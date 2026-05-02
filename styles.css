@@ -180,50 +180,19 @@ body.title-active .app-shell {
 
 .title-card {
   position: absolute;
-  width: clamp(132px, 17vw, 260px);
+  top: var(--title-top, auto);
+  right: var(--title-right, auto);
+  bottom: var(--title-bottom, auto);
+  left: var(--title-left, auto);
+  z-index: var(--title-layer, 1);
+  width: var(--title-width, clamp(118px, 14vw, 232px));
   border-radius: 8px;
-  opacity: 0.72;
+  opacity: var(--title-opacity, 0.62);
   object-fit: cover;
+  transform: rotate(var(--title-rotate, 0deg));
   box-shadow: 0 26px 52px rgba(0, 0, 0, 0.55);
-  animation: titleCardDrift 7200ms ease-in-out infinite;
-}
-
-.title-card-a {
-  left: 7%;
-  top: 9%;
-  transform: rotate(-13deg);
-}
-
-.title-card-b {
-  right: 11%;
-  top: 8%;
-  width: clamp(150px, 20vw, 300px);
-  transform: rotate(11deg);
-  animation-delay: -1800ms;
-}
-
-.title-card-c {
-  left: 13%;
-  bottom: 7%;
-  width: clamp(150px, 19vw, 288px);
-  transform: rotate(8deg);
-  animation-delay: -3100ms;
-}
-
-.title-card-d {
-  right: 8%;
-  bottom: 10%;
-  transform: rotate(-9deg);
-  animation-delay: -900ms;
-}
-
-.title-card-e {
-  right: 31%;
-  top: 42%;
-  width: clamp(120px, 14vw, 214px);
-  opacity: 0.46;
-  transform: rotate(4deg);
-  animation-delay: -4200ms;
+  animation: titleCardDrift var(--title-duration, 7200ms) ease-in-out infinite;
+  animation-delay: var(--title-delay, 0ms);
 }
 
 .title-content {
@@ -1715,31 +1684,12 @@ body.title-active .app-shell {
   }
 
   .title-card {
-    opacity: 0.45;
-  }
-
-  .title-card-a {
-    left: -10%;
-    top: 8%;
-  }
-
-  .title-card-b {
-    right: -12%;
-    top: 12%;
-  }
-
-  .title-card-c {
-    left: -8%;
-    bottom: 8%;
-  }
-
-  .title-card-d {
-    right: -10%;
-    bottom: 13%;
-  }
-
-  .title-card-e {
-    display: none;
+    top: var(--title-mobile-top, var(--title-top, auto));
+    right: var(--title-mobile-right, var(--title-right, auto));
+    bottom: var(--title-mobile-bottom, var(--title-bottom, auto));
+    left: var(--title-mobile-left, var(--title-left, auto));
+    width: var(--title-mobile-width, clamp(86px, 28vw, 148px));
+    opacity: 0.38;
   }
 
   .title-content {

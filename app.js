@@ -1064,6 +1064,110 @@ let state = null;
 let activeScreen = "title";
 let deckEditorIds = [];
 
+const TITLE_CARD_COUNT = 10;
+const TITLE_CARD_SLOTS = [
+  {
+    left: "5%",
+    top: "7%",
+    width: "clamp(118px, 14vw, 226px)",
+    rotate: "-13deg",
+    opacity: "0.66",
+    delay: "-700ms",
+    mobileLeft: "-13%",
+    mobileTop: "6%",
+  },
+  {
+    right: "8%",
+    top: "6%",
+    width: "clamp(138px, 18vw, 286px)",
+    rotate: "11deg",
+    opacity: "0.68",
+    delay: "-1800ms",
+    mobileRight: "-15%",
+    mobileTop: "11%",
+  },
+  {
+    left: "12%",
+    bottom: "6%",
+    width: "clamp(138px, 17vw, 276px)",
+    rotate: "8deg",
+    opacity: "0.58",
+    delay: "-3100ms",
+    mobileLeft: "-12%",
+    mobileBottom: "10%",
+  },
+  {
+    right: "6%",
+    bottom: "8%",
+    width: "clamp(120px, 15vw, 246px)",
+    rotate: "-9deg",
+    opacity: "0.6",
+    delay: "-900ms",
+    mobileRight: "-13%",
+    mobileBottom: "13%",
+  },
+  {
+    left: "29%",
+    top: "41%",
+    width: "clamp(104px, 12vw, 198px)",
+    rotate: "4deg",
+    opacity: "0.38",
+    delay: "-4200ms",
+    mobileLeft: "13%",
+    mobileTop: "46%",
+  },
+  {
+    right: "29%",
+    top: "39%",
+    width: "clamp(104px, 12vw, 198px)",
+    rotate: "-5deg",
+    opacity: "0.36",
+    delay: "-2500ms",
+    mobileRight: "11%",
+    mobileTop: "49%",
+  },
+  {
+    left: "41%",
+    top: "-5%",
+    width: "clamp(108px, 13vw, 214px)",
+    rotate: "7deg",
+    opacity: "0.42",
+    delay: "-5600ms",
+    mobileLeft: "36%",
+    mobileTop: "-5%",
+  },
+  {
+    right: "41%",
+    bottom: "-6%",
+    width: "clamp(110px, 13vw, 216px)",
+    rotate: "-7deg",
+    opacity: "0.4",
+    delay: "-1400ms",
+    mobileRight: "35%",
+    mobileBottom: "-6%",
+  },
+  {
+    left: "-2%",
+    top: "36%",
+    width: "clamp(100px, 12vw, 196px)",
+    rotate: "16deg",
+    opacity: "0.42",
+    delay: "-3600ms",
+    mobileLeft: "-20%",
+    mobileTop: "36%",
+  },
+  {
+    right: "-3%",
+    top: "32%",
+    width: "clamp(100px, 12vw, 196px)",
+    rotate: "-15deg",
+    opacity: "0.42",
+    delay: "-5100ms",
+    mobileRight: "-21%",
+    mobileTop: "34%",
+  },
+];
+
 const BGM_TRACKS = {
   title: {
     src: "assets/audio/cross-the-line-title-theme.mp3",
@@ -1082,7 +1186,7 @@ const BGM_TRACKS = {
     label: "優勢",
   },
   victory: {
-    src: "assets/audio/cross-the-line-gloria-victory.mp3",
+    src: "assets/audio/cross-the-line-victory-theme.mp3",
     label: "勝利",
   },
   crisis: {
@@ -1090,7 +1194,7 @@ const BGM_TRACKS = {
     label: "劣勢",
   },
   defeat: {
-    src: "assets/audio/cross-the-line-crisis.mp3",
+    src: "assets/audio/cross-the-line-defeat-theme.mp3",
     label: "敗北",
   },
 };
@@ -1203,8 +1307,52 @@ const audio = {
 
 document.addEventListener("pointerdown", () => audio.unlock(), { once: true });
 
+function renderTitleCards() {
+  const container = qs("#titleVisuals");
+  if (!container) return;
+  const owned = loadOwnedCollection();
+  const ownedIds = Object.entries(owned)
+    .filter(([id, count]) => CARD_DB.has(id) && Number(count) > 0)
+    .map(([id]) => id);
+  const pool = ownedIds.length ? ownedIds : [...new Set(PLAYER_DECK)];
+  const picked = shuffle(pool).slice(0, TITLE_CARD_COUNT);
+  while (picked.length < TITLE_CARD_COUNT) {
+    picked.push(randomItem(pool));
+  }
+  container.innerHTML = picked
+    .map((id, index) => {
+      const card = CARD_DB.get(id);
+      const slot = TITLE_CARD_SLOTS[index % TITLE_CARD_SLOTS.length];
+      return `<img class="title-card" src="assets/cards/${card.id}.png" alt="" style="${titleCardStyle(slot)}" />`;
+    })
+    .join("");
+}
+
+function titleCardStyle(slot) {
+  return [
+    ["--title-top", slot.top],
+    ["--title-right", slot.right],
+    ["--title-bottom", slot.bottom],
+    ["--title-left", slot.left],
+    ["--title-width", slot.width],
+    ["--title-rotate", slot.rotate],
+    ["--title-opacity", slot.opacity],
+    ["--title-delay", slot.delay],
+    ["--title-duration", slot.duration],
+    ["--title-mobile-top", slot.mobileTop],
+    ["--title-mobile-right", slot.mobileRight],
+    ["--title-mobile-bottom", slot.mobileBottom],
+    ["--title-mobile-left", slot.mobileLeft],
+    ["--title-mobile-width", slot.mobileWidth],
+  ]
+    .filter(([, value]) => value !== undefined)
+    .map(([property, value]) => `${property}:${value}`)
+    .join(";");
+}
+
 function showTitleScreen() {
   activeScreen = "title";
+  renderTitleCards();
   document.body.classList.add("title-active");
   qs("#titleScreen").classList.remove("is-hidden");
   audio.updateMusic();
