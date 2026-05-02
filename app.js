@@ -1067,8 +1067,10 @@ let deckEditorIds = [];
 let battleBgmStyle = "standard";
 let gallerySelectedCardId = null;
 let galleryMusicTrack = "title";
+let lastHandTap = { index: null, instanceId: null, at: 0 };
 
 const TITLE_CARD_COUNT = 10;
+const HAND_DOUBLE_TAP_MS = 420;
 const TITLE_CARD_SLOTS = [
   {
     left: "5%",
@@ -1494,6 +1496,7 @@ function startTurn(player) {
   state.selectedField = null;
   state.selectedAttackerId = null;
   state.pendingSupport = null;
+  clearHandTapState();
   if (player.counterAttack > 0) {
     player.counterAttack = 0;
     log(`${player.name} の紫禁の策謀は有効期限を過ぎた。`, "effect");
@@ -1571,6 +1574,7 @@ function playCharacterFromHand(player, handIndex, lane, slotIndex) {
   applySummonEffects(card, player, lane);
   state.selectedHandIndex = null;
   state.selectedField = { owner: player.key, lane, index: slotIndex };
+  clearHandTapState();
   render();
   window.setTimeout(() => {
     if (state?.summonDropId === card.instanceId) state.summonDropId = null;
@@ -1897,6 +1901,7 @@ function useSelectedSupport() {
   player.hand.splice(state.selectedHandIndex, 1);
   state.selectedHandIndex = null;
   state.pendingSupport = null;
+  clearHandTapState();
   render();
   checkGameOver();
 }
@@ -2100,6 +2105,7 @@ function completeSupportTarget(targetCard) {
   state.selectedField = null;
   state.selectedAttackerId = null;
   state.pendingSupport = null;
+  clearHandTapState();
   render();
   checkGameOver();
 }
@@ -3241,10 +3247,15 @@ function hintText() {
   if (state.current === "ai") return "AIが思考中です。";
   const pendingSupport = getPendingSupportCard();
   if (pendingSupport) return `${pendingSupport.name} の対象を選択してください。`;
-  if (state.phase === "main") return "手札を選び、空き枠に配置。サポートはカード情報から使用できます。";
+  if (state.phase === "main") return "手札を選択。もう一度タップでサポート使用、キャラは配置先選択へ。";
   const attacker = getSelectedAttacker();
   if (attacker) return "攻撃対象を選択してください。ガード持ちがいる場合はガードのみ攻撃できます。";
   return "前衛の攻撃可能なキャラを選択してください。";
+}
+
+function hasPlayableSlotForCard(player, card) {
+  if (!card || card.kind !== "character") return false;
+  return ["front", "back"].some((lane) => player[lane].some((slot) => !slot && isValidLane(card, lane)));
 }
 
 function isPlayableSlot(ownerKey, lane, index) {
@@ -3398,6 +3409,24 @@ function getHandCardFromEvent(event) {
   return card ? { cardEl, index, card } : null;
 }
 
+function isHandDoubleTap(found) {
+  const now = window.performance?.now?.() || Date.now();
+  const repeated =
+    lastHandTap.index === found.index &&
+    lastHandTap.instanceId === found.card.instanceId &&
+    now - lastHandTap.at <= HAND_DOUBLE_TAP_MS;
+  lastHandTap = {
+    index: found.index,
+    instanceId: found.card.instanceId,
+    at: now,
+  };
+  return repeated;
+}
+
+function clearHandTapState() {
+  lastHandTap = { index: null, instanceId: null, at: 0 };
+}
+
 function handleHandHover(event) {
   const found = getHandCardFromEvent(event);
   if (!found) return;
@@ -3431,12 +3460,38 @@ function handleHandClick(event) {
   const found = getHandCardFromEvent(event);
   openHandDock();
   if (!found || state.busy || state.current !== "player") return;
+  const doubleTap = isHandDoubleTap(found);
   state.pendingSupport = null;
   state.selectedHandIndex = found.index;
   state.selectedField = null;
   state.selectedAttackerId = null;
   showSkillPopup(found.card, found.cardEl);
   audio.sfx("draw");
+  if (doubleTap) {
+    clearHandTapState();
+    if (state.phase !== "main") {
+      log("手札の使用・配置はメインフェイズ中のみ可能です。", "warn");
+      render();
+      return;
+    }
+    if (found.card.kind === "support") {
+      useSelectedSupport();
+      return;
+    }
+    if (found.card.kind === "character") {
+      hideSkillPopup();
+      closeHandDock();
+      if (!canPay(state.player, found.card)) {
+        log("エネルギーが足りない。", "warn");
+      } else if (!hasPlayableSlotForCard(state.player, found.card)) {
+        log(`${found.card.name} を配置できる空き枠がない。`, "warn");
+      } else {
+        log(`${found.card.name} の配置先を選択してください。`, "summon");
+      }
+      render();
+      return;
+    }
+  }
   render();
 }
 
