@@ -2629,6 +2629,14 @@ function closeOpeningMovie() {
   audio.updateMusic();
 }
 
+function openHowToPlay() {
+  qs("#howToPlayModal")?.classList.remove("hidden");
+}
+
+function closeHowToPlay() {
+  qs("#howToPlayModal")?.classList.add("hidden");
+}
+
 function addDeckCard(cardId) {
   const owned = loadOwnedCollection();
   const selected = countBy(deckEditorIds, (id) => id);
@@ -3359,6 +3367,14 @@ function bindEvents() {
   qs("#openingMovieModal").addEventListener("click", (event) => {
     if (event.target.id === "openingMovieModal") closeOpeningMovie();
   });
+  qs("#howToPlayBtn").addEventListener("click", () => {
+    audio.unlock();
+    openHowToPlay();
+  });
+  qs("#closeHowToPlayBtn").addEventListener("click", closeHowToPlay);
+  qs("#howToPlayModal").addEventListener("click", (event) => {
+    if (event.target.id === "howToPlayModal") closeHowToPlay();
+  });
   qs("#deckEditBtn").addEventListener("click", () => {
     audio.unlock();
     openDeckEditor();
@@ -3422,7 +3438,9 @@ function bindEvents() {
     closeHandDock();
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !qs("#openingMovieModal").classList.contains("hidden")) closeOpeningMovie();
+    if (event.key !== "Escape") return;
+    if (!qs("#openingMovieModal").classList.contains("hidden")) closeOpeningMovie();
+    if (!qs("#howToPlayModal").classList.contains("hidden")) closeHowToPlay();
   });
   qs(".field-wrap").addEventListener("click", handleFieldClick);
   qs("#inspectPanel").addEventListener("click", (event) => {

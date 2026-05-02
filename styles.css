@@ -1431,6 +1431,57 @@ body.title-active .app-shell {
   margin-bottom: 14px;
 }
 
+.how-to-play-modal {
+  z-index: 120;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.how-to-play-card {
+  width: min(840px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+}
+
+.how-to-play-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.how-to-play-header h2 {
+  margin: 0;
+}
+
+.how-to-play-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid rgba(246, 200, 95, 0.22);
+  border-left: 1px solid rgba(246, 200, 95, 0.16);
+}
+
+.how-to-play-body section {
+  padding: 14px;
+  border-right: 1px solid rgba(246, 200, 95, 0.16);
+  border-bottom: 1px solid rgba(246, 200, 95, 0.16);
+}
+
+.how-to-play-body h3 {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 0.92rem;
+}
+
+.how-to-play-body p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
 .reward-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1706,6 +1757,14 @@ body.title-active .app-shell {
 
   .title-menu-button {
     width: 100%;
+  }
+
+  .how-to-play-card {
+    padding: 18px;
+  }
+
+  .how-to-play-body {
+    grid-template-columns: 1fr;
   }
 
   .deck-editor {
