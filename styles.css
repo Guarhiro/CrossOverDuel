@@ -1464,6 +1464,12 @@ body.title-active .app-shell {
   margin-bottom: 16px;
 }
 
+.reward-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .choice-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1803,6 +1809,10 @@ body.title-active .app-shell {
 
   .reward-cards,
   .choice-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .reward-actions {
     grid-template-columns: 1fr;
   }
 }

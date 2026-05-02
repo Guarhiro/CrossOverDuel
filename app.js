@@ -1908,8 +1908,8 @@ async function performAttack(attacker, target, options = {}) {
     damageCharacter(attacker, attackValue, foe, { ignoreDef: true });
     await sleep(IMPACT_SETTLE_DELAY);
     state.busy = previousBusy;
+    if (checkGameOver()) return;
     render();
-    checkGameOver();
     return;
   }
 
@@ -1937,14 +1937,14 @@ async function performAttack(attacker, target, options = {}) {
   attacker.attacked = true;
   if (!findCardLocation(attacker)) {
     state.busy = previousBusy;
+    if (checkGameOver()) return;
     render();
-    checkGameOver();
     return;
   }
   afterAttackEffects(attacker, owner, foe, target, killed, hpDamage);
   state.busy = previousBusy;
+  if (checkGameOver()) return;
   render();
-  checkGameOver();
 }
 
 function afterAttackEffects(attacker, owner, foe, target, killed) {
@@ -2241,7 +2241,7 @@ function revealRandomHand(targetPlayer, viewer) {
 }
 
 function checkGameOver() {
-  if (state.gameOver) return;
+  if (state.gameOver) return true;
   if (state.ai.lp <= 0 || state.player.lp <= 0) {
     state.gameOver = true;
     state.phase = "gameover";
@@ -2251,7 +2251,9 @@ function checkGameOver() {
     log(playerWon ? "<strong>勝利！</strong> 相手LPを0にした。" : "<strong>敗北。</strong> プレイヤーLPが0になった。", "system");
     render();
     giveRewards(playerWon);
+    return true;
   }
+  return false;
 }
 
 function giveRewards(playerWon) {
@@ -3132,8 +3134,15 @@ function bindEvents() {
     if (!attacker || !isLpTargetable() || state.busy) return;
     performAttack(attacker, { type: "lp", player: state.ai });
   });
-  qs("#closeRewardBtn").addEventListener("click", () => {
+  qs("#nextBattleBtn").addEventListener("click", () => {
     qs("#rewardModal").classList.add("hidden");
+    startNewGame();
+  });
+  qs("#returnTitleBtn").addEventListener("click", () => {
+    qs("#rewardModal").classList.add("hidden");
+    hideSkillPopup();
+    closeHandDock();
+    showTitleScreen();
   });
   qs("#musicBtn").addEventListener("click", () => {
     audio.unlock();
