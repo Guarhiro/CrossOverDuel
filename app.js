@@ -2370,6 +2370,7 @@ function openDeckEditor() {
 function closeDeckEditor() {
   if (activeScreen === "deckEdit") activeScreen = "title";
   qs("#deckEditor").classList.add("hidden");
+  hideSkillPopup();
   audio.updateMusic();
 }
 
@@ -2394,6 +2395,7 @@ function addDeckCard(cardId) {
   const selected = countBy(deckEditorIds, (id) => id);
   if (!CARD_DB.has(cardId) || deckEditorIds.length >= PLAYER_DECK_SIZE) return;
   if ((selected[cardId] || 0) >= (owned[cardId] || 0)) return;
+  hideSkillPopup();
   deckEditorIds.push(cardId);
   renderDeckEditor();
 }
@@ -2401,6 +2403,7 @@ function addDeckCard(cardId) {
 function removeDeckCard(cardId) {
   const index = deckEditorIds.indexOf(cardId);
   if (index === -1) return;
+  hideSkillPopup();
   deckEditorIds.splice(index, 1);
   renderDeckEditor();
 }
@@ -2680,6 +2683,30 @@ function showSkillPopup(card, anchor) {
   popup.innerHTML = `
     <h3>${escapeHtml(card.name)}</h3>
     <div class="popup-meta">
+      <span class="popup-chip">${card.rarity}</span>
+      <span class="popup-chip">${escapeHtml(card.element || "無")}</span>
+      <span class="popup-chip">${escapeHtml(typeLine)}</span>
+    </div>
+    <p><strong>${escapeHtml(card.skill)}</strong><br>${escapeHtml(card.text)}</p>
+    <p>${escapeHtml(statsLine)}</p>
+  `;
+  popup.classList.remove("hidden");
+  positionSkillPopup(popup, anchor);
+}
+
+function showDeckCardPopup(cardId, anchor) {
+  const card = CARD_DB.get(cardId);
+  const popup = qs("#skillPopup");
+  if (!card || !popup) return;
+  const typeLine = card.kind === "support" ? card.supportType : ROLE_LABELS[card.role];
+  const statsLine =
+    card.kind === "character"
+      ? `Cost ${card.cost} / ATK ${card.atk} / DEF ${card.def} / HP ${card.hp}`
+      : `${card.supportType} / コスト ${card.cost}`;
+  popup.innerHTML = `
+    <h3>${escapeHtml(card.name)}</h3>
+    <div class="popup-meta">
+      <span class="popup-chip">${escapeHtml(card.no)}</span>
       <span class="popup-chip">${card.rarity}</span>
       <span class="popup-chip">${escapeHtml(card.element || "無")}</span>
       <span class="popup-chip">${escapeHtml(typeLine)}</span>
@@ -2979,6 +3006,20 @@ function handleHandOut(event) {
   hideSkillPopup();
 }
 
+function handleDeckEditorCardPreview(event) {
+  const cardButton = event.target.closest(".deck-edit-card[data-card-id]");
+  if (!cardButton || !qs("#deckEditor")?.contains(cardButton)) return;
+  showDeckCardPopup(cardButton.dataset.cardId, cardButton);
+}
+
+function handleDeckEditorCardOut(event) {
+  const fromCard = event.target.closest(".deck-edit-card[data-card-id]");
+  if (!fromCard) return;
+  const toCard = event.relatedTarget?.closest?.(".deck-edit-card[data-card-id]");
+  if (toCard === fromCard) return;
+  hideSkillPopup();
+}
+
 function handleHandClick(event) {
   const found = getHandCardFromEvent(event);
   openHandDock();
@@ -3080,6 +3121,13 @@ function bindEvents() {
     const cardButton = event.target.closest(".deck-edit-card[data-card-id]");
     if (!cardButton) return;
     removeDeckCard(cardButton.dataset.cardId);
+  });
+  [qs("#cardLibrary"), qs("#deckList")].forEach((deckArea) => {
+    deckArea.addEventListener("pointerover", handleDeckEditorCardPreview);
+    deckArea.addEventListener("pointermove", handleDeckEditorCardPreview);
+    deckArea.addEventListener("pointerout", handleDeckEditorCardOut);
+    deckArea.addEventListener("focusin", handleDeckEditorCardPreview);
+    deckArea.addEventListener("focusout", handleDeckEditorCardOut);
   });
   qs("#newGameBtn").addEventListener("click", () => {
     qs("#rewardModal").classList.add("hidden");
