@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=hand-double-tap-1" />
+    <link rel="stylesheet" href="styles.css?v=deck-filters-1" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -43,11 +43,20 @@
         <p id="deckEditorStatus" class="deck-editor-status"></p>
         <div class="deck-editor-grid">
           <section class="deck-editor-panel">
-            <h3>デッキ</h3>
+            <div class="deck-editor-panel-head">
+              <h3>デッキ</h3>
+              <button id="toggleDeckListBtn" class="panel-toggle" type="button">非表示</button>
+            </div>
             <div id="deckList" class="deck-list"></div>
           </section>
           <section class="deck-editor-panel">
-            <h3>所持カード</h3>
+            <div class="deck-editor-panel-head">
+              <h3>所持カード</h3>
+              <div class="deck-editor-panel-actions">
+                <button id="ownedOnlyLibraryBtn" class="panel-toggle" type="button" aria-pressed="false">入手済みのみ</button>
+                <button id="toggleLibraryBtn" class="panel-toggle" type="button">非表示</button>
+              </div>
+            </div>
             <div id="cardLibrary" class="card-library"></div>
           </section>
         </div>
@@ -221,6 +230,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=hand-double-tap-1"></script>
+    <script src="app.js?v=deck-filters-1"></script>
   </body>
 </html>

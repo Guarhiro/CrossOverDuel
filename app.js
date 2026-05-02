@@ -1064,6 +1064,9 @@ let nextInstanceId = 1;
 let state = null;
 let activeScreen = "title";
 let deckEditorIds = [];
+let deckEditorDeckHidden = false;
+let deckEditorLibraryHidden = false;
+let deckEditorLibraryOwnedOnly = false;
 let battleBgmStyle = "standard";
 let gallerySelectedCardId = null;
 let galleryMusicTrack = "title";
@@ -2829,6 +2832,42 @@ function saveDeckEditor() {
   renderDeckEditor("20枚ちょうどで保存できます。");
 }
 
+function toggleDeckListVisibility() {
+  deckEditorDeckHidden = !deckEditorDeckHidden;
+  hideSkillPopup();
+  renderDeckEditor();
+}
+
+function toggleLibraryVisibility() {
+  deckEditorLibraryHidden = !deckEditorLibraryHidden;
+  hideSkillPopup();
+  renderDeckEditor();
+}
+
+function toggleLibraryOwnedOnly() {
+  deckEditorLibraryOwnedOnly = !deckEditorLibraryOwnedOnly;
+  hideSkillPopup();
+  renderDeckEditor();
+}
+
+function updateDeckEditorToggleButtons() {
+  const deckButton = qs("#toggleDeckListBtn");
+  const libraryButton = qs("#toggleLibraryBtn");
+  const ownedOnlyButton = qs("#ownedOnlyLibraryBtn");
+  deckButton.textContent = deckEditorDeckHidden ? "表示" : "非表示";
+  deckButton.title = deckEditorDeckHidden ? "デッキ内カードを表示" : "デッキ内カードを非表示";
+  deckButton.setAttribute("aria-pressed", String(deckEditorDeckHidden));
+  deckButton.classList.toggle("is-on", deckEditorDeckHidden);
+  libraryButton.textContent = deckEditorLibraryHidden ? "表示" : "非表示";
+  libraryButton.title = deckEditorLibraryHidden ? "所持カード一覧を表示" : "所持カード一覧を非表示";
+  libraryButton.setAttribute("aria-pressed", String(deckEditorLibraryHidden));
+  libraryButton.classList.toggle("is-on", deckEditorLibraryHidden);
+  ownedOnlyButton.textContent = deckEditorLibraryOwnedOnly ? "全カード" : "入手済みのみ";
+  ownedOnlyButton.title = deckEditorLibraryOwnedOnly ? "全カードを表示" : "入手済みカードのみ表示";
+  ownedOnlyButton.setAttribute("aria-pressed", String(deckEditorLibraryOwnedOnly));
+  ownedOnlyButton.classList.toggle("is-on", deckEditorLibraryOwnedOnly);
+}
+
 function renderDeckEditor(message = "", ready = false) {
   const owned = loadOwnedCollection();
   const selected = countBy(deckEditorIds, (id) => id);
@@ -2836,6 +2875,7 @@ function renderDeckEditor(message = "", ready = false) {
   const valid = isValidDeckIds(deckEditorIds, owned);
   qs("#deckCount").textContent = `${deckCount}/${PLAYER_DECK_SIZE}`;
   qs("#saveDeckBtn").disabled = !valid;
+  updateDeckEditorToggleButtons();
   const status = qs("#deckEditorStatus");
   status.classList.toggle("is-ready", ready || valid);
   status.textContent = message || (valid ? "保存できます。" : `${PLAYER_DECK_SIZE - deckCount}枚追加できます。`);
@@ -2844,10 +2884,11 @@ function renderDeckEditor(message = "", ready = false) {
     .sort(([idA], [idB]) => compareCards(CARD_DB.get(idA), CARD_DB.get(idB)))
     .map(([id, count]) => renderDeckEditorCard(CARD_DB.get(id), count, `所持 ${owned[id] || 0}`, false, "deck"))
     .join("");
-  qs("#deckList").innerHTML = deckCards || '<p class="deck-empty">0枚</p>';
+  qs("#deckList").innerHTML = deckEditorDeckHidden ? '<p class="deck-empty">デッキ内カードを非表示中です。</p>' : deckCards || '<p class="deck-empty">0枚</p>';
 
-  qs("#cardLibrary").innerHTML = [...ALL_CARDS]
+  const libraryCards = [...ALL_CARDS]
     .sort(compareCards)
+    .filter((card) => !deckEditorLibraryOwnedOnly || (owned[card.id] || 0) > 0)
     .map((card) => {
       const ownedCount = owned[card.id] || 0;
       const usedCount = selected[card.id] || 0;
@@ -2856,6 +2897,9 @@ function renderDeckEditor(message = "", ready = false) {
       return renderDeckEditorCard(card, remaining, `所持 ${ownedCount} / デッキ ${usedCount}`, disabled, "library");
     })
     .join("");
+  qs("#cardLibrary").innerHTML = deckEditorLibraryHidden
+    ? '<p class="deck-empty">所持カード一覧を非表示中です。</p>'
+    : libraryCards || '<p class="deck-empty">表示できるカードがありません。</p>';
 }
 
 function compareCards(a, b) {
@@ -3622,6 +3666,9 @@ function bindEvents() {
   });
   qs("#resetDeckBtn").addEventListener("click", resetDeckEditor);
   qs("#saveDeckBtn").addEventListener("click", saveDeckEditor);
+  qs("#toggleDeckListBtn").addEventListener("click", toggleDeckListVisibility);
+  qs("#toggleLibraryBtn").addEventListener("click", toggleLibraryVisibility);
+  qs("#ownedOnlyLibraryBtn").addEventListener("click", toggleLibraryOwnedOnly);
   qs("#cardLibrary").addEventListener("click", (event) => {
     const cardButton = event.target.closest(".deck-edit-card[data-card-id]");
     if (!cardButton || cardButton.dataset.disabled === "true") return;
