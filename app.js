@@ -1295,6 +1295,7 @@ function startNewGame() {
     gameOver: false,
     rewardsGiven: false,
     pendingDeckChoice: null,
+    pendingSupport: null,
     summonDropId: null,
     log: [],
   };
@@ -1317,6 +1318,7 @@ function startTurn(player) {
   state.selectedHandIndex = null;
   state.selectedField = null;
   state.selectedAttackerId = null;
+  state.pendingSupport = null;
   if (player.counterAttack > 0) {
     player.counterAttack = 0;
     log(`${player.name} の紫禁の策謀は有効期限を過ぎた。`, "effect");
@@ -1689,6 +1691,25 @@ function useSelectedSupport() {
     render();
     return;
   }
+  if (supportRequiresTarget(card)) {
+    const targets = getSupportTargets(card, player, state.ai);
+    if (!targets.length) {
+      log(`${card.name} は今は有効な対象がない。`, "warn");
+      render();
+      return;
+    }
+    state.pendingSupport = {
+      handIndex: state.selectedHandIndex,
+      instanceId: card.instanceId,
+    };
+    state.selectedField = null;
+    state.selectedAttackerId = null;
+    hideSkillPopup();
+    closeHandDock();
+    log(`${card.name} の対象を選択してください。`, "support");
+    render();
+    return;
+  }
   const target = chooseSupportTarget(card, player, state.ai);
   if (target === false) {
     log(`${card.name} は今は有効な対象がない。`, "warn");
@@ -1700,6 +1721,7 @@ function useSelectedSupport() {
   resolveSupport(player, state.ai, card, target);
   player.hand.splice(state.selectedHandIndex, 1);
   state.selectedHandIndex = null;
+  state.pendingSupport = null;
   render();
   checkGameOver();
 }
@@ -1839,18 +1861,87 @@ function resolveSupport(player, foe, card, target) {
   }
 }
 
+function supportRequiresTarget(card) {
+  return ["S01", "S03", "S05", "S14", "S15"].includes(card?.id);
+}
+
+function getSupportTargets(card, player, foe) {
+  switch (card?.id) {
+    case "S01":
+      return boardCards(player).filter((ally) => ally.currentHp < ally.maxHp && !ally.noHeal);
+    case "S03":
+      return foe.front.filter(Boolean);
+    case "S05":
+      return boardCards(player).filter((ally) => ally.awaken && !ally.awakened);
+    case "S14":
+      return activeGuards(foe);
+    case "S15":
+      return boardCards(player);
+    default:
+      return [];
+  }
+}
+
+function getPendingSupportCard() {
+  if (!state.pendingSupport) return null;
+  const card = state.player.hand[state.pendingSupport.handIndex];
+  if (!card || card.instanceId !== state.pendingSupport.instanceId) {
+    state.pendingSupport = null;
+    return null;
+  }
+  return card;
+}
+
+function isSupportTargetable(card) {
+  const support = getPendingSupportCard();
+  if (!support || state.current !== "player" || state.phase !== "main" || state.busy) return false;
+  return getSupportTargets(support, state.player, state.ai).includes(card);
+}
+
+function completeSupportTarget(targetCard) {
+  const player = state.player;
+  const support = getPendingSupportCard();
+  if (!support) {
+    render();
+    return;
+  }
+  if (!canPay(player, support)) {
+    state.pendingSupport = null;
+    log("エネルギーが足りない。", "warn");
+    render();
+    return;
+  }
+  if (!getSupportTargets(support, player, state.ai).includes(targetCard)) {
+    log("そのカードは対象にできません。", "warn");
+    render();
+    return;
+  }
+  const handIndex = state.pendingSupport.handIndex;
+  hideSkillPopup();
+  closeHandDock();
+  resolveSupport(player, state.ai, support, targetCard);
+  player.hand.splice(handIndex, 1);
+  state.selectedHandIndex = null;
+  state.selectedField = null;
+  state.selectedAttackerId = null;
+  state.pendingSupport = null;
+  render();
+  checkGameOver();
+}
+
 function chooseSupportTarget(card, player, foe) {
+  const targets = getSupportTargets(card, player, foe);
   switch (card.id) {
     case "S01":
       return mostDamagedAlly(player) || false;
     case "S03":
-      return foe.front.filter(Boolean).sort((a, b) => effectiveAtk(b) - effectiveAtk(a))[0] || false;
+      return targets.sort((a, b) => effectiveAtk(b) - effectiveAtk(a))[0] || false;
     case "S05":
-      return boardCards(player).find((ally) => ally.awaken && !ally.awakened) || false;
+      return targets[0] || false;
     case "S14":
-      return activeGuards(foe).sort((a, b) => effectiveDef(b) - effectiveDef(a))[0] || false;
+      return targets.sort((a, b) => effectiveDef(b) - effectiveDef(a))[0] || false;
     case "S15":
-      return boardCards(player).sort((a, b) => effectiveDef(a) - effectiveDef(b))[0] || false;
+      return targets.sort((a, b) => effectiveDef(a) - effectiveDef(b))[0] || false;
     default:
       return null;
   }
@@ -2609,7 +2700,7 @@ function renderCard(card, options = {}) {
   const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
   const cardImage = `assets/cards/${card.id}.png`;
   const selected = options.selected || state.selectedAttackerId === card.instanceId || isSelectedField(card);
-  const targetable = options.field && isCardTargetable(card);
+  const targetable = options.field && (isCardTargetable(card) || isSupportTargetable(card));
   const exhausted = options.field && card.kind === "character" && (card.attacked || !canAttack(card, state[card.ownerKey]));
   const statusClass = card.status?.stun > 0 ? "is-stunned" : "";
   const typeLine = card.kind === "support" ? card.supportType : ROLE_LABELS[card.role];
@@ -2771,10 +2862,11 @@ function renderInspector() {
 
   const owner = card.ownerKey ? state[card.ownerKey] : state.player;
   const afford = canPay(state.player, card);
+  const waitingForTarget = selectedHandCard && getPendingSupportCard() === selectedHandCard;
   const action =
     selectedHandCard && state.current === "player" && state.phase === "main"
       ? card.kind === "support"
-        ? `<button id="useSupportBtn" ${afford ? "" : "disabled"}>サポート使用</button>`
+        ? `<button id="useSupportBtn" ${afford && !waitingForTarget ? "" : "disabled"}>${waitingForTarget ? "対象を選択中" : "サポート使用"}</button>`
         : `<p class="inspect-text">${afford ? "空いている前衛/後衛枠をクリックして配置。" : "エネルギーが足りません。"}</p>`
       : "";
 
@@ -2835,6 +2927,8 @@ function renderCollectionSummary() {
 function hintText() {
   if (state.gameOver) return "ゲーム終了。報酬3枚を獲得しています。";
   if (state.current === "ai") return "AIが思考中です。";
+  const pendingSupport = getPendingSupportCard();
+  if (pendingSupport) return `${pendingSupport.name} の対象を選択してください。`;
   if (state.phase === "main") return "手札を選び、空き枠に配置。サポートはカード情報から使用できます。";
   const attacker = getSelectedAttacker();
   if (attacker) return "攻撃対象を選択してください。ガード持ちがいる場合はガードのみ攻撃できます。";
@@ -2843,6 +2937,7 @@ function hintText() {
 
 function isPlayableSlot(ownerKey, lane, index) {
   if (ownerKey !== "player" || state.current !== "player" || state.phase !== "main" || state.busy) return false;
+  if (state.pendingSupport) return false;
   if (state.player[lane][index]) return false;
   const card = state.selectedHandIndex !== null ? state.player.hand[state.selectedHandIndex] : null;
   return Boolean(card && card.kind === "character" && canPay(state.player, card) && isValidLane(card, lane));
@@ -3024,6 +3119,7 @@ function handleHandClick(event) {
   const found = getHandCardFromEvent(event);
   openHandDock();
   if (!found || state.busy || state.current !== "player") return;
+  state.pendingSupport = null;
   state.selectedHandIndex = found.index;
   state.selectedField = null;
   state.selectedAttackerId = null;
@@ -3044,6 +3140,15 @@ async function handleFieldClick(event) {
     const lane = cardEl.dataset.lane;
     const index = Number(cardEl.dataset.index);
     const card = state[owner][lane][index];
+    if (state.pendingSupport) {
+      if (isSupportTargetable(card)) {
+        completeSupportTarget(card);
+      } else {
+        log("そのカードは対象にできません。", "warn");
+        render();
+      }
+      return;
+    }
     if (state.phase === "battle") {
       const attacker = getSelectedAttacker();
       if (owner === "player" && lane === "front" && canAttack(card, state.player)) {
@@ -3066,6 +3171,7 @@ async function handleFieldClick(event) {
     return;
   }
 
+  if (state.pendingSupport) return;
   if (!slotEl || state.phase !== "main") return;
   const owner = slotEl.dataset.owner;
   const lane = slotEl.dataset.lane;
@@ -3137,6 +3243,7 @@ function bindEvents() {
     if (state.current !== "player" || state.phase !== "main" || state.busy) return;
     hideSkillPopup();
     closeHandDock();
+    state.pendingSupport = null;
     state.phase = "battle";
     state.selectedHandIndex = null;
     state.selectedField = null;
@@ -3149,6 +3256,7 @@ function bindEvents() {
     if (!canAcceptPlayerCommands()) return;
     hideSkillPopup();
     closeHandDock();
+    state.pendingSupport = null;
     endTurn(state.player);
     state.turnNumber += 1;
     render();
