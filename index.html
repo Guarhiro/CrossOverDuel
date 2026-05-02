@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CROSSOVER DUEL</title>
+    <link rel="stylesheet" href="styles.css?v=youtube-op-1" />
+  </head>
+  <body>
+    <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
+      <div class="title-visuals" aria-hidden="true">
+        <img class="title-card title-card-a" src="assets/cards/C01.png" alt="" />
+        <img class="title-card title-card-b" src="assets/cards/C18.png" alt="" />
+        <img class="title-card title-card-c" src="assets/cards/C34.png" alt="" />
+        <img class="title-card title-card-d" src="assets/cards/S03.png" alt="" />
+        <img class="title-card title-card-e" src="assets/cards/S14.png" alt="" />
+      </div>
+      <div class="title-content">
+        <p class="title-kicker">CROSS THE LINE</p>
+        <h1 class="title-logo">
+          <span>CROSSOVER</span>
+          <span>DUEL</span>
+        </h1>
+        <p class="title-subtitle">交差する戦線、切り札は一枚。</p>
+        <div class="title-actions">
+          <button id="startDuelBtn" class="title-start">DUEL START</button>
+          <button id="openingMovieBtn" class="title-menu-button">OPENING MOVIE</button>
+          <button id="deckEditBtn" class="title-menu-button">DECK EDIT</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="deckEditor" class="deck-editor hidden" aria-label="デッキ編集画面">
+      <div class="deck-editor-shell">
+        <header class="deck-editor-header">
+          <div>
+            <p class="eyebrow">Deck Edit</p>
+            <h2>プレイヤーデッキ</h2>
+          </div>
+          <div class="deck-editor-actions">
+            <span id="deckCount" class="deck-count">0/20</span>
+            <button id="resetDeckBtn">初期デッキ</button>
+            <button id="saveDeckBtn">保存</button>
+            <button id="closeDeckEditorBtn">戻る</button>
+          </div>
+        </header>
+        <p id="deckEditorStatus" class="deck-editor-status"></p>
+        <div class="deck-editor-grid">
+          <section class="deck-editor-panel">
+            <h3>デッキ</h3>
+            <div id="deckList" class="deck-list"></div>
+          </section>
+          <section class="deck-editor-panel">
+            <h3>所持カード</h3>
+            <div id="cardLibrary" class="card-library"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <div class="app-shell">
+      <main class="duel-layout">
+        <section class="battle-zone">
+          <div id="opponentHud" class="duelist-hud opponent"></div>
+
+          <div class="field-wrap">
+            <div id="opponentBack" class="slot-row back-row"></div>
+            <div id="opponentFront" class="slot-row front-row"></div>
+
+            <div class="arena-line">
+              <button id="opponentLpTarget" class="lp-target" title="相手LPを攻撃">Enemy LP</button>
+              <div id="phaseBanner" class="phase-banner">準備中</div>
+              <button id="playerLpTarget" class="lp-target disabled" title="自分のLP">Your LP</button>
+            </div>
+
+            <div id="playerFront" class="slot-row front-row"></div>
+            <div id="playerBack" class="slot-row back-row"></div>
+          </div>
+
+          <div id="playerHud" class="duelist-hud player"></div>
+        </section>
+
+        <aside class="side-panel">
+          <section class="turn-console">
+            <div class="console-actions">
+              <button id="newGameBtn" class="icon-button" title="新しいゲーム">New</button>
+              <button id="musicBtn" class="icon-button is-on" title="BGM">BGM</button>
+              <button id="sfxBtn" class="icon-button is-on" title="SE">SE</button>
+              <button id="voiceBtn" class="icon-button is-on" title="ボイス">Voice</button>
+            </div>
+            <div class="console-header">
+              <span id="turnLabel">Turn 1</span>
+              <span id="phaseLabel">Main</span>
+            </div>
+            <div class="command-row">
+              <button id="battleBtn">バトルへ</button>
+              <button id="endTurnBtn">ターン終了</button>
+            </div>
+            <p id="hintText" class="hint-text"></p>
+          </section>
+
+          <section id="inspectPanel" class="inspect-panel"></section>
+
+          <section class="log-panel">
+            <h2>Battle Log</h2>
+            <div id="battleLog" class="battle-log"></div>
+          </section>
+        </aside>
+      </main>
+
+      <section id="handDock" class="hand-dock" tabindex="0" aria-label="手札">
+        <div class="hand-header">
+          <span>手札</span>
+          <span id="collectionSummary">Collection 0</span>
+        </div>
+        <div id="playerHand" class="hand-row"></div>
+      </section>
+    </div>
+
+    <div id="skillPopup" class="skill-popup hidden" role="status" aria-live="polite"></div>
+
+    <div id="openingMovieModal" class="opening-movie-modal hidden" role="dialog" aria-label="オープニングムービー">
+      <div class="opening-movie-frame">
+        <div class="opening-movie-header">
+          <span>OPENING MOVIE</span>
+          <button id="closeOpeningMovieBtn" class="icon-button">Close</button>
+        </div>
+        <iframe
+          id="openingMovieFrame"
+          class="opening-movie-video"
+          title="CrossOverDuel Opening Movie"
+          data-src="https://www.youtube.com/embed/xmQomgD_4G0?autoplay=1&rel=0&playsinline=1"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+
+    <div id="choiceModal" class="modal hidden">
+      <div class="modal-card">
+        <p class="eyebrow">Support Effect</p>
+        <h2 id="choiceTitle">カードを1枚選択</h2>
+        <div id="choiceCards" class="choice-cards"></div>
+      </div>
+    </div>
+
+    <div id="rewardModal" class="modal hidden">
+      <div class="modal-card">
+        <p class="eyebrow">Battle Reward</p>
+        <h2 id="rewardTitle">カード獲得</h2>
+        <div id="rewardCards" class="reward-cards"></div>
+        <button id="closeRewardBtn">閉じる</button>
+      </div>
+    </div>
+
+    <script src="app.js?v=youtube-op-1"></script>
+  </body>
+</html>
