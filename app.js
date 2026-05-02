@@ -2465,8 +2465,8 @@ function renderDeckEditorCard(card, count, meta, disabled, zone) {
       ? `Cost ${card.cost} / ${card.supportType}`
       : `Cost ${card.cost} / ATK ${card.atk} / DEF ${card.def} / HP ${card.hp}`;
   return `
-    <button class="deck-edit-card ${count <= 0 ? "is-empty" : ""}" style="--element:${color}; --card-image:url('${image}'); --deck-card-position:center 28%"
-      data-card-id="${card.id}" data-zone="${zone}" ${disabled ? "disabled" : ""}>
+    <button class="deck-edit-card ${count <= 0 ? "is-empty" : ""} ${disabled ? "is-unavailable" : ""}" style="--element:${color}; --card-image:url('${image}'); --deck-card-position:center 28%"
+      data-card-id="${card.id}" data-zone="${zone}" data-disabled="${disabled}" aria-disabled="${disabled}">
       <span class="deck-edit-card-inner">
         <span class="deck-card-top">
           <span>${escapeHtml(card.no)} ${card.rarity}</span>
@@ -3114,7 +3114,7 @@ function bindEvents() {
   qs("#saveDeckBtn").addEventListener("click", saveDeckEditor);
   qs("#cardLibrary").addEventListener("click", (event) => {
     const cardButton = event.target.closest(".deck-edit-card[data-card-id]");
-    if (!cardButton || cardButton.disabled) return;
+    if (!cardButton || cardButton.dataset.disabled === "true") return;
     addDeckCard(cardButton.dataset.cardId);
   });
   qs("#deckList").addEventListener("click", (event) => {

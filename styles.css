@@ -470,6 +470,11 @@ body.title-active .app-shell {
   filter: grayscale(0.78);
 }
 
+.deck-edit-card.is-unavailable {
+  cursor: not-allowed;
+  filter: grayscale(0.78);
+}
+
 .deck-edit-card-inner {
   min-height: 116px;
   display: grid;
@@ -1357,7 +1362,7 @@ body.title-active .app-shell {
 
 .skill-popup {
   position: fixed;
-  z-index: 20;
+  z-index: 120;
   width: min(320px, calc(100vw - 24px));
   padding: 10px 12px;
   border: 1px solid rgba(246, 200, 95, 0.5);
