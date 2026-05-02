@@ -1065,6 +1065,8 @@ let state = null;
 let activeScreen = "title";
 let deckEditorIds = [];
 let battleBgmStyle = "standard";
+let gallerySelectedCardId = null;
+let galleryMusicTrack = "title";
 
 const TITLE_CARD_COUNT = 10;
 const TITLE_CARD_SLOTS = [
@@ -1175,6 +1177,10 @@ const BGM_TRACKS = {
     src: "assets/audio/cross-the-line-title-theme.mp3",
     label: "タイトル",
   },
+  titleJazz: {
+    src: "assets/audio/cross-the-line-title-jazz.mp3",
+    label: "タイトル JAZZ",
+  },
   deckEdit: {
     src: "assets/audio/cross-the-line-deck-edit.mp3",
     label: "デッキ編集",
@@ -1213,9 +1219,12 @@ const BGM_TRACKS = {
   },
 };
 
+const GALLERY_BGM_KEYS = ["title", "titleJazz", "deckEdit", "normal", "normalJazz", "advantage", "advantageJazz", "crisis", "crisisJazz", "victory", "defeat"];
+
 function desiredMusicTrack() {
   if (activeScreen === "title") return "title";
   if (activeScreen === "deckEdit") return "deckEdit";
+  if (activeScreen === "gallery") return BGM_TRACKS[galleryMusicTrack] ? galleryMusicTrack : "title";
   if (!state) return battleMusicTrack("normal");
   if (state.gameOver) {
     if (state.ai.lp <= 0) return "victory";
@@ -2663,6 +2672,21 @@ function closeDeckEditor() {
   audio.updateMusic();
 }
 
+function openGallery() {
+  activeScreen = "gallery";
+  galleryMusicTrack = BGM_TRACKS[audio.musicTrack] ? audio.musicTrack : galleryMusicTrack;
+  qs("#galleryView").classList.remove("hidden");
+  renderGallery();
+  audio.updateMusic();
+}
+
+function closeGallery() {
+  if (activeScreen === "gallery") activeScreen = "title";
+  qs("#galleryView").classList.add("hidden");
+  hideSkillPopup();
+  audio.updateMusic();
+}
+
 function openOpeningMovie() {
   const modal = qs("#openingMovieModal");
   const frame = qs("#openingMovieFrame");
@@ -2685,6 +2709,87 @@ function openHowToPlay() {
 
 function closeHowToPlay() {
   qs("#howToPlayModal")?.classList.add("hidden");
+}
+
+function ownedGalleryCards() {
+  const owned = loadOwnedCollection();
+  return Object.entries(owned)
+    .filter(([id, count]) => CARD_DB.has(id) && Number(count) > 0)
+    .map(([id, count]) => ({ card: CARD_DB.get(id), count: Number(count) || 0 }))
+    .sort((a, b) => compareCards(a.card, b.card));
+}
+
+function renderGallery() {
+  const ownedCards = ownedGalleryCards();
+  const selected = ownedCards.find(({ card }) => card.id === gallerySelectedCardId) || ownedCards[0];
+  if (selected) gallerySelectedCardId = selected.card.id;
+  qs("#galleryOwnedCount").textContent = `${ownedCards.length}/${ALL_CARDS.length}`;
+  qs("#galleryCardStage").innerHTML = selected ? renderGalleryStage(selected.card, selected.count) : '<p class="deck-empty">所持カードがありません。</p>';
+  qs("#galleryCardGrid").innerHTML = ownedCards.map(({ card, count }) => renderGalleryCardButton(card, count, card.id === gallerySelectedCardId)).join("");
+  renderGalleryBgmList();
+}
+
+function renderGalleryStage(card, count) {
+  const typeLine = card.kind === "support" ? card.supportType : ROLE_LABELS[card.role];
+  const statsLine =
+    card.kind === "support"
+      ? `Cost ${card.cost} / ${card.supportType}`
+      : `Cost ${card.cost} / ATK ${card.atk} / DEF ${card.def} / HP ${card.hp}`;
+  return `
+    <div class="gallery-card-preview">
+      <img src="assets/cards/${card.id}.png" alt="${escapeHtml(card.name)}" />
+    </div>
+    <div class="gallery-card-info">
+      <div class="inspect-title">
+        <h2>${escapeHtml(card.name)}</h2>
+        <span class="tag">${card.rarity}</span>
+      </div>
+      <div class="inspect-meta">
+        <span class="tag muted">${escapeHtml(card.no)}</span>
+        <span class="tag muted">${escapeHtml(card.element || "無")}</span>
+        <span class="tag muted">${escapeHtml(typeLine)}</span>
+        <span class="tag muted">所持 ${count}</span>
+      </div>
+      <p class="inspect-text"><strong>${escapeHtml(card.skill)}</strong><br>${escapeHtml(card.text)}</p>
+      <p class="inspect-text">${escapeHtml(statsLine)}</p>
+    </div>
+  `;
+}
+
+function renderGalleryCardButton(card, count, selected) {
+  const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
+  return `
+    <button class="gallery-card-button ${selected ? "is-selected" : ""}" style="--element:${color}; --card-image:url('assets/cards/${card.id}.png')" data-card-id="${card.id}">
+      <span>${escapeHtml(card.no)} ${card.rarity}</span>
+      <strong>${escapeHtml(card.name)}</strong>
+      <small>x${count}</small>
+    </button>
+  `;
+}
+
+function renderGalleryBgmList() {
+  const list = qs("#galleryBgmList");
+  if (!list) return;
+  qs("#galleryMusicNow").textContent = `Now Playing: ${BGM_TRACKS[galleryMusicTrack]?.label || BGM_TRACKS.title.label}`;
+  list.innerHTML = GALLERY_BGM_KEYS.map((key) => {
+    const track = BGM_TRACKS[key];
+    const active = key === galleryMusicTrack;
+    return `
+      <button class="gallery-bgm-button ${active ? "is-active" : ""}" data-track="${key}">
+        <span>${escapeHtml(track.label)}</span>
+        <small>${escapeHtml(track.src.split("/").pop())}</small>
+      </button>
+    `;
+  }).join("");
+}
+
+function selectGalleryMusic(track) {
+  if (!BGM_TRACKS[track]) return;
+  galleryMusicTrack = track;
+  audio.musicOn = true;
+  qs("#musicBtn")?.classList.add("is-on");
+  audio.startMusic(track);
+  renderGalleryBgmList();
 }
 
 function addDeckCard(cardId) {
@@ -3431,6 +3536,35 @@ function bindEvents() {
     openDeckEditor();
   });
   qs("#closeDeckEditorBtn").addEventListener("click", closeDeckEditor);
+  qs("#galleryBtn").addEventListener("click", () => {
+    audio.unlock();
+    openGallery();
+  });
+  qs("#closeGalleryBtn").addEventListener("click", closeGallery);
+  qs("#galleryCardGrid").addEventListener("click", (event) => {
+    const button = event.target.closest(".gallery-card-button[data-card-id]");
+    if (!button) return;
+    gallerySelectedCardId = button.dataset.cardId;
+    hideSkillPopup();
+    renderGallery();
+  });
+  qs("#galleryBgmList").addEventListener("click", (event) => {
+    const button = event.target.closest(".gallery-bgm-button[data-track]");
+    if (!button) return;
+    audio.unlock();
+    selectGalleryMusic(button.dataset.track);
+  });
+  qs("#galleryCardGrid").addEventListener("pointerover", (event) => {
+    const button = event.target.closest(".gallery-card-button[data-card-id]");
+    if (button) showDeckCardPopup(button.dataset.cardId, button);
+  });
+  qs("#galleryCardGrid").addEventListener("pointerout", (event) => {
+    const fromCard = event.target.closest(".gallery-card-button[data-card-id]");
+    if (!fromCard) return;
+    const toCard = event.relatedTarget?.closest?.(".gallery-card-button[data-card-id]");
+    if (toCard === fromCard) return;
+    hideSkillPopup();
+  });
   qs("#resetDeckBtn").addEventListener("click", resetDeckEditor);
   qs("#saveDeckBtn").addEventListener("click", saveDeckEditor);
   qs("#cardLibrary").addEventListener("click", (event) => {
@@ -3492,6 +3626,7 @@ function bindEvents() {
     if (event.key !== "Escape") return;
     if (!qs("#openingMovieModal").classList.contains("hidden")) closeOpeningMovie();
     if (!qs("#howToPlayModal").classList.contains("hidden")) closeHowToPlay();
+    if (!qs("#galleryView").classList.contains("hidden")) closeGallery();
   });
   qs(".field-wrap").addEventListener("click", handleFieldClick);
   qs("#inspectPanel").addEventListener("click", (event) => {

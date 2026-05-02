@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=jazz-bgm-1" />
+    <link rel="stylesheet" href="styles.css?v=gallery-mode-1" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -20,6 +20,7 @@
           <button id="startDuelBtn" class="title-start">DUEL START</button>
           <button id="howToPlayBtn" class="title-menu-button">HOW TO PLAY</button>
           <button id="openingMovieBtn" class="title-menu-button">OPENING MOVIE</button>
+          <button id="galleryBtn" class="title-menu-button">GALLERY</button>
           <button id="deckEditBtn" class="title-menu-button">DECK EDIT</button>
         </div>
       </div>
@@ -48,6 +49,36 @@
           <section class="deck-editor-panel">
             <h3>所持カード</h3>
             <div id="cardLibrary" class="card-library"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section id="galleryView" class="gallery-view hidden" aria-label="鑑賞モード">
+      <div class="gallery-shell">
+        <header class="gallery-header">
+          <div>
+            <p class="eyebrow">Gallery</p>
+            <h2>カード & BGM鑑賞</h2>
+          </div>
+          <div class="gallery-header-actions">
+            <span id="galleryOwnedCount" class="deck-count">0/0</span>
+            <button id="closeGalleryBtn">戻る</button>
+          </div>
+        </header>
+        <div class="gallery-grid">
+          <section class="gallery-stage-panel">
+            <h3>カード鑑賞</h3>
+            <div id="galleryCardStage" class="gallery-card-stage"></div>
+          </section>
+          <section class="gallery-library-panel">
+            <h3>所持カード</h3>
+            <div id="galleryCardGrid" class="gallery-card-grid"></div>
+          </section>
+          <section class="gallery-music-panel">
+            <h3>BGM鑑賞</h3>
+            <p id="galleryMusicNow" class="gallery-music-now">Now Playing</p>
+            <div id="galleryBgmList" class="gallery-bgm-list"></div>
           </section>
         </div>
       </div>
@@ -190,6 +221,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=jazz-bgm-1"></script>
+    <script src="app.js?v=gallery-mode-1"></script>
   </body>
 </html>
