@@ -990,6 +990,7 @@ const PLAYER_DECK_STORAGE_KEY = "crossover-duel-player-deck";
 const PLAYER_DECK_SIZE = PLAYER_DECK.length;
 const FREEPLAY_WIN_STORAGE_KEY = "crossover-duel-freeplay-wins";
 const FREEPLAY_MAX_WINS = 50;
+const BATTLE_BGM_STYLE_STORAGE_KEY = "crossover-duel-battle-bgm-style";
 
 // Update this staged list when new cards are added to the game.
 const AI_DECKS = [
@@ -1063,6 +1064,7 @@ let nextInstanceId = 1;
 let state = null;
 let activeScreen = "title";
 let deckEditorIds = [];
+let battleBgmStyle = "standard";
 
 const TITLE_CARD_COUNT = 10;
 const TITLE_CARD_SLOTS = [
@@ -1181,9 +1183,17 @@ const BGM_TRACKS = {
     src: "assets/audio/cross-the-line-battle-scene.mp3",
     label: "通常戦闘",
   },
+  normalJazz: {
+    src: "assets/audio/cross-the-line-jazz-battle.mp3",
+    label: "通常戦闘 JAZZ",
+  },
   advantage: {
     src: "assets/audio/cross-the-line-gloria-victory.mp3",
     label: "優勢",
+  },
+  advantageJazz: {
+    src: "assets/audio/cross-the-line-jazz-advantage.mp3",
+    label: "優勢 JAZZ",
   },
   victory: {
     src: "assets/audio/cross-the-line-victory-theme.mp3",
@@ -1192,6 +1202,10 @@ const BGM_TRACKS = {
   crisis: {
     src: "assets/audio/cross-the-line-crisis.mp3",
     label: "劣勢",
+  },
+  crisisJazz: {
+    src: "assets/audio/cross-the-line-jazz-crisis.mp3",
+    label: "劣勢 JAZZ",
   },
   defeat: {
     src: "assets/audio/cross-the-line-defeat-theme.mp3",
@@ -1202,15 +1216,19 @@ const BGM_TRACKS = {
 function desiredMusicTrack() {
   if (activeScreen === "title") return "title";
   if (activeScreen === "deckEdit") return "deckEdit";
-  if (!state) return "normal";
+  if (!state) return battleMusicTrack("normal");
   if (state.gameOver) {
     if (state.ai.lp <= 0) return "victory";
     if (state.player.lp <= 0) return "defeat";
-    return "normal";
+    return battleMusicTrack("normal");
   }
-  if (state.ai.lp <= 5) return "advantage";
-  if (state.ai.lp >= 6 && state.player.lp <= 5) return "crisis";
-  return "normal";
+  if (state.ai.lp <= 5) return battleMusicTrack("advantage");
+  if (state.ai.lp >= 6 && state.player.lp <= 5) return battleMusicTrack("crisis");
+  return battleMusicTrack("normal");
+}
+
+function battleMusicTrack(track) {
+  return battleBgmStyle === "jazz" ? `${track}Jazz` : track;
 }
 
 const audio = {
@@ -2590,6 +2608,38 @@ function addFreeplayWin() {
   return saveFreeplayWins(loadFreeplayWins() + 1);
 }
 
+function loadBattleBgmStyle() {
+  try {
+    return localStorage.getItem(BATTLE_BGM_STYLE_STORAGE_KEY) === "jazz" ? "jazz" : "standard";
+  } catch {
+    return "standard";
+  }
+}
+
+function saveBattleBgmStyle(style) {
+  battleBgmStyle = style === "jazz" ? "jazz" : "standard";
+  try {
+    localStorage.setItem(BATTLE_BGM_STYLE_STORAGE_KEY, battleBgmStyle);
+  } catch {
+    // Storage can be unavailable in some browser privacy modes.
+  }
+  updateBattleBgmStyleButton();
+  audio.updateMusic();
+}
+
+function toggleBattleBgmStyle() {
+  saveBattleBgmStyle(battleBgmStyle === "jazz" ? "standard" : "jazz");
+}
+
+function updateBattleBgmStyleButton() {
+  const button = qs("#battleBgmStyleBtn");
+  if (!button) return;
+  const jazz = battleBgmStyle === "jazz";
+  button.textContent = jazz ? "JAZZ" : "STD";
+  button.classList.toggle("is-on", jazz);
+  button.title = jazz ? "戦闘BGM: JAZZ版" : "戦闘BGM: 通常版";
+}
+
 function aiProfileForWins(wins = loadFreeplayWins()) {
   const normalizedWins = Math.max(0, Number.parseInt(wins, 10) || 0);
   for (let index = AI_DECKS.length - 1; index >= 0; index -= 1) {
@@ -3054,6 +3104,7 @@ function renderLog() {
 function renderControls() {
   const isPlayerMain = state.current === "player" && state.phase === "main" && !state.gameOver;
   const endTurnAvailable = canAcceptPlayerCommands();
+  updateBattleBgmStyleButton();
   qs("#battleBtn").disabled = !isPlayerMain || state.busy;
   qs("#endTurnBtn").disabled = !endTurnAvailable;
   qs("#endTurnBtn").setAttribute("aria-disabled", String(!endTurnAvailable));
@@ -3473,6 +3524,10 @@ function bindEvents() {
     if (audio.musicOn) audio.startMusic();
     else audio.stopMusic();
   });
+  qs("#battleBgmStyleBtn").addEventListener("click", () => {
+    audio.unlock();
+    toggleBattleBgmStyle();
+  });
   qs("#sfxBtn").addEventListener("click", () => {
     audio.sfxOn = !audio.sfxOn;
     qs("#sfxBtn").classList.toggle("is-on", audio.sfxOn);
@@ -3549,4 +3604,6 @@ function escapeHtml(value) {
 }
 
 bindEvents();
+battleBgmStyle = loadBattleBgmStyle();
+updateBattleBgmStyleButton();
 showTitleScreen();
