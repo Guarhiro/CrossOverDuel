@@ -760,6 +760,22 @@ const CHARACTERS = [
     skill: "元騎士の意地",
     text: "スキルなし",
   },
+  {
+    kind: "character",
+    id: "C46",
+    no: "#46",
+    rarity: "UR",
+    name: "カトリーナ・フォン・ハイゼンベルク",
+    series: "グッドナイトワールド",
+    element: "炎",
+    role: "AT",
+    cost: 6,
+    atk: 6,
+    def: 1,
+    hp: 5,
+    skill: "アトミックフレア",
+    text: "攻撃時DEFを無視し、撤退させた時相手後衛全体に2ダメージ。このスキルは場に出てから一度しか使えない。次の攻撃に効果。",
+  },
 ];
 
 const SUPPORTS = [
@@ -1052,7 +1068,7 @@ const AI_DECKS = [
     level: 10,
     wins: 50,
     name: "Final Crossover",
-    deck: ["C01", "C02", "C03", "C05", "C06", "C07", "C14", "C16", "C18", "C23", "S01", "S03", "S05", "S08", "S09", "S09", "S11", "S13", "S14", "S15"],
+    deck: ["C01", "C02", "C03", "C05", "C06", "C07", "C14", "C18", "C23", "C46", "S01", "S03", "S05", "S08", "S09", "S09", "S11", "S13", "S14", "S15"],
   },
 ];
 
@@ -2176,6 +2192,8 @@ async function performAttack(attacker, target, options = {}) {
     log(`烈 龍翔の気まぐれ: ATK${mod > 0 ? "+" : ""}${mod}。`, "effect");
   }
   if (target.type === "card" && attacker.id === "C44" && target.card.role === "ST") attackValue += 2;
+  const atomicFlareActive = attacker.id === "C46" && !attacker.atomicFlareUsed;
+  if (atomicFlareActive) attacker.atomicFlareUsed = true;
 
   if (foe.counterAttack > 0) {
     foe.counterAttack -= 1;
@@ -2197,7 +2215,7 @@ async function performAttack(attacker, target, options = {}) {
     hpDamage = attackValue;
   } else {
     const result = damageCharacter(target.card, attackValue, owner, {
-      ignoreDef: attacker.id === "C28",
+      ignoreDef: attacker.id === "C28" || atomicFlareActive,
       attacker,
     });
     killed = result.killed;
@@ -2217,13 +2235,13 @@ async function performAttack(attacker, target, options = {}) {
     render();
     return;
   }
-  afterAttackEffects(attacker, owner, foe, target, killed, hpDamage);
+  afterAttackEffects(attacker, owner, foe, target, killed, hpDamage, { atomicFlareActive });
   state.busy = previousBusy;
   if (checkGameOver()) return;
   render();
 }
 
-function afterAttackEffects(attacker, owner, foe, target, killed) {
+function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, effects = {}) {
   boardCards(owner)
     .filter((ally) => ally.id === "C21")
     .forEach((te) => {
@@ -2244,6 +2262,11 @@ function afterAttackEffects(attacker, owner, foe, target, killed) {
   }
 
   if (killed) {
+    if (attacker.id === "C46" && effects.atomicFlareActive) {
+      const blastTargets = foe.back.filter(Boolean);
+      blastTargets.forEach((enemy) => damageCharacter(enemy, 2, owner));
+      if (blastTargets.length) log("カトリーナのアトミックフレアが着弾点を爆破。", "effect");
+    }
     if (attacker.id === "C07") {
       attacker.killCount += 1;
       buffAtk(attacker, 3);
