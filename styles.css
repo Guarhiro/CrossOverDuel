@@ -645,6 +645,9 @@ body.title-active .app-shell {
 
 .deck-edit-card.is-unavailable {
   cursor: not-allowed;
+}
+
+.deck-edit-card.is-empty {
   filter: grayscale(0.78);
 }
 
