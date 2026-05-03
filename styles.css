@@ -617,22 +617,40 @@ body.title-active .app-shell {
   --element: var(--gold);
   --deck-card-position: center 28%;
   min-height: 116px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   padding: 0;
   overflow: hidden;
+  color: var(--text);
+  font: inherit;
   text-align: left;
+  cursor: pointer;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 40%),
     var(--card-image) var(--deck-card-position) / cover no-repeat,
     linear-gradient(135deg, color-mix(in srgb, var(--element) 30%, #222831), #161a21 62%);
+  transition: transform 140ms ease, border-color 140ms ease, filter 140ms ease;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 }
 
-.deck-edit-card:disabled {
-  filter: grayscale(0.78);
+.deck-edit-card:hover,
+.deck-edit-card:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--gold);
+  outline: none;
 }
 
 .deck-edit-card.is-unavailable {
   cursor: not-allowed;
   filter: grayscale(0.78);
+}
+
+.deck-edit-card.is-unavailable:hover,
+.deck-edit-card.is-unavailable:focus-visible {
+  transform: none;
 }
 
 .deck-edit-card-inner {
@@ -657,12 +675,33 @@ body.title-active .app-shell {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .deck-card-top {
   color: var(--gold);
   font-size: 0.72rem;
   font-weight: 900;
+}
+
+.deck-card-mode-btn {
+  position: relative;
+  z-index: 2;
+  min-width: 58px;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border-color: rgba(246, 200, 95, 0.46);
+  color: #151922;
+  background: var(--gold);
+  font-size: 0.64rem;
+  font-weight: 1000;
+  letter-spacing: 0;
+  flex: 0 0 auto;
+}
+
+.deck-card-mode-btn:hover {
+  background: #ffe08a;
 }
 
 .deck-card-name {
@@ -677,6 +716,36 @@ body.title-active .app-shell {
 
 .deck-list .deck-card-name {
   align-self: center;
+}
+
+.deck-card-skill {
+  min-width: 0;
+  align-self: end;
+  display: grid;
+  gap: 3px;
+  color: var(--text);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.68);
+}
+
+.deck-card-skill strong {
+  color: var(--gold);
+  font-size: 0.82rem;
+  line-height: 1.15;
+}
+
+.deck-card-skill span {
+  display: -webkit-box;
+  overflow: hidden;
+  color: rgba(246, 242, 233, 0.88);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.deck-list .deck-card-skill span {
+  -webkit-line-clamp: 2;
 }
 
 .deck-card-bottom {

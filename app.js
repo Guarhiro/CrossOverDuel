@@ -1067,6 +1067,7 @@ let deckEditorIds = [];
 let deckEditorDeckHidden = false;
 let deckEditorLibraryHidden = false;
 let deckEditorLibraryOwnedOnly = false;
+let deckEditorSkillViews = new Set();
 let battleBgmStyle = "standard";
 let gallerySelectedCardId = null;
 let galleryMusicTrack = "title";
@@ -2850,6 +2851,19 @@ function toggleLibraryOwnedOnly() {
   renderDeckEditor();
 }
 
+function deckEditorViewKey(zone, cardId) {
+  return `${zone}:${cardId}`;
+}
+
+function toggleDeckEditorCardView(cardId, zone) {
+  if (!CARD_DB.has(cardId)) return;
+  const key = deckEditorViewKey(zone, cardId);
+  if (deckEditorSkillViews.has(key)) deckEditorSkillViews.delete(key);
+  else deckEditorSkillViews.add(key);
+  hideSkillPopup();
+  renderDeckEditor();
+}
+
 function updateDeckEditorToggleButtons() {
   const deckButton = qs("#toggleDeckListBtn");
   const libraryButton = qs("#toggleLibraryBtn");
@@ -2916,22 +2930,27 @@ function renderDeckEditorCard(card, count, meta, disabled, zone) {
     card.kind === "support"
       ? `Cost ${card.cost} / ${card.supportType}`
       : `Cost ${card.cost} / ATK ${card.atk} / DEF ${card.def} / HP ${card.hp}`;
+  const showingSkill = deckEditorSkillViews.has(deckEditorViewKey(zone, card.id));
+  const detail = showingSkill
+    ? `<span class="deck-card-skill"><strong>${escapeHtml(card.skill)}</strong><span>${escapeHtml(card.text)}</span></span>`
+    : `<span class="deck-card-name">${escapeHtml(card.name)}</span>`;
   return `
-    <button class="deck-edit-card ${count <= 0 ? "is-empty" : ""} ${disabled ? "is-unavailable" : ""}" style="--element:${color}; --card-image:url('${image}'); --deck-card-position:center 28%"
-      data-card-id="${card.id}" data-zone="${zone}" data-disabled="${disabled}" aria-disabled="${disabled}">
+    <div class="deck-edit-card ${count <= 0 ? "is-empty" : ""} ${disabled ? "is-unavailable" : ""}" style="--element:${color}; --card-image:url('${image}'); --deck-card-position:center 28%"
+      data-card-id="${card.id}" data-zone="${zone}" data-disabled="${disabled}" aria-disabled="${disabled}" role="button" tabindex="0">
       <span class="deck-edit-card-inner">
         <span class="deck-card-top">
           <span>${escapeHtml(card.no)} ${card.rarity}</span>
           <span>${escapeHtml(typeLine)}</span>
+          <button class="deck-card-mode-btn" type="button" data-card-id="${card.id}" data-zone="${zone}" aria-label="${escapeHtml(card.name)}の${showingSkill ? "ステータス" : "スキル"}を表示">${showingSkill ? "STATUS" : "SKILL"}</button>
         </span>
-        <span class="deck-card-name">${escapeHtml(card.name)}</span>
+        ${detail}
         <span class="deck-card-bottom">
           <span>${escapeHtml(statLine)}</span>
           <span class="deck-card-count">x${count}</span>
         </span>
         <span class="deck-card-bottom">${escapeHtml(meta)}</span>
       </span>
-    </button>
+    </div>
   `;
 }
 
@@ -3487,8 +3506,10 @@ function handleHandOut(event) {
 }
 
 function handleDeckEditorCardPreview(event) {
+  if (event.pointerType === "touch") return;
   const cardButton = event.target.closest(".deck-edit-card[data-card-id]");
   if (!cardButton || !qs("#deckEditor")?.contains(cardButton)) return;
+  if (event.target.closest(".deck-card-mode-btn")) return;
   showDeckCardPopup(cardButton.dataset.cardId, cardButton);
 }
 
@@ -3670,14 +3691,38 @@ function bindEvents() {
   qs("#toggleLibraryBtn").addEventListener("click", toggleLibraryVisibility);
   qs("#ownedOnlyLibraryBtn").addEventListener("click", toggleLibraryOwnedOnly);
   qs("#cardLibrary").addEventListener("click", (event) => {
+    const modeButton = event.target.closest(".deck-card-mode-btn[data-card-id]");
+    if (modeButton) {
+      toggleDeckEditorCardView(modeButton.dataset.cardId, modeButton.dataset.zone);
+      return;
+    }
     const cardButton = event.target.closest(".deck-edit-card[data-card-id]");
     if (!cardButton || cardButton.dataset.disabled === "true") return;
     addDeckCard(cardButton.dataset.cardId);
   });
   qs("#deckList").addEventListener("click", (event) => {
+    const modeButton = event.target.closest(".deck-card-mode-btn[data-card-id]");
+    if (modeButton) {
+      toggleDeckEditorCardView(modeButton.dataset.cardId, modeButton.dataset.zone);
+      return;
+    }
     const cardButton = event.target.closest(".deck-edit-card[data-card-id]");
     if (!cardButton) return;
     removeDeckCard(cardButton.dataset.cardId);
+  });
+  [qs("#cardLibrary"), qs("#deckList")].forEach((deckArea) => {
+    deckArea.addEventListener("keydown", (event) => {
+      if (event.target.closest(".deck-card-mode-btn")) return;
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const cardButton = event.target.closest(".deck-edit-card[data-card-id]");
+      if (!cardButton) return;
+      event.preventDefault();
+      if (cardButton.dataset.zone === "library") {
+        if (cardButton.dataset.disabled !== "true") addDeckCard(cardButton.dataset.cardId);
+      } else {
+        removeDeckCard(cardButton.dataset.cardId);
+      }
+    });
   });
   [qs("#cardLibrary"), qs("#deckList")].forEach((deckArea) => {
     deckArea.addEventListener("pointerover", handleDeckEditorCardPreview);
