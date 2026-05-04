@@ -3094,6 +3094,30 @@ function renderHand() {
       }),
     )
     .join("");
+  updateHandScrollProxy();
+}
+
+function updateHandScrollProxy() {
+  const hand = qs("#playerHand");
+  const spacer = qs("#handScrollTopSpacer");
+  const topScroller = qs("#handScrollTop");
+  if (!hand || !spacer || !topScroller) return;
+  spacer.style.width = `${Math.max(hand.scrollWidth, hand.clientWidth)}px`;
+  topScroller.scrollLeft = hand.scrollLeft;
+}
+
+function syncHandScrollFromTop() {
+  const hand = qs("#playerHand");
+  const topScroller = qs("#handScrollTop");
+  if (!hand || !topScroller || hand.scrollLeft === topScroller.scrollLeft) return;
+  hand.scrollLeft = topScroller.scrollLeft;
+}
+
+function syncHandScrollFromCards() {
+  const hand = qs("#playerHand");
+  const topScroller = qs("#handScrollTop");
+  if (!hand || !topScroller || topScroller.scrollLeft === hand.scrollLeft) return;
+  topScroller.scrollLeft = hand.scrollLeft;
 }
 
 function showDeckChoice(player, cards) {
@@ -3135,6 +3159,8 @@ function completeDeckChoice(index) {
 
 function openHandDock() {
   qs("#handDock")?.classList.add("is-open");
+  updateHandScrollProxy();
+  window.setTimeout(updateHandScrollProxy, 190);
 }
 
 function closeHandDock() {
@@ -3896,9 +3922,12 @@ function bindEvents() {
   qs("#playerHand").addEventListener("pointermove", handleHandHover);
   qs("#playerHand").addEventListener("pointerout", handleHandOut);
   qs("#playerHand").addEventListener("click", handleHandClick);
+  qs("#playerHand").addEventListener("scroll", syncHandScrollFromCards);
+  qs("#handScrollTop").addEventListener("scroll", syncHandScrollFromTop);
   qs("#handDock").addEventListener("click", (event) => {
     if (!event.target.closest(".game-card")) openHandDock();
   });
+  window.addEventListener("resize", updateHandScrollProxy);
   document.addEventListener("click", (event) => {
     if (event.target.closest("#handDock")) return;
     closeHandDock();

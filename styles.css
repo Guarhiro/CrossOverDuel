@@ -1123,16 +1123,59 @@ body.title-active .app-shell {
   margin-bottom: 7px;
 }
 
+.hand-scroll-top {
+  height: 13px;
+  margin: 0 2px 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  opacity: 0;
+  pointer-events: none;
+  scrollbar-color: rgba(246, 200, 95, 0.62) rgba(255, 255, 255, 0.08);
+  scrollbar-width: thin;
+  transition: opacity 160ms ease;
+}
+
+.hand-scroll-top-spacer {
+  width: 1px;
+  height: 1px;
+}
+
+.hand-dock:hover .hand-scroll-top,
+.hand-dock:focus-within .hand-scroll-top,
+.hand-dock.is-open .hand-scroll-top {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hand-scroll-top::-webkit-scrollbar {
+  height: 9px;
+}
+
+.hand-scroll-top::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.hand-scroll-top::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(246, 200, 95, 0.62);
+}
+
 .hand-row {
   display: flex;
   gap: 10px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 2px 2px 6px;
+  padding: 2px;
   opacity: 0;
   pointer-events: none;
   transform: translateY(8px);
+  scrollbar-width: none;
   transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.hand-row::-webkit-scrollbar {
+  display: none;
 }
 
 .hand-dock:hover .hand-row,
