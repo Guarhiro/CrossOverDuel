@@ -1804,7 +1804,7 @@ body.title-active .app-shell {
 
 .reward-cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -1838,7 +1838,7 @@ body.title-active .app-shell {
 }
 
 .reward-cards .game-card {
-  min-height: 250px;
+  min-height: 230px;
 }
 
 @keyframes shake {

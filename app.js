@@ -1006,6 +1006,7 @@ const PLAYER_DECK_STORAGE_KEY = "crossover-duel-player-deck";
 const PLAYER_DECK_SIZE = PLAYER_DECK.length;
 const FREEPLAY_WIN_STORAGE_KEY = "crossover-duel-freeplay-wins";
 const FREEPLAY_MAX_WINS = 50;
+const REWARD_CARD_COUNT = 4;
 const BATTLE_BGM_STYLE_STORAGE_KEY = "crossover-duel-battle-bgm-style";
 
 // Update this staged list when new cards are added to the game.
@@ -2569,13 +2570,13 @@ function giveRewards(playerWon) {
       log(`AI Lv.${nextProfile.level}「${nextProfile.name}」が次のDUEL STARTから解放。`, "system");
     }
   }
-  const rewards = [randomRewardCard(), randomRewardCard(), randomRewardCard()];
+  const rewards = Array.from({ length: REWARD_CARD_COUNT }, () => randomRewardCard());
   const collection = loadCollection();
   rewards.forEach((card) => {
     collection[card.id] = (collection[card.id] || 0) + 1;
   });
   saveCollection(collection);
-  qs("#rewardTitle").textContent = playerWon ? "勝利報酬 3枚獲得" : "対戦報酬 3枚獲得";
+  qs("#rewardTitle").textContent = playerWon ? `勝利報酬 ${REWARD_CARD_COUNT}枚獲得` : `対戦報酬 ${REWARD_CARD_COUNT}枚獲得`;
   qs("#rewardCards").innerHTML = rewards.map((card) => renderCard(createInstance(card, "player"), { inReward: true })).join("");
   qs("#rewardModal").classList.remove("hidden");
   renderHud();
@@ -2586,7 +2587,7 @@ function giveRewards(playerWon) {
 function randomRewardCard() {
   const pool = [];
   ALL_CARDS.forEach((card) => {
-    const weight = { UR: 2, SR: 6, R: 14, C: 28 }[card.rarity] || 12;
+    const weight = { UR: 3, SR: 6, R: 14, C: 28 }[card.rarity] || 12;
     for (let i = 0; i < weight; i += 1) pool.push(card);
   });
   return randomItem(pool);
@@ -3370,7 +3371,7 @@ function renderCollectionSummary() {
 }
 
 function hintText() {
-  if (state.gameOver) return "ゲーム終了。報酬3枚を獲得しています。";
+  if (state.gameOver) return `ゲーム終了。報酬${REWARD_CARD_COUNT}枚を獲得しています。`;
   if (state.current === "ai") return "AIが思考中です。";
   const pendingSupport = getPendingSupportCard();
   if (pendingSupport) return `${pendingSupport.name} の対象を選択してください。`;
