@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=deck-owned-visible-1" />
+    <link rel="stylesheet" href="styles.css?v=ai-level-select-1" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -155,6 +155,20 @@
 
     <div id="skillPopup" class="skill-popup hidden" role="status" aria-live="polite"></div>
 
+    <div id="levelSelectModal" class="modal level-select-modal hidden" role="dialog" aria-modal="true" aria-label="対戦レベル選択">
+      <div class="modal-card level-select-card">
+        <div class="level-select-header">
+          <div>
+            <p class="eyebrow">Duel Start</p>
+            <h2>対戦レベル選択</h2>
+          </div>
+          <button id="closeLevelSelectBtn" class="icon-button">Close</button>
+        </div>
+        <div id="levelSelectSummary" class="level-select-summary"></div>
+        <div id="levelSelectList" class="level-select-list"></div>
+      </div>
+    </div>
+
     <div id="openingMovieModal" class="opening-movie-modal hidden" role="dialog" aria-label="オープニングムービー">
       <div class="opening-movie-frame">
         <div class="opening-movie-header">
@@ -230,6 +244,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=deck-owned-visible-1"></script>
+    <script src="app.js?v=ai-level-select-1"></script>
   </body>
 </html>

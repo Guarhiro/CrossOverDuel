@@ -1470,13 +1470,14 @@ function createInstance(base, ownerKey = null) {
   return card;
 }
 
-function startNewGame() {
+function startNewGame(aiProfileOverride = null) {
   hideSkillPopup();
   closeDeckEditor();
+  closeLevelSelect();
   hideTitleScreen();
   nextInstanceId = 1;
   const freeplayWins = loadFreeplayWins();
-  const aiProfile = aiProfileForWins(freeplayWins);
+  const aiProfile = aiProfileOverride || aiProfileForWins(freeplayWins);
   state = {
     player: createPlayer("player", "Player", loadPlayerDeckIds()),
     ai: createPlayer("ai", `AI Rival Lv.${aiProfile.level}`, aiProfile.deck),
@@ -2076,7 +2077,7 @@ function getSupportTargets(card, player, foe) {
     case "S14":
       return activeGuards(foe);
     case "S15":
-      return boardCards(player);
+      return boardCards(player).filter((ally) => ally.currentDef < ally.maxDef);
     default:
       return [];
   }
@@ -2688,6 +2689,46 @@ function aiProfileForWins(wins = loadFreeplayWins()) {
     if (normalizedWins >= AI_DECKS[index].wins) return AI_DECKS[index];
   }
   return AI_DECKS[0];
+}
+
+function unlockedAiProfiles(wins = loadFreeplayWins()) {
+  const normalizedWins = Math.max(0, Number.parseInt(wins, 10) || 0);
+  const unlocked = AI_DECKS.filter((profile) => normalizedWins >= profile.wins);
+  return unlocked.length ? unlocked : [AI_DECKS[0]];
+}
+
+function aiProfileForLevel(level) {
+  const normalizedLevel = Number.parseInt(level, 10);
+  return AI_DECKS.find((profile) => profile.level === normalizedLevel) || aiProfileForWins();
+}
+
+function openLevelSelect() {
+  activeScreen = "title";
+  qs("#rewardModal")?.classList.add("hidden");
+  renderLevelSelect();
+  qs("#levelSelectModal")?.classList.remove("hidden");
+}
+
+function closeLevelSelect() {
+  qs("#levelSelectModal")?.classList.add("hidden");
+}
+
+function renderLevelSelect() {
+  const wins = loadFreeplayWins();
+  const unlocked = unlockedAiProfiles(wins);
+  const latest = unlocked[unlocked.length - 1];
+  qs("#levelSelectSummary").textContent = `Wins ${Math.min(wins, FREEPLAY_MAX_WINS)}/${FREEPLAY_MAX_WINS} / Lv.${latest.level}まで選択可能`;
+  qs("#levelSelectList").innerHTML = unlocked.map((profile) => renderLevelSelectButton(profile, profile.level === latest.level)).join("");
+}
+
+function renderLevelSelectButton(profile, latest = false) {
+  return `
+    <button class="level-select-button ${latest ? "is-latest" : ""}" type="button" data-ai-level="${profile.level}">
+      <span>AI Lv.${profile.level}${latest ? " / 最新" : ""}</span>
+      <strong>${escapeHtml(profile.name)}</strong>
+      <small>解放条件 ${profile.wins}勝</small>
+    </button>
+  `;
 }
 
 function openDeckEditor() {
@@ -3423,15 +3464,8 @@ function aiPlayBestCard() {
     .map((card, index) => ({ card, index }))
     .filter(({ card }) => card.kind === "support" && canPay(ai, card))
     .filter(({ card }) => chooseSupportTarget(card, ai, state.player) !== false)
+    .filter(({ card }) => isSupportWorthUsing(card, ai, state.player))
     .sort((a, b) => RARITY_ORDER[b.card.rarity] - RARITY_ORDER[a.card.rarity] || b.card.cost - a.card.cost);
-
-  if (playableSupports.length && Math.random() < 0.42) {
-    const { card, index } = playableSupports[0];
-    const target = chooseSupportTarget(card, ai, state.player);
-    resolveSupport(ai, state.player, card, target);
-    ai.hand.splice(index, 1);
-    return true;
-  }
 
   const playableChars = ai.hand
     .map((card, index) => ({ card, index }))
@@ -3439,6 +3473,15 @@ function aiPlayBestCard() {
     .map((entry) => ({ ...entry, slot: chooseAiSlot(entry.card) }))
     .filter((entry) => entry.slot)
     .sort((a, b) => scoreCardForAi(b.card) - scoreCardForAi(a.card));
+
+  const needsBoardPresence = !ai.front.some(Boolean) && playableChars.length > 0;
+  if (playableSupports.length && !needsBoardPresence && Math.random() < 0.42) {
+    const { card, index } = playableSupports[0];
+    const target = chooseSupportTarget(card, ai, state.player);
+    resolveSupport(ai, state.player, card, target);
+    ai.hand.splice(index, 1);
+    return true;
+  }
 
   if (!playableChars.length) {
     if (playableSupports.length) {
@@ -3454,6 +3497,62 @@ function aiPlayBestCard() {
   const { card, index, slot } = playableChars[0];
   playCharacterFromHand(ai, index, slot.lane, slot.index);
   return true;
+}
+
+function isSupportWorthUsing(card, player, foe) {
+  switch (card.id) {
+    case "S01":
+    case "S03":
+    case "S05":
+    case "S14":
+    case "S15":
+      return getSupportTargets(card, player, foe).length > 0;
+    case "S02":
+      return player.deck.some((deckCard) => {
+        const base = CARD_DB.get(deckCard.id);
+        return base?.series === "F" && ["C", "R"].includes(base.rarity);
+      });
+    case "S04":
+      return !player.nextBackSkillDouble && player.back.some((slot) => !slot) && [...player.hand, ...player.deck].some((candidate) => isBackSkillCandidate(candidate));
+    case "S06": {
+      const ownCards = boardCards(player);
+      const hasFire = ownCards.some((ally) => ally.element === "炎");
+      const hasWater = ownCards.some((ally) => ally.element === "水");
+      return hasFire && hasWater && foe.front.some(Boolean);
+    }
+    case "S07":
+      return boardCards(player).length > 0;
+    case "S08": {
+      const threats = foe.front.filter((enemy) => enemy && enemy.status.stun <= 0 && effectiveAtk(enemy) > 0).length;
+      return threats > 0 && player.counterAttack < threats;
+    }
+    case "S09":
+      return player.front.some((ally) => canJoinUpcomingAttack(ally, player));
+    case "S10":
+      return player.deck.length > 0;
+    case "S11":
+      return boardCards(player).length > 0 && !player.delayed.some((effect) => effect.type === "eternalTime");
+    case "S12":
+      return boardCards(player).length > 0 && player.reviveTrap <= 0;
+    case "S13": {
+      const counts = countBy(boardCards(player), (ally) => ally.series);
+      return Object.values(counts).some((count) => count >= 3);
+    }
+    default:
+      return true;
+  }
+}
+
+function isBackSkillCandidate(card) {
+  return card?.kind === "character" && (card.backOnly || ["ST", "SP"].includes(card.role));
+}
+
+function canJoinUpcomingAttack(card, player) {
+  if (!card || !player.front.includes(card)) return false;
+  if (card.attacked || card.status.stun > 0) return false;
+  if (card.dormant && !card.awakened) return false;
+  if (effectiveAtk(card) <= 0) return false;
+  return card.haste || player.turns > card.summonedOnTurn;
 }
 
 function chooseAiSlot(card) {
@@ -3655,8 +3754,19 @@ async function animateHandSummonOut() {
 function bindEvents() {
   qs("#startDuelBtn").addEventListener("click", () => {
     audio.unlock();
-    qs("#rewardModal").classList.add("hidden");
-    startNewGame();
+    openLevelSelect();
+  });
+  qs("#closeLevelSelectBtn").addEventListener("click", closeLevelSelect);
+  qs("#levelSelectModal").addEventListener("click", (event) => {
+    if (event.target.id === "levelSelectModal") closeLevelSelect();
+  });
+  qs("#levelSelectList").addEventListener("click", (event) => {
+    const button = event.target.closest(".level-select-button[data-ai-level]");
+    if (!button) return;
+    const profile = aiProfileForLevel(button.dataset.aiLevel);
+    if (!unlockedAiProfiles().some((unlocked) => unlocked.level === profile.level)) return;
+    audio.unlock();
+    startNewGame(profile);
   });
   qs("#openingMovieBtn").addEventListener("click", () => {
     audio.unlock();
@@ -3756,7 +3866,7 @@ function bindEvents() {
   });
   qs("#newGameBtn").addEventListener("click", () => {
     qs("#rewardModal").classList.add("hidden");
-    startNewGame();
+    startNewGame(state?.aiProfile || null);
   });
   qs("#battleBtn").addEventListener("click", () => {
     if (state.current !== "player" || state.phase !== "main" || state.busy) return;
@@ -3794,6 +3904,7 @@ function bindEvents() {
   });
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
+    if (!qs("#levelSelectModal").classList.contains("hidden")) closeLevelSelect();
     if (!qs("#openingMovieModal").classList.contains("hidden")) closeOpeningMovie();
     if (!qs("#howToPlayModal").classList.contains("hidden")) closeHowToPlay();
     if (!qs("#galleryView").classList.contains("hidden")) closeGallery();
@@ -3814,7 +3925,7 @@ function bindEvents() {
   });
   qs("#nextBattleBtn").addEventListener("click", () => {
     qs("#rewardModal").classList.add("hidden");
-    startNewGame();
+    startNewGame(state?.aiProfile || null);
   });
   qs("#returnTitleBtn").addEventListener("click", () => {
     qs("#rewardModal").classList.add("hidden");
