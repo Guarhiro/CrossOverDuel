@@ -1779,16 +1779,16 @@ body.title-active .app-shell {
 
 .level-select-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
 }
 
 .level-select-button {
-  min-height: 104px;
+  min-height: 148px;
   padding: 10px;
   display: grid;
   align-content: space-between;
-  gap: 8px;
+  gap: 7px;
   text-align: left;
   background:
     linear-gradient(180deg, rgba(246, 200, 95, 0.13), rgba(12, 15, 21, 0.82)),
@@ -1806,6 +1806,19 @@ body.title-active .app-shell {
   color: var(--gold);
   font-size: 0.75rem;
   font-weight: 900;
+}
+
+.level-select-button .level-select-concept {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.level-select-button .level-select-curve {
+  color: var(--text);
+  font-size: 0.76rem;
+  letter-spacing: 0;
 }
 
 .level-select-button.is-latest {

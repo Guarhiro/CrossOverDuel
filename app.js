@@ -1009,67 +1009,78 @@ const FREEPLAY_MAX_WINS = 50;
 const REWARD_CARD_COUNT = 4;
 const BATTLE_BGM_STYLE_STORAGE_KEY = "crossover-duel-battle-bgm-style";
 
+// AIデッキは高レベルでも低コスト札を残し、強さを「重さ」ではなくコンセプトで上げる。
 // Update this staged list when new cards are added to the game.
 const AI_DECKS = [
   {
     level: 1,
     wins: 0,
     name: "Rookie Line",
-    deck: ["C28", "C28", "C29", "C29", "C30", "C30", "C31", "C32", "C33", "C34", "C35", "C37", "C38", "C40", "C41", "S07", "S07", "S10", "S15", "S15"],
+    concept: "1-2コストの基本札で、毎ターン盤面を作る練習用。",
+    deck: ["C27", "C28", "C28", "C29", "C29", "C30", "C30", "C31", "C33", "C33", "C34", "C35", "C37", "C40", "C41", "S07", "S07", "S10", "S10", "S15"],
   },
   {
     level: 2,
     wins: 5,
     name: "Guard Basics",
-    deck: ["C21", "C21", "C25", "C30", "C30", "C35", "C35", "C41", "C42", "C43", "C44", "C45", "S07", "S07", "S10", "S10", "S12", "S13", "S15", "S15"],
+    concept: "軽量ガードと修復で、前衛を切らさずに粘る構成。",
+    deck: ["C21", "C21", "C25", "C30", "C30", "C37", "C37", "C40", "C40", "C35", "C41", "C43", "C45", "S07", "S07", "S10", "S12", "S13", "S15", "S15"],
   },
   {
     level: 3,
     wins: 10,
     name: "Fate Tools Tempo",
-    deck: ["C20", "C20", "C22", "C22", "C26", "C26", "C31", "C36", "C41", "C44", "C45", "S02", "S02", "S07", "S07", "S10", "S10", "S12", "S15", "S15"],
+    concept: "招集と速攻札で、低コストの横展開から主導権を取る。",
+    deck: ["C21", "C22", "C22", "C25", "C26", "C26", "C31", "C34", "C34", "C35", "C36", "C41", "S02", "S02", "S07", "S10", "S10", "S12", "S14", "S15"],
   },
   {
     level: 4,
     wins: 15,
-    name: "Counter Wall",
-    deck: ["C21", "C21", "C25", "C25", "C30", "C30", "C40", "C40", "C14", "C16", "C18", "C35", "S03", "S03", "S06", "S06", "S08", "S10", "S14", "S15"],
+    name: "Twin Blade Tempo",
+    concept: "炎と水を低コストで揃え、氷焔の双剣を早めに通す。",
+    deck: ["C12", "C14", "C16", "C20", "C21", "C22", "C23", "C30", "C30", "C32", "C35", "C41", "S03", "S06", "S06", "S07", "S08", "S10", "S12", "S15"],
   },
   {
     level: 5,
     wins: 20,
     name: "Silver Snow Trial",
-    deck: ["C05", "C14", "C14", "C16", "C16", "C18", "C18", "C30", "C30", "C45", "S03", "S03", "S06", "S06", "S08", "S14", "S14", "S15", "S11", "S07"],
+    concept: "ナージャとアグニアの守攻コンボを、軽量札で支える中盤型。",
+    deck: ["C05", "C14", "C14", "C16", "C18", "C21", "C25", "C30", "C30", "C32", "C35", "C45", "S03", "S06", "S06", "S07", "S08", "S11", "S14", "S15"],
   },
   {
     level: 6,
     wins: 25,
-    name: "Twin Blade Guard",
-    deck: ["C05", "C05", "C14", "C14", "C16", "C16", "C18", "C18", "C30", "C40", "S03", "S03", "S06", "S06", "S08", "S08", "S11", "S14", "S14", "S15"],
+    name: "Royal Counter Wall",
+    concept: "フィオナの防衛線に催眠と反計を重ねるコントロール型。",
+    deck: ["C03", "C13", "C17", "C21", "C23", "C24", "C25", "C30", "C30", "C37", "C38", "C38", "C40", "S01", "S03", "S03", "S08", "S10", "S14", "S15"],
   },
   {
     level: 7,
     wins: 30,
     name: "Awakening Rose",
-    deck: ["C02", "C02", "C05", "C08", "C14", "C16", "C18", "C23", "C25", "C30", "S03", "S05", "S05", "S06", "S08", "S10", "S11", "S14", "S14", "S15"],
+    concept: "軽量の支えを敷いてから、アズーラを覚醒で一気に起こす。",
+    deck: ["C02", "C02", "C08", "C20", "C20", "C22", "C23", "C25", "C30", "C39", "C40", "C43", "S05", "S05", "S07", "S10", "S11", "S13", "S14", "S15"],
   },
   {
     level: 8,
     wins: 35,
-    name: "NEXUS Control",
-    deck: ["C06", "C06", "C05", "C14", "C16", "C18", "C21", "C23", "C25", "C30", "S03", "S05", "S08", "S09", "S09", "S11", "S13", "S14", "S14", "S15"],
+    name: "NEXUS Formation",
+    concept: "N.E.X.U.S.を覚醒させ、総力強化で盤面全体を押し上げる。",
+    deck: ["C06", "C06", "C12", "C21", "C23", "C25", "C30", "C32", "C35", "C40", "C43", "C45", "S03", "S05", "S05", "S07", "S09", "S09", "S10", "S15"],
   },
   {
     level: 9,
     wins: 40,
     name: "Royal Lock",
-    deck: ["C03", "C03", "C05", "C05", "C06", "C14", "C16", "C18", "C23", "C25", "S03", "S03", "S05", "S08", "S08", "S09", "S11", "S13", "S14", "S15"],
+    concept: "王女の防衛線を軸に、催眠と反計で相手の攻撃順を崩す。",
+    deck: ["C03", "C03", "C05", "C13", "C17", "C23", "C24", "C25", "C30", "C38", "C38", "C40", "S03", "S03", "S08", "S08", "S10", "S11", "S14", "S15"],
   },
   {
     level: 10,
     wins: 50,
     name: "Final Crossover",
-    deck: ["C01", "C02", "C03", "C05", "C06", "C07", "C14", "C18", "C23", "C46", "S01", "S03", "S05", "S08", "S09", "S09", "S11", "S13", "S14", "S15"],
+    concept: "URフィニッシャーを低中コストの展開札と探索で確実に着地させる。",
+    deck: ["C01", "C02", "C03", "C07", "C19", "C21", "C22", "C23", "C25", "C30", "C33", "C40", "C46", "S01", "S03", "S05", "S08", "S10", "S14", "S15"],
   },
 ];
 
@@ -1313,35 +1324,157 @@ const audio = {
   stopMusic() {
     if (this.musicAudio) this.musicAudio.pause();
   },
-  tone(freq, duration = 0.18, type = "sine", volume = 0.08) {
-    if (!this.ctx || !this.sfxOn && volume > 0.04) return;
+  tone(freq, duration = 0.18, type = "sine", volume = 0.08, delay = 0, endFreq = null) {
+    if (!this.ctx || !this.sfxOn) return;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
+    const start = this.ctx.currentTime + delay;
+    const end = start + duration;
     osc.type = type;
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(volume, this.ctx.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+    osc.frequency.setValueAtTime(freq, start);
+    if (endFreq) osc.frequency.exponentialRampToValueAtTime(Math.max(1, endFreq), end);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + 0.018);
+    gain.gain.exponentialRampToValueAtTime(0.0001, end);
     osc.connect(gain).connect(this.ctx.destination);
-    osc.start();
-    osc.stop(this.ctx.currentTime + duration + 0.02);
+    osc.start(start);
+    osc.stop(end + 0.03);
   },
-  sfx(name) {
+  noise(duration = 0.12, volume = 0.035, delay = 0, filterType = "bandpass", frequency = 900, q = 0.9) {
+    if (!this.ctx || !this.sfxOn) return;
+    const sampleRate = this.ctx.sampleRate;
+    const buffer = this.ctx.createBuffer(1, Math.max(1, Math.floor(sampleRate * duration)), sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
+    const source = this.ctx.createBufferSource();
+    const filter = this.ctx.createBiquadFilter();
+    const gain = this.ctx.createGain();
+    const start = this.ctx.currentTime + delay;
+    const end = start + duration;
+    source.buffer = buffer;
+    filter.type = filterType;
+    filter.frequency.setValueAtTime(frequency, start);
+    filter.Q.setValueAtTime(q, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, end);
+    source.connect(filter).connect(gain).connect(this.ctx.destination);
+    source.start(start);
+    source.stop(end + 0.02);
+  },
+  elementLayer(element, delay = 0, intensity = 1) {
+    const volume = 0.038 * intensity;
+    switch (element) {
+      case "炎":
+        this.noise(0.17, volume, delay, "bandpass", 1500, 1.1);
+        this.tone(185, 0.2, "sawtooth", volume * 0.95, delay + 0.015, 92);
+        break;
+      case "水":
+        this.tone(660, 0.22, "sine", volume, delay, 880);
+        this.tone(990, 0.16, "triangle", volume * 0.55, delay + 0.06, 740);
+        break;
+      case "風":
+        this.noise(0.16, volume * 0.82, delay, "highpass", 1900, 0.7);
+        this.tone(980, 0.13, "triangle", volume * 0.6, delay + 0.04, 1320);
+        break;
+      case "地":
+        this.tone(82, 0.19, "triangle", volume * 1.25, delay, 48);
+        this.noise(0.1, volume * 0.7, delay + 0.025, "lowpass", 420, 0.8);
+        break;
+      default:
+        this.tone(520, 0.12, "triangle", volume, delay, 620);
+        break;
+    }
+  },
+  rarityLayer(rarity, delay = 0) {
+    if (rarity === "UR") {
+      [784, 988, 1319, 1568].forEach((freq, index) => this.tone(freq, 0.18, "triangle", 0.038, delay + index * 0.055));
+      this.noise(0.18, 0.02, delay + 0.08, "highpass", 2300, 0.6);
+    } else if (rarity === "SR") {
+      [659, 880, 1175].forEach((freq, index) => this.tone(freq, 0.15, "triangle", 0.03, delay + index * 0.055));
+    }
+  },
+  sfx(name, detail = {}) {
     if (!this.sfxOn) return;
-    const pattern = {
-      draw: [660, 880],
-      summon: [220, 330, 494],
-      support: [440, 660, 990],
-      attack: [180, 120],
-      damage: [90, 70],
-      heal: [520, 660, 784],
-      win: [523, 659, 784, 1046],
-      lose: [220, 185, 147],
-      phase: [392, 494],
-    }[name] || [440];
-    pattern.forEach((freq, index) => {
-      window.setTimeout(() => this.tone(freq, 0.16, index % 2 ? "triangle" : "square", 0.075), index * 75);
-    });
+    const amount = Math.max(1, Number(detail.amount || detail.total || 1));
+    switch (name) {
+      case "draw":
+        this.noise(0.055, 0.025, 0, "highpass", 1200, 0.8);
+        this.tone(660, 0.08, "triangle", 0.04, 0.02, 880);
+        break;
+      case "summon":
+        this.tone(110, 0.16, "triangle", 0.065, 0, 70);
+        this.tone(330, 0.18, "square", 0.043, 0.055, 494);
+        this.elementLayer(detail.element, 0.08, detail.rarity === "UR" ? 1.35 : 1);
+        this.rarityLayer(detail.rarity, 0.13);
+        break;
+      case "support":
+        this.tone(440, 0.11, "triangle", 0.038, 0, 660);
+        this.tone(880, 0.15, "sine", 0.034, 0.06, 990);
+        this.elementLayer(detail.element, 0.075, 0.72);
+        break;
+      case "attack":
+        this.noise(0.11, 0.034, 0, "highpass", 1300 + amount * 35, 0.8);
+        this.tone(210 + amount * 8, 0.12, "sawtooth", 0.045, 0.035, 130);
+        this.elementLayer(detail.element, 0.04, 0.7);
+        break;
+      case "atomic":
+        this.tone(220, 0.28, "sawtooth", 0.04, 0, 660);
+        this.noise(0.1, 0.035, 0.18, "bandpass", 1800, 1.2);
+        this.tone(92, 0.24, "square", 0.075, 0.24, 46);
+        this.noise(0.26, 0.06, 0.25, "lowpass", 520, 0.9);
+        break;
+      case "damage":
+        this.tone(amount >= 7 ? 54 : amount >= 4 ? 72 : 98, 0.16, "square", amount >= 7 ? 0.09 : 0.065, 0, 36);
+        this.noise(amount >= 4 ? 0.16 : 0.09, amount >= 7 ? 0.062 : 0.042, 0.015, "lowpass", amount >= 7 ? 620 : 980, 0.8);
+        break;
+      case "lpDamage":
+        this.tone(70, 0.22, "sawtooth", 0.082, 0, 42);
+        this.tone(140, 0.16, "square", 0.042, 0.05, 84);
+        this.noise(0.2, 0.045, 0.02, "lowpass", 760, 0.7);
+        break;
+      case "guard":
+        this.tone(310, 0.08, "square", 0.036, 0, 220);
+        this.tone(620, 0.1, "triangle", 0.026, 0.025, 420);
+        this.noise(0.07, 0.024, 0.01, "bandpass", 720, 1.8);
+        break;
+      case "heal":
+        this.tone(523, 0.13, "sine", 0.035, 0, 659);
+        this.tone(784, 0.16, "triangle", 0.033, 0.055, 1046);
+        this.tone(1046, 0.22, "sine", 0.024, 0.12);
+        break;
+      case "counter":
+        this.tone(980, 0.08, "square", 0.048, 0, 520);
+        this.tone(1470, 0.1, "triangle", 0.034, 0.055, 740);
+        this.noise(0.09, 0.034, 0.02, "highpass", 2100, 1.1);
+        break;
+      case "awaken":
+        this.tone(130, 0.36, "sawtooth", 0.045, 0, 520);
+        [523, 659, 784, 1046].forEach((freq, index) => this.tone(freq, 0.2, "triangle", 0.04, 0.11 + index * 0.075));
+        this.elementLayer(detail.element, 0.16, 1.2);
+        break;
+      case "retreat":
+        this.tone(185, 0.13, "triangle", 0.04, 0, 92);
+        this.noise(0.11, 0.026, 0.02, "lowpass", 500, 0.9);
+        break;
+      case "reward":
+        this.rarityLayer(detail.rarity, 0);
+        if (detail.rarity === "UR") this.tone(196, 0.32, "triangle", 0.04, 0, 392);
+        break;
+      case "win":
+        [523, 659, 784, 1046].forEach((freq, index) => this.tone(freq, 0.18, "triangle", 0.048, index * 0.075));
+        break;
+      case "lose":
+        [220, 185, 147].forEach((freq, index) => this.tone(freq, 0.2, "sawtooth", 0.045, index * 0.09, freq * 0.72));
+        break;
+      case "phase":
+        this.tone(392, 0.1, "triangle", 0.035, 0, 494);
+        this.tone(494, 0.11, "triangle", 0.032, 0.08, 392);
+        break;
+      default:
+        this.tone(440, 0.14, "triangle", 0.045);
+        break;
+    }
   },
   speak(text) {
     if (!this.voiceOn || !("speechSynthesis" in window)) return;
@@ -1590,7 +1723,7 @@ function playCharacterFromHand(player, handIndex, lane, slotIndex) {
   player[lane][slotIndex] = card;
   state.summonDropId = card.instanceId;
 
-  audio.sfx("summon");
+  audio.sfx("summon", card);
   audio.speak(card.name);
   log(`${player.name} は <strong>${card.name}</strong> を${lane === "front" ? "前衛" : "後衛"}に配置。`, "summon");
   applySummonEffects(card, player, lane);
@@ -1930,12 +2063,13 @@ function useSelectedSupport() {
 
 function resolveSupport(player, foe, card, target) {
   player.energy -= effectiveCost(card, player);
-  audio.sfx("support");
+  audio.sfx("support", card);
   audio.speak(card.name);
   log(`${player.name} はサポート <strong>${card.name}</strong> を使用。`, "support");
 
   if (foe.supportNullify > 0) {
     foe.supportNullify -= 1;
+    audio.sfx("counter");
     log(`${foe.name} の軍師の策略がサポートを無効化。`, "effect");
     return;
   }
@@ -2165,7 +2299,7 @@ function awaken(card, player, forced = false) {
     buffDef(card, 4);
   }
   log(`${card.name} が${forced ? "即座に" : ""}覚醒した。`, "effect");
-  audio.sfx("win");
+  audio.sfx("awaken", card);
 }
 
 async function performAttack(attacker, target, options = {}) {
@@ -2183,7 +2317,8 @@ async function performAttack(attacker, target, options = {}) {
   const previousBusy = state.busy;
   state.busy = true;
   state.selectedAttackerId = null;
-  audio.sfx("attack");
+  const atomicFlareReady = attacker.id === "C46" && !attacker.atomicFlareUsed;
+  audio.sfx(atomicFlareReady ? "atomic" : "attack", { ...attacker, amount: effectiveAtk(attacker) });
   animateCard(attacker.instanceId, "attack-lift");
   await sleep(ATTACK_IMPACT_DELAY);
 
@@ -2194,12 +2329,13 @@ async function performAttack(attacker, target, options = {}) {
     log(`烈 龍翔の気まぐれ: ATK${mod > 0 ? "+" : ""}${mod}。`, "effect");
   }
   if (target.type === "card" && attacker.id === "C44" && target.card.role === "ST") attackValue += 2;
-  const atomicFlareActive = attacker.id === "C46" && !attacker.atomicFlareUsed;
+  const atomicFlareActive = atomicFlareReady;
   if (atomicFlareActive) attacker.atomicFlareUsed = true;
 
   if (foe.counterAttack > 0) {
     foe.counterAttack -= 1;
     attacker.attacked = true;
+    audio.sfx("counter");
     log(`${foe.name} の紫禁の策謀。攻撃を無効化し${attackValue}反射。`, "effect");
     damageCharacter(attacker, attackValue, foe, { ignoreDef: true });
     await sleep(IMPACT_SETTLE_DELAY);
@@ -2315,9 +2451,10 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
 
   if (hpDamage > 0) {
     card.currentHp -= hpDamage;
-    audio.sfx("damage");
+    audio.sfx("damage", { ...card, amount: hpDamage, total: totalDamage });
     animateCard(card.instanceId, "shake", `-${hpDamage}`, false, totalDamage);
   } else {
+    audio.sfx("guard", { ...card, amount: totalDamage });
     animateCard(card.instanceId, "shake", "DEF", false, totalDamage);
   }
 
@@ -2335,7 +2472,10 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
   if (!loc) return;
   owner[loc.lane][loc.index] = null;
   owner.grave.push(card);
-  if (!options.silentDamage) log(`${card.name} は撤退。`, "damage");
+  if (!options.silentDamage) {
+    audio.sfx("retreat", card);
+    log(`${card.name} は撤退。`, "damage");
+  }
 
   if (owner.reviveTrap > 0) {
     owner.reviveTrap -= 1;
@@ -2378,7 +2518,7 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
 function damageLp(player, amount, source) {
   if (amount <= 0 || state.gameOver) return;
   player.lp = Math.max(0, player.lp - amount);
-  audio.sfx("damage");
+  audio.sfx("lpDamage", { amount });
   log(`${player.name} LPに${amount}ダメージ${source ? `（${source}）` : ""}。`, "damage");
   const lpButton = player.key === "ai" ? qs("#opponentLpTarget") : qs("#playerLpTarget");
   if (lpButton) {
@@ -2395,7 +2535,7 @@ function healCharacter(card, amount) {
   card.currentHp = Math.min(card.maxHp, card.currentHp + amount);
   const gained = card.currentHp - before;
   if (gained > 0) {
-    audio.sfx("heal");
+    audio.sfx("heal", { ...card, amount: gained });
     animateCard(card.instanceId, "", `+${gained}`, true);
   }
 }
@@ -2579,6 +2719,10 @@ function giveRewards(playerWon) {
   qs("#rewardTitle").textContent = playerWon ? `勝利報酬 ${REWARD_CARD_COUNT}枚獲得` : `対戦報酬 ${REWARD_CARD_COUNT}枚獲得`;
   qs("#rewardCards").innerHTML = rewards.map((card) => renderCard(createInstance(card, "player"), { inReward: true })).join("");
   qs("#rewardModal").classList.remove("hidden");
+  const topReward = rewards.reduce((best, card) => (RARITY_ORDER[card.rarity] > RARITY_ORDER[best.rarity] ? card : best), rewards[0]);
+  if (topReward && RARITY_ORDER[topReward.rarity] >= RARITY_ORDER.SR) {
+    window.setTimeout(() => audio.sfx("reward", topReward), 360);
+  }
   renderHud();
   renderLog();
   renderCollectionSummary();
@@ -2723,13 +2867,30 @@ function renderLevelSelect() {
 }
 
 function renderLevelSelectButton(profile, latest = false) {
+  const curve = summarizeDeckCurve(profile.deck);
   return `
     <button class="level-select-button ${latest ? "is-latest" : ""}" type="button" data-ai-level="${profile.level}">
       <span>AI Lv.${profile.level}${latest ? " / 最新" : ""}</span>
       <strong>${escapeHtml(profile.name)}</strong>
+      <small class="level-select-concept">${escapeHtml(profile.concept || "")}</small>
+      <span class="level-select-curve">${escapeHtml(curve)}</span>
       <small>解放条件 ${profile.wins}勝</small>
     </button>
   `;
+}
+
+function summarizeDeckCurve(deckIds) {
+  const counts = deckIds.reduce(
+    (acc, id) => {
+      const cost = CARD_DB.get(id)?.cost || 0;
+      if (cost <= 2) acc.low += 1;
+      else if (cost === 3) acc.mid += 1;
+      else acc.high += 1;
+      return acc;
+    },
+    { low: 0, mid: 0, high: 0 },
+  );
+  return `低${counts.low} / 中${counts.mid} / 高${counts.high}`;
 }
 
 function openDeckEditor() {
