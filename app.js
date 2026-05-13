@@ -20,6 +20,8 @@ const RARITY_ORDER = {
   UR: 4,
 };
 
+const MAX_LP = 20;
+const C48_CLAIRE_BOOST = 3;
 const ATTACK_IMPACT_DELAY = 390;
 const IMPACT_SETTLE_DELAY = 460;
 const SUMMON_OUT_DELAY = 260;
@@ -776,6 +778,154 @@ const CHARACTERS = [
     skill: "アトミックフレア",
     text: "攻撃時DEFを無視し、撤退させた時相手後衛全体に2ダメージ。このスキルは場に出てから一度しか使えない。次の攻撃に効果。",
   },
+  {
+    kind: "character",
+    id: "C47",
+    no: "#47",
+    rarity: "R",
+    name: "クレア",
+    series: "双頭鳥の御旗",
+    element: "炎",
+    role: "GD",
+    cost: 3,
+    atk: 3,
+    def: 4,
+    hp: 5,
+    skill: "無銘の防壁",
+    text: "スキルなし。高い基礎戦闘力を持つ。【ガード】",
+    tags: ["guard"],
+  },
+  {
+    kind: "character",
+    id: "C48",
+    no: "#48",
+    rarity: "SR",
+    name: "セレナ",
+    series: "双頭鳥の御旗",
+    element: "水",
+    role: "ST",
+    cost: 4,
+    atk: 2,
+    def: 2,
+    hp: 4,
+    skill: "蒼盾の号令",
+    text: "クレアが場にいる時、クレアのATK+3, DEF+3。場にいる間、味方撤退時LP1回復",
+  },
+  {
+    kind: "character",
+    id: "C49",
+    no: "#49",
+    rarity: "C",
+    name: "レオン・ファルケンハイン",
+    series: "双頭鳥の御旗",
+    element: "地",
+    role: "GD",
+    cost: 2,
+    atk: 1,
+    def: 2,
+    hp: 3,
+    skill: "不屈の片翼",
+    text: "1回だけHPが0になってもHP1で耐える。【ガード】",
+    tags: ["guard"],
+  },
+  {
+    kind: "character",
+    id: "C50",
+    no: "#50",
+    rarity: "R",
+    name: "フィーネ・エールシュタイン",
+    series: "双頭鳥の御旗",
+    element: "風",
+    role: "SP",
+    cost: 3,
+    atk: 2,
+    def: 1,
+    hp: 4,
+    skill: "清風の手当",
+    text: "配置時、味方全体の状態異常を解除。味方ガーディアン全体の最大HP+2/HP+2",
+  },
+  {
+    kind: "character",
+    id: "C51",
+    no: "#51",
+    rarity: "SR",
+    name: "マルグリット・ヴィシェール",
+    series: "双頭鳥の御旗",
+    element: "水",
+    role: "AT",
+    cost: 3,
+    atk: 2,
+    def: 0,
+    hp: 3,
+    skill: "後衛砲撃",
+    text: "後衛配置限定。自ターン開始時、相手後衛1体に2ダメージ。後衛がいなければ前衛1体に2ダメージ",
+    backOnly: true,
+  },
+  {
+    kind: "character",
+    id: "C52",
+    no: "#52",
+    rarity: "SR",
+    name: "イレーネ・セラフィム",
+    series: "双頭鳥の御旗",
+    element: "地",
+    role: "SP",
+    cost: 4,
+    atk: 2,
+    def: 1,
+    hp: 4,
+    skill: "封印審判",
+    text: "相手のサポーターのスキル、またはサポートカード効果を1回無効化する",
+  },
+  {
+    kind: "character",
+    id: "C53",
+    no: "#53",
+    rarity: "R",
+    name: "カタリナ・ロッシ",
+    series: "双頭鳥の御旗",
+    element: "風",
+    role: "SP",
+    cost: 3,
+    atk: 2,
+    def: 1,
+    hp: 3,
+    skill: "前線転移",
+    text: "配置時、相手前衛に空きがあれば相手後衛1体を前衛へ移動",
+  },
+  {
+    kind: "character",
+    id: "C54",
+    no: "#54",
+    rarity: "R",
+    name: "ルクレツィア・ヴァルト",
+    series: "双頭鳥の御旗",
+    element: "炎",
+    role: "SP",
+    cost: 2,
+    atk: 1,
+    def: 1,
+    hp: 3,
+    skill: "先読み補給",
+    text: "配置後、次の自ターン開始時まで生存していればエネルギー最大値+1",
+  },
+  {
+    kind: "character",
+    id: "C55",
+    no: "#55",
+    rarity: "SR",
+    name: "ヴァネッサ・クラウツ",
+    series: "双頭鳥の御旗",
+    element: "炎",
+    role: "AT",
+    cost: 4,
+    atk: 5,
+    def: 1,
+    hp: 4,
+    skill: "切込隊長",
+    text: "配置ターンに攻撃可能。HPダメージを与えた時、自身ATK+1（最大+2）",
+    haste: true,
+  },
 ];
 
 const SUPPORTS = [
@@ -973,6 +1123,19 @@ const SUPPORTS = [
     element: "地",
     skill: "修復",
     text: "味方1体のDEFを初期値まで回復",
+  },
+  {
+    kind: "support",
+    id: "S16",
+    no: "S16",
+    rarity: "SR",
+    name: "双頭鳥の御旗",
+    supportType: "設置型",
+    cost: 5,
+    series: "双頭鳥の御旗",
+    element: "無",
+    skill: "双頭鳥の御旗",
+    text: "2ターンの間、味方キャラ配置コスト-1。終了時1ドロー",
   },
 ];
 
@@ -1551,7 +1714,7 @@ function createPlayer(key, name, deckIds) {
   return {
     key,
     name,
-    lp: 20,
+    lp: MAX_LP,
     energyMax: 0,
     energy: 0,
     deck: shuffle(deckIds.map((id) => createInstance(CARD_DB.get(id), key))),
@@ -1562,9 +1725,11 @@ function createPlayer(key, name, deckIds) {
     turns: 0,
     skipDraw: false,
     supportNullify: 0,
+    effectNullify: 0,
     counterAttack: 0,
     reviveTrap: 0,
     nextBackSkillDouble: false,
+    bannerTurns: 0,
     delayed: [],
   };
 }
@@ -1688,6 +1853,7 @@ function endTurn(player) {
     }
     decrementStatuses(card);
   });
+  tickBannerEffect(player);
   player.energy = 0;
 }
 
@@ -1752,6 +1918,9 @@ function applySummonEffects(card, player, lane) {
   if (hasBoardCard(player, "C32") && card.element === "炎" && card.id !== "C32") buffAtk(card, 1 * scale);
   if (card.id === "C14" && hasBoardCard(player, "C05")) buffAtk(card, 3 * scale);
   if (card.id === "C26" && boardCards(player).some((ally) => ally.id === "C07" || ally.id === "C19")) buffAtk(card, 2 * scale);
+
+  if (card.id === "C47") applySerenaBoostsToClaire(card, player);
+  if (card.role === "ST" && consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) return;
 
   switch (card.id) {
     case "C04":
@@ -1872,6 +2041,19 @@ function applySummonEffects(card, player, lane) {
       }
       break;
     }
+    case "C48":
+      applySerenaBoostToClaires(player);
+      break;
+    case "C50":
+      clearAllyStatusesAndBolsterGuards(player);
+      break;
+    case "C52":
+      player.effectNullify += 1;
+      log(`${player.name} は次のサポーター/サポート効果を1回無効化する構え。`, "effect");
+      break;
+    case "C53":
+      moveEnemyBacklineToFront(player, foe);
+      break;
     default:
       break;
   }
@@ -1911,6 +2093,12 @@ function applyStartEffects(player) {
           drawCard(player);
         }
         break;
+      case "C51":
+        fireMargueriteBacklineShot(card, player, foe);
+        break;
+      case "C54":
+        triggerLucreziaEnergy(card, player);
+        break;
       default:
         break;
     }
@@ -1930,9 +2118,11 @@ function applyEndEffects(player) {
     if (card.status.silenced) return;
     switch (card.id) {
       case "C04":
+        if (consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) break;
         healCharacter(mostDamagedAlly(player), 1);
         break;
       case "C08":
+        if (consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) break;
         if (player.turns - card.summonedOnTurn >= 3) {
           const target = strongestAlly(player, card);
           if (target) {
@@ -1953,6 +2143,7 @@ function applyEndEffects(player) {
         break;
       }
       case "C27": {
+        if (consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) break;
         const target = mostDamagedAlly(player);
         if (target) healCharacter(target, 2);
         break;
@@ -1964,6 +2155,7 @@ function applyEndEffects(player) {
         }
         break;
       case "C38": {
+        if (consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) break;
         const fiona = boardCards(player).find((ally) => ally.id === "C03");
         if (fiona) healDef(fiona, 1);
         break;
@@ -2013,6 +2205,106 @@ function tickDelayed(player) {
       }
       return false;
     });
+}
+
+function tickBannerEffect(player) {
+  if (!player.bannerTurns) return;
+  player.bannerTurns = Math.max(0, player.bannerTurns - 1);
+  if (player.bannerTurns === 0) {
+    drawCard(player);
+    log("双頭鳥の御旗の効果が終わり、1枚ドロー。", "effect");
+  }
+}
+
+function consumeEffectNullify(card, player, label) {
+  const foe = opponentOf(player);
+  if (!foe?.effectNullify || card.role !== "ST") return false;
+  foe.effectNullify -= 1;
+  audio.sfx("counter");
+  log(`${foe.name} のイレーネが${label}を無効化。`, "effect");
+  return true;
+}
+
+function applySerenaBoostsToClaire(card, player) {
+  const sources = boardCards(player).filter((ally) => ally.id === "C48");
+  sources.forEach(() => applySerenaBoost(card));
+  if (sources.length) log(`${card.name} はセレナの号令で強化された。`, "effect");
+}
+
+function applySerenaBoostToClaires(player) {
+  const claires = boardCards(player).filter((ally) => ally.id === "C47");
+  claires.forEach((claire) => applySerenaBoost(claire));
+  if (claires.length) log("セレナの号令でクレアが強化された。", "effect");
+}
+
+function applySerenaBoost(card) {
+  card.c48Boosts = (card.c48Boosts || 0) + 1;
+  card.currentAtk += C48_CLAIRE_BOOST;
+  card.maxDef += C48_CLAIRE_BOOST;
+  card.currentDef += C48_CLAIRE_BOOST;
+}
+
+function removeSerenaBoostFromClaires(player) {
+  boardCards(player)
+    .filter((ally) => ally.id === "C47" && (ally.c48Boosts || 0) > 0)
+    .forEach((claire) => {
+      claire.c48Boosts -= 1;
+      claire.currentAtk = Math.max(0, claire.currentAtk - C48_CLAIRE_BOOST);
+      claire.maxDef = Math.max(claire.originalDef, claire.maxDef - C48_CLAIRE_BOOST);
+      claire.currentDef = Math.min(claire.maxDef, Math.max(0, claire.currentDef - C48_CLAIRE_BOOST));
+    });
+}
+
+function clearAllyStatusesAndBolsterGuards(player) {
+  let cleared = 0;
+  boardCards(player).forEach((ally) => {
+    const hadStatus = Object.values(ally.status || {}).some((value) => value > 0);
+    if (hadStatus) cleared += 1;
+    ally.status.stun = 0;
+    ally.status.guardOff = 0;
+    ally.status.bind = 0;
+    ally.status.silenced = 0;
+    if (ally.role === "GD") buffMaxHp(ally, 2);
+  });
+  log(`フィーネが状態異常を解除し、ガーディアンを補強した${cleared ? `（解除${cleared}体）` : ""}。`, "effect");
+}
+
+function moveEnemyBacklineToFront(player, foe) {
+  const frontIndex = foe.front.findIndex((slot) => !slot);
+  const backIndex = foe.back.findIndex(Boolean);
+  if (frontIndex < 0 || backIndex < 0) {
+    log("前線転移は条件を満たさず不発。", "warn");
+    return;
+  }
+  const [target] = foe.back.splice(backIndex, 1, null);
+  foe.front[frontIndex] = target;
+  log(`${target.name} を後衛から前衛へ移動させた。`, "effect");
+}
+
+function fireMargueriteBacklineShot(card, player, foe) {
+  const target =
+    foe.back.filter(Boolean).sort((a, b) => a.currentHp - b.currentHp || effectiveAtk(b) - effectiveAtk(a))[0] ||
+    foe.front.filter(Boolean).sort((a, b) => a.currentHp - b.currentHp || effectiveAtk(b) - effectiveAtk(a))[0];
+  if (!target) return;
+  log(`${card.name} が${findCardLocation(target)?.lane === "back" ? "後衛" : "前衛"}の${target.name}を砲撃。`, "effect");
+  damageCharacter(target, 2, player);
+}
+
+function triggerLucreziaEnergy(card, player) {
+  if (card.energyBoosted || player.turns - card.summonedOnTurn < 1) return;
+  card.energyBoosted = true;
+  const before = player.energyMax;
+  player.energyMax = Math.min(10, player.energyMax + 1);
+  player.energy = Math.min(10, player.energy + (player.energyMax - before));
+  if (player.energyMax > before) log("ルクレツィアの補給でエネルギー最大値+1。", "effect");
+}
+
+function triggerSerenaRetreatHeal(owner, fallenCard) {
+  if (fallenCard.id === "C48") return;
+  const serena = boardCards(owner).find((ally) => ally.id === "C48" && ally.status.silenced <= 0);
+  if (!serena) return;
+  if (consumeEffectNullify(serena, owner, "セレナの撤退時回復")) return;
+  healLp(owner, 1, "セレナ");
 }
 
 function useSelectedSupport() {
@@ -2071,6 +2363,13 @@ function resolveSupport(player, foe, card, target) {
     foe.supportNullify -= 1;
     audio.sfx("counter");
     log(`${foe.name} の軍師の策略がサポートを無効化。`, "effect");
+    return;
+  }
+
+  if (foe.effectNullify > 0) {
+    foe.effectNullify -= 1;
+    audio.sfx("counter");
+    log(`${foe.name} のイレーネがサポート効果を無効化。`, "effect");
     return;
   }
 
@@ -2191,6 +2490,10 @@ function resolveSupport(player, foe, card, target) {
         target.currentDef = target.maxDef;
         log(`${target.name} のDEFを修復。`, "effect");
       }
+      break;
+    case "S16":
+      player.bannerTurns = Math.max(player.bannerTurns || 0, 2);
+      log("双頭鳥の御旗を掲げた。2ターンの間、味方キャラ配置コスト-1。", "effect");
       break;
     default:
       break;
@@ -2399,6 +2702,12 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
     if (targetAlly) healCharacter(targetAlly, 2);
   }
 
+  if (attacker.id === "C55" && hpDamage > 0 && (attacker.vanguardStacks || 0) < 2) {
+    attacker.vanguardStacks = (attacker.vanguardStacks || 0) + 1;
+    buffAtk(attacker, 1);
+    log("ヴァネッサが切り込みを成功させ、ATK+1。", "effect");
+  }
+
   if (killed) {
     if (attacker.id === "C46" && effects.atomicFlareActive) {
       const blastTargets = foe.back.filter(Boolean);
@@ -2459,6 +2768,14 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
   }
 
   if (card.currentHp <= 0) {
+    if (card.id === "C49" && !card.lastStandUsed) {
+      card.lastStandUsed = true;
+      card.currentHp = 1;
+      audio.sfx("heal", { ...card, amount: 1 });
+      animateCard(card.instanceId, "", "+1", true);
+      log(`${card.name} は不屈の片翼でHP1になって踏みとどまった。`, "effect");
+      return { killed: false, hpDamage, totalDamage };
+    }
     destroyCharacter(card, sourcePlayer, options);
     return { killed: true, hpDamage, totalDamage };
   }
@@ -2472,10 +2789,13 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
   if (!loc) return;
   owner[loc.lane][loc.index] = null;
   owner.grave.push(card);
+  if (card.id === "C48") removeSerenaBoostFromClaires(owner);
   if (!options.silentDamage) {
     audio.sfx("retreat", card);
     log(`${card.name} は撤退。`, "damage");
   }
+
+  triggerSerenaRetreatHeal(owner, card);
 
   if (owner.reviveTrap > 0) {
     owner.reviveTrap -= 1;
@@ -2527,6 +2847,18 @@ function damageLp(player, amount, source) {
     lpButton.classList.add("shake");
     addFloatingPop(lpButton, `-${amount}`, false, amount);
   }
+}
+
+function healLp(player, amount, source) {
+  if (amount <= 0 || state.gameOver) return;
+  const before = player.lp;
+  player.lp = Math.min(MAX_LP, player.lp + amount);
+  const gained = player.lp - before;
+  if (gained <= 0) return;
+  audio.sfx("heal", { amount: gained });
+  log(`${player.name} LPを${gained}回復${source ? `（${source}）` : ""}。`, "effect");
+  const lpButton = player.key === "ai" ? qs("#opponentLpTarget") : qs("#playerLpTarget");
+  if (lpButton) addFloatingPop(lpButton, `+${gained}`, true);
 }
 
 function healCharacter(card, amount) {
@@ -2608,6 +2940,7 @@ function effectiveCost(card, player) {
   const foe = opponentOf(player);
   let cost = card.cost || 0;
   if (card.costReduction) cost -= card.costReduction;
+  if (card.kind === "character" && player?.bannerTurns > 0) cost -= 1;
   if (card.kind === "support" && foe && hasBoardCard(foe, "C23")) cost += 1;
   return Math.max(0, cost);
 }
@@ -3726,6 +4059,8 @@ function isSupportWorthUsing(card, player, foe) {
       const counts = countBy(boardCards(player), (ally) => ally.series);
       return Object.values(counts).some((count) => count >= 3);
     }
+    case "S16":
+      return !player.bannerTurns && player.hand.some((handCard) => handCard.kind === "character");
     default:
       return true;
   }
