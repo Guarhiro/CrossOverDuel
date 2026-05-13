@@ -15,4 +15,5 @@ Browser card battle game.
 
 - The opening movie plays from YouTube: https://youtu.be/Igquf2HnWg4
 - Local MP4 files are intentionally excluded from this package.
-- Game progress, collection, deck edit data, and free-play wins are saved in the browser's localStorage.
+- Game progress, collection, exchange points, deck edit data, and free-play wins are saved in the browser's localStorage.
+- Card exchange rates: converting cards gives C 1P, R 2P, SR 3P, SSR 5P, UR 10P. Buying cards costs C 50P, R 75P, SR 150P, SSR 300P, UR 500P.

@@ -17,7 +17,24 @@ const RARITY_ORDER = {
   C: 1,
   R: 2,
   SR: 3,
-  UR: 4,
+  SSR: 4,
+  UR: 5,
+};
+
+const CARD_POINT_VALUES = {
+  C: 1,
+  R: 2,
+  SR: 3,
+  SSR: 5,
+  UR: 10,
+};
+
+const CARD_POINT_COSTS = {
+  C: 50,
+  R: 75,
+  SR: 150,
+  SSR: 300,
+  UR: 500,
 };
 
 const MAX_LP = 20;
@@ -1171,6 +1188,8 @@ const FREEPLAY_WIN_STORAGE_KEY = "crossover-duel-freeplay-wins";
 const FREEPLAY_MAX_WINS = 50;
 const REWARD_CARD_COUNT = 4;
 const BATTLE_BGM_STYLE_STORAGE_KEY = "crossover-duel-battle-bgm-style";
+const CARD_EXCHANGE_POINT_STORAGE_KEY = "crossover-duel-card-exchange-points";
+const STARTER_DECK_COUNTS = countBy(PLAYER_DECK, (id) => id);
 
 // AIデッキは高レベルでも低コスト札を残し、強さを「重さ」ではなくコンセプトで上げる。
 // Update this staged list when new cards are added to the game.
@@ -3082,6 +3101,29 @@ function saveCollection(collection) {
   localStorage.setItem("crossover-duel-collection", JSON.stringify(collection));
 }
 
+function loadExchangePoints() {
+  try {
+    const points = Number.parseInt(localStorage.getItem(CARD_EXCHANGE_POINT_STORAGE_KEY) || "0", 10);
+    return Number.isFinite(points) ? Math.max(0, points) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveExchangePoints(points) {
+  const normalized = Math.max(0, Number.parseInt(points, 10) || 0);
+  localStorage.setItem(CARD_EXCHANGE_POINT_STORAGE_KEY, String(normalized));
+  return normalized;
+}
+
+function cardPointValue(card) {
+  return CARD_POINT_VALUES[card?.rarity] || 0;
+}
+
+function cardPointCost(card) {
+  return CARD_POINT_COSTS[card?.rarity] || 9999;
+}
+
 function loadOwnedCollection() {
   const owned = countBy(PLAYER_DECK, (id) => id);
   const rewards = loadCollection();
@@ -3361,6 +3403,59 @@ function selectGalleryMusic(track) {
   renderGalleryBgmList();
 }
 
+function exchangeableCardCopies(card, collection, selected, savedDeckCounts) {
+  const collectionCopies = Math.max(0, Number(collection[card.id]) || 0);
+  const starterCopies = STARTER_DECK_COUNTS[card.id] || 0;
+  const requiredCopies = Math.max(selected[card.id] || 0, savedDeckCounts[card.id] || 0);
+  const protectedCollectionCopies = Math.max(0, requiredCopies - starterCopies);
+  return Math.max(0, collectionCopies - protectedCollectionCopies);
+}
+
+function exchangeCardForPoints(cardId) {
+  const card = CARD_DB.get(cardId);
+  if (!card) return;
+  const collection = loadCollection();
+  const selected = countBy(deckEditorIds, (id) => id);
+  const savedDeckCounts = countBy(loadPlayerDeckIds(), (id) => id);
+  const sellable = exchangeableCardCopies(card, collection, selected, savedDeckCounts);
+  if (sellable <= 0) {
+    renderDeckEditor(`${card.name} はデッキ使用分を残すためポイント化できません。`);
+    return;
+  }
+
+  const points = cardPointValue(card);
+  const nextCount = Math.max(0, (Number(collection[card.id]) || 0) - 1);
+  if (nextCount > 0) collection[card.id] = nextCount;
+  else delete collection[card.id];
+
+  saveCollection(collection);
+  saveExchangePoints(loadExchangePoints() + points);
+  hideSkillPopup();
+  renderDeckEditor(`${card.name} を ${points}P に交換しました。`, true);
+  renderCollectionSummary();
+  if (!qs("#galleryView")?.classList.contains("hidden")) renderGallery();
+}
+
+function buyCardWithPoints(cardId) {
+  const card = CARD_DB.get(cardId);
+  if (!card) return;
+  const cost = cardPointCost(card);
+  const points = loadExchangePoints();
+  if (points < cost) {
+    renderDeckEditor(`${card.name} の交換には ${cost}P 必要です。`);
+    return;
+  }
+
+  const collection = loadCollection();
+  collection[card.id] = (Number(collection[card.id]) || 0) + 1;
+  saveCollection(collection);
+  saveExchangePoints(points - cost);
+  hideSkillPopup();
+  renderDeckEditor(`${card.name} を ${cost}P で交換しました。`, true);
+  renderCollectionSummary();
+  if (!qs("#galleryView")?.classList.contains("hidden")) renderGallery();
+}
+
 function addDeckCard(cardId) {
   const owned = loadOwnedCollection();
   const selected = countBy(deckEditorIds, (id) => id);
@@ -3443,10 +3538,13 @@ function updateDeckEditorToggleButtons() {
 
 function renderDeckEditor(message = "", ready = false) {
   const owned = loadOwnedCollection();
+  const collection = loadCollection();
   const selected = countBy(deckEditorIds, (id) => id);
+  const savedDeckCounts = countBy(loadPlayerDeckIds(), (id) => id);
   const deckCount = deckEditorIds.length;
   const valid = isValidDeckIds(deckEditorIds, owned);
   qs("#deckCount").textContent = `${deckCount}/${PLAYER_DECK_SIZE}`;
+  qs("#exchangePointBalance").textContent = `${loadExchangePoints()}P`;
   qs("#saveDeckBtn").disabled = !valid;
   updateDeckEditorToggleButtons();
   const status = qs("#deckEditorStatus");
@@ -3473,6 +3571,51 @@ function renderDeckEditor(message = "", ready = false) {
   qs("#cardLibrary").innerHTML = deckEditorLibraryHidden
     ? '<p class="deck-empty">所持カード一覧を非表示中です。</p>'
     : libraryCards || '<p class="deck-empty">表示できるカードがありません。</p>';
+
+  renderCardExchange(owned, collection, selected, savedDeckCounts);
+}
+
+function renderCardExchange(owned, collection, selected, savedDeckCounts) {
+  const points = loadExchangePoints();
+  const rates = ["C", "R", "SR", "SSR", "UR"]
+    .map((rarity) => `${rarity}: ${CARD_POINT_VALUES[rarity]}P -> ${CARD_POINT_COSTS[rarity]}P`)
+    .join(" / ");
+  qs("#exchangeSummary").innerHTML = `
+    <div class="exchange-balance">
+      <strong>${points}P</strong>
+      <span>${escapeHtml(rates)}</span>
+    </div>
+  `;
+
+  const exchangeCards = [...ALL_CARDS]
+    .sort(compareCards)
+    .map((card) => renderExchangeCard(card, owned, collection, selected, savedDeckCounts, points))
+    .join("");
+  qs("#exchangeList").innerHTML = exchangeCards;
+}
+
+function renderExchangeCard(card, owned, collection, selected, savedDeckCounts, points) {
+  const ownedCount = owned[card.id] || 0;
+  const usedCount = selected[card.id] || 0;
+  const collectionCount = Math.max(0, Number(collection[card.id]) || 0);
+  const sellable = exchangeableCardCopies(card, collection, selected, savedDeckCounts);
+  const value = cardPointValue(card);
+  const cost = cardPointCost(card);
+  const canBuy = points >= cost;
+  const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
+  return `
+    <div class="deck-exchange-card" style="--element:${color}; --card-image:url('assets/cards/${card.id}.png')" data-card-id="${card.id}">
+      <div class="exchange-card-main">
+        <span class="exchange-card-kicker">${escapeHtml(card.no)} ${card.rarity}</span>
+        <strong>${escapeHtml(card.name)}</strong>
+        <small>所持 ${ownedCount} / デッキ ${usedCount} / 追加分 ${collectionCount}</small>
+      </div>
+      <div class="exchange-card-actions">
+        <button type="button" data-exchange-action="sell" data-card-id="${card.id}" ${sellable <= 0 ? "disabled" : ""}>+${value}P</button>
+        <button type="button" data-exchange-action="buy" data-card-id="${card.id}" ${canBuy ? "" : "disabled"}>-${cost}P</button>
+      </div>
+    </div>
+  `;
 }
 
 function compareCards(a, b) {
@@ -3887,7 +4030,7 @@ function canAcceptPlayerCommands() {
 function renderCollectionSummary() {
   const collection = loadCollection();
   const total = Object.values(collection).reduce((sum, count) => sum + count, 0);
-  qs("#collectionSummary").textContent = `Collection ${total}`;
+  qs("#collectionSummary").textContent = `Collection ${total} / ${loadExchangePoints()}P`;
 }
 
 function hintText() {
@@ -4366,6 +4509,12 @@ function bindEvents() {
     if (!cardButton) return;
     removeDeckCard(cardButton.dataset.cardId);
   });
+  qs("#exchangeList").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-exchange-action][data-card-id]");
+    if (!button || button.disabled) return;
+    if (button.dataset.exchangeAction === "sell") exchangeCardForPoints(button.dataset.cardId);
+    if (button.dataset.exchangeAction === "buy") buyCardWithPoints(button.dataset.cardId);
+  });
   [qs("#cardLibrary"), qs("#deckList")].forEach((deckArea) => {
     deckArea.addEventListener("keydown", (event) => {
       if (event.target.closest(".deck-card-mode-btn")) return;
@@ -4380,12 +4529,32 @@ function bindEvents() {
       }
     });
   });
+  qs("#exchangeList").addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const button = event.target.closest("button[data-exchange-action][data-card-id]");
+    if (!button || button.disabled) return;
+    event.preventDefault();
+    if (button.dataset.exchangeAction === "sell") exchangeCardForPoints(button.dataset.cardId);
+    if (button.dataset.exchangeAction === "buy") buyCardWithPoints(button.dataset.cardId);
+  });
   [qs("#cardLibrary"), qs("#deckList")].forEach((deckArea) => {
     deckArea.addEventListener("pointerover", handleDeckEditorCardPreview);
     deckArea.addEventListener("pointermove", handleDeckEditorCardPreview);
     deckArea.addEventListener("pointerout", handleDeckEditorCardOut);
     deckArea.addEventListener("focusin", handleDeckEditorCardPreview);
     deckArea.addEventListener("focusout", handleDeckEditorCardOut);
+  });
+  qs("#exchangeList").addEventListener("pointerover", (event) => {
+    if (event.pointerType === "touch") return;
+    const card = event.target.closest(".deck-exchange-card[data-card-id]");
+    if (card) showDeckCardPopup(card.dataset.cardId, card);
+  });
+  qs("#exchangeList").addEventListener("pointerout", (event) => {
+    const fromCard = event.target.closest(".deck-exchange-card[data-card-id]");
+    if (!fromCard) return;
+    const toCard = event.relatedTarget?.closest?.(".deck-exchange-card[data-card-id]");
+    if (toCard === fromCard) return;
+    hideSkillPopup();
   });
   qs("#newGameBtn").addEventListener("click", () => {
     qs("#rewardModal").classList.add("hidden");

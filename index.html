@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=sfx-rich-1" />
+    <link rel="stylesheet" href="styles.css?v=card-exchange-1" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -34,6 +34,7 @@
             <h2>プレイヤーデッキ</h2>
           </div>
           <div class="deck-editor-actions">
+            <span id="exchangePointBalance" class="deck-count">0P</span>
             <span id="deckCount" class="deck-count">0/20</span>
             <button id="resetDeckBtn">初期デッキ</button>
             <button id="saveDeckBtn">保存</button>
@@ -48,6 +49,13 @@
               <button id="toggleDeckListBtn" class="panel-toggle" type="button">非表示</button>
             </div>
             <div id="deckList" class="deck-list"></div>
+          </section>
+          <section class="deck-editor-panel exchange-panel">
+            <div class="deck-editor-panel-head">
+              <h3>交換所</h3>
+            </div>
+            <div id="exchangeSummary" class="exchange-summary"></div>
+            <div id="exchangeList" class="deck-exchange-list"></div>
           </section>
           <section class="deck-editor-panel">
             <div class="deck-editor-panel-head">
@@ -221,7 +229,7 @@
           </section>
           <section>
             <h3>報酬とデッキ</h3>
-            <p>対戦後にカードを獲得します。DECK EDITで所持カードから20枚のデッキを組み、勝利数に応じて強くなるAIに挑みます。</p>
+            <p>対戦後にカードを獲得します。DECK EDITで所持カードから20枚のデッキを組み、余ったカードは交換所でポイント化して欲しいカードと交換できます。</p>
           </section>
         </div>
       </div>
@@ -247,6 +255,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=sfx-rich-1"></script>
+    <script src="app.js?v=card-exchange-1"></script>
   </body>
 </html>

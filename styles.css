@@ -420,7 +420,7 @@ body.title-active .app-shell {
 .deck-editor-grid {
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(260px, 0.74fr) minmax(0, 1.26fr);
+  grid-template-columns: minmax(240px, 0.68fr) minmax(260px, 0.92fr) minmax(0, 1.18fr);
   gap: 10px;
 }
 
@@ -450,7 +450,8 @@ body.title-active .app-shell {
 }
 
 .deck-list,
-.card-library {
+.card-library,
+.deck-exchange-list {
   min-height: 0;
   overflow: auto;
   padding-right: 4px;
@@ -466,6 +467,108 @@ body.title-active .app-shell {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
   gap: 8px;
+}
+
+.exchange-panel {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.exchange-summary {
+  min-height: 42px;
+  padding: 8px;
+  border: 1px solid rgba(246, 200, 95, 0.18);
+  border-radius: 8px;
+  background: rgba(10, 13, 18, 0.42);
+}
+
+.exchange-balance {
+  display: grid;
+  gap: 4px;
+}
+
+.exchange-balance strong {
+  color: var(--gold);
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.exchange-balance span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.deck-exchange-list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.deck-exchange-card {
+  --element: var(--gold);
+  min-height: 92px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: stretch;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.68), rgba(0, 0, 0, 0.34)),
+    var(--card-image) right 22% / 112px auto no-repeat,
+    linear-gradient(135deg, color-mix(in srgb, var(--element) 26%, #222831), #161a21 68%);
+}
+
+.exchange-card-main {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+}
+
+.exchange-card-kicker,
+.exchange-card-main small {
+  color: var(--gold);
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.exchange-card-main strong {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.18;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72);
+}
+
+.exchange-card-main small {
+  color: rgba(246, 242, 233, 0.76);
+  line-height: 1.25;
+}
+
+.exchange-card-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  align-content: center;
+  width: 74px;
+}
+
+.exchange-card-actions button {
+  min-height: 30px;
+  padding: 0 8px;
+  border-color: rgba(246, 200, 95, 0.38);
+  color: #111318;
+  background: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 1000;
+}
+
+.exchange-card-actions button:last-child {
+  color: var(--text);
+  background: rgba(40, 48, 60, 0.92);
 }
 
 .gallery-card-stage,
