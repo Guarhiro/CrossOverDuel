@@ -13,6 +13,6 @@ Browser card battle game.
 
 ## Notes
 
-- The opening movie plays from YouTube: https://youtu.be/s4sKmrNfax4
+- The opening movie plays from YouTube: https://youtu.be/Igquf2HnWg4
 - Local MP4 files are intentionally excluded from this package.
 - Game progress, collection, deck edit data, and free-play wins are saved in the browser's localStorage.
