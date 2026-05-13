@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=card-exchange-1" />
+    <link rel="stylesheet" href="styles.css?v=card-exchange-2" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -43,21 +43,14 @@
         </header>
         <p id="deckEditorStatus" class="deck-editor-status"></p>
         <div class="deck-editor-grid">
-          <section class="deck-editor-panel">
+          <section id="deckPanel" class="deck-editor-panel">
             <div class="deck-editor-panel-head">
               <h3>デッキ</h3>
               <button id="toggleDeckListBtn" class="panel-toggle" type="button">非表示</button>
             </div>
             <div id="deckList" class="deck-list"></div>
           </section>
-          <section class="deck-editor-panel exchange-panel">
-            <div class="deck-editor-panel-head">
-              <h3>交換所</h3>
-            </div>
-            <div id="exchangeSummary" class="exchange-summary"></div>
-            <div id="exchangeList" class="deck-exchange-list"></div>
-          </section>
-          <section class="deck-editor-panel">
+          <section id="libraryPanel" class="deck-editor-panel">
             <div class="deck-editor-panel-head">
               <h3>所持カード</h3>
               <div class="deck-editor-panel-actions">
@@ -66,6 +59,14 @@
               </div>
             </div>
             <div id="cardLibrary" class="card-library"></div>
+          </section>
+          <section id="exchangePanel" class="deck-editor-panel exchange-panel">
+            <div class="deck-editor-panel-head">
+              <h3>交換所</h3>
+              <button id="toggleExchangeListBtn" class="panel-toggle" type="button">非表示</button>
+            </div>
+            <div id="exchangeSummary" class="exchange-summary"></div>
+            <div id="exchangeList" class="deck-exchange-list"></div>
           </section>
         </div>
       </div>
@@ -255,6 +256,18 @@
       </div>
     </div>
 
-    <script src="app.js?v=card-exchange-1"></script>
+    <div id="exchangeConfirmModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="カード交換確認">
+      <div class="modal-card exchange-confirm-card">
+        <p class="eyebrow">Card Exchange</p>
+        <h2 id="exchangeConfirmTitle">交換しますか？</h2>
+        <p id="exchangeConfirmText" class="exchange-confirm-text"></p>
+        <div class="reward-actions">
+          <button id="cancelExchangeBtn">キャンセル</button>
+          <button id="confirmExchangeBtn">交換する</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js?v=card-exchange-2"></script>
   </body>
 </html>

@@ -1276,8 +1276,10 @@ let activeScreen = "title";
 let deckEditorIds = [];
 let deckEditorDeckHidden = false;
 let deckEditorLibraryHidden = false;
+let deckEditorExchangeHidden = false;
 let deckEditorLibraryOwnedOnly = false;
 let deckEditorSkillViews = new Set();
+let pendingExchangeCardId = null;
 let battleBgmStyle = "standard";
 let gallerySelectedCardId = null;
 let galleryMusicTrack = "title";
@@ -3411,6 +3413,39 @@ function exchangeableCardCopies(card, collection, selected, savedDeckCounts) {
   return Math.max(0, collectionCopies - protectedCollectionCopies);
 }
 
+function requestExchangeCardForPoints(cardId) {
+  const card = CARD_DB.get(cardId);
+  if (!card) return;
+  const owned = loadOwnedCollection();
+  const ownedCount = owned[card.id] || 0;
+  if (ownedCount <= 2) {
+    openExchangeConfirm(card);
+    return;
+  }
+  exchangeCardForPoints(cardId);
+}
+
+function openExchangeConfirm(card) {
+  pendingExchangeCardId = card.id;
+  const owned = loadOwnedCollection();
+  const ownedCount = owned[card.id] || 0;
+  const points = cardPointValue(card);
+  qs("#exchangeConfirmTitle").textContent = `${card.name} をポイント化しますか？`;
+  qs("#exchangeConfirmText").textContent = `所持枚数が ${ownedCount}枚 のカードです。交換すると ${points}P を獲得し、このカードの追加所持が1枚減ります。`;
+  qs("#exchangeConfirmModal").classList.remove("hidden");
+}
+
+function closeExchangeConfirm() {
+  pendingExchangeCardId = null;
+  qs("#exchangeConfirmModal")?.classList.add("hidden");
+}
+
+function confirmPendingExchange() {
+  const cardId = pendingExchangeCardId;
+  closeExchangeConfirm();
+  if (cardId) exchangeCardForPoints(cardId);
+}
+
 function exchangeCardForPoints(cardId) {
   const card = CARD_DB.get(cardId);
   if (!card) return;
@@ -3499,6 +3534,12 @@ function toggleLibraryVisibility() {
   renderDeckEditor();
 }
 
+function toggleExchangeVisibility() {
+  deckEditorExchangeHidden = !deckEditorExchangeHidden;
+  hideSkillPopup();
+  renderDeckEditor();
+}
+
 function toggleLibraryOwnedOnly() {
   deckEditorLibraryOwnedOnly = !deckEditorLibraryOwnedOnly;
   hideSkillPopup();
@@ -3521,15 +3562,26 @@ function toggleDeckEditorCardView(cardId, zone) {
 function updateDeckEditorToggleButtons() {
   const deckButton = qs("#toggleDeckListBtn");
   const libraryButton = qs("#toggleLibraryBtn");
+  const exchangeButton = qs("#toggleExchangeListBtn");
   const ownedOnlyButton = qs("#ownedOnlyLibraryBtn");
+  const deckPanel = qs("#deckPanel");
+  const libraryPanel = qs("#libraryPanel");
+  const exchangePanel = qs("#exchangePanel");
   deckButton.textContent = deckEditorDeckHidden ? "表示" : "非表示";
   deckButton.title = deckEditorDeckHidden ? "デッキ内カードを表示" : "デッキ内カードを非表示";
   deckButton.setAttribute("aria-pressed", String(deckEditorDeckHidden));
   deckButton.classList.toggle("is-on", deckEditorDeckHidden);
+  deckPanel?.classList.toggle("is-collapsed", deckEditorDeckHidden);
   libraryButton.textContent = deckEditorLibraryHidden ? "表示" : "非表示";
   libraryButton.title = deckEditorLibraryHidden ? "所持カード一覧を表示" : "所持カード一覧を非表示";
   libraryButton.setAttribute("aria-pressed", String(deckEditorLibraryHidden));
   libraryButton.classList.toggle("is-on", deckEditorLibraryHidden);
+  libraryPanel?.classList.toggle("is-collapsed", deckEditorLibraryHidden);
+  exchangeButton.textContent = deckEditorExchangeHidden ? "表示" : "非表示";
+  exchangeButton.title = deckEditorExchangeHidden ? "交換所を表示" : "交換所を非表示";
+  exchangeButton.setAttribute("aria-pressed", String(deckEditorExchangeHidden));
+  exchangeButton.classList.toggle("is-on", deckEditorExchangeHidden);
+  exchangePanel?.classList.toggle("is-collapsed", deckEditorExchangeHidden);
   ownedOnlyButton.textContent = deckEditorLibraryOwnedOnly ? "全カード" : "入手済みのみ";
   ownedOnlyButton.title = deckEditorLibraryOwnedOnly ? "全カードを表示" : "入手済みカードのみ表示";
   ownedOnlyButton.setAttribute("aria-pressed", String(deckEditorLibraryOwnedOnly));
@@ -3586,6 +3638,10 @@ function renderCardExchange(owned, collection, selected, savedDeckCounts) {
       <span>${escapeHtml(rates)}</span>
     </div>
   `;
+  if (deckEditorExchangeHidden) {
+    qs("#exchangeList").innerHTML = "";
+    return;
+  }
 
   const exchangeCards = [...ALL_CARDS]
     .sort(compareCards)
@@ -4488,7 +4544,13 @@ function bindEvents() {
   qs("#saveDeckBtn").addEventListener("click", saveDeckEditor);
   qs("#toggleDeckListBtn").addEventListener("click", toggleDeckListVisibility);
   qs("#toggleLibraryBtn").addEventListener("click", toggleLibraryVisibility);
+  qs("#toggleExchangeListBtn").addEventListener("click", toggleExchangeVisibility);
   qs("#ownedOnlyLibraryBtn").addEventListener("click", toggleLibraryOwnedOnly);
+  qs("#cancelExchangeBtn").addEventListener("click", closeExchangeConfirm);
+  qs("#confirmExchangeBtn").addEventListener("click", confirmPendingExchange);
+  qs("#exchangeConfirmModal").addEventListener("click", (event) => {
+    if (event.target.id === "exchangeConfirmModal") closeExchangeConfirm();
+  });
   qs("#cardLibrary").addEventListener("click", (event) => {
     const modeButton = event.target.closest(".deck-card-mode-btn[data-card-id]");
     if (modeButton) {
@@ -4512,7 +4574,7 @@ function bindEvents() {
   qs("#exchangeList").addEventListener("click", (event) => {
     const button = event.target.closest("button[data-exchange-action][data-card-id]");
     if (!button || button.disabled) return;
-    if (button.dataset.exchangeAction === "sell") exchangeCardForPoints(button.dataset.cardId);
+    if (button.dataset.exchangeAction === "sell") requestExchangeCardForPoints(button.dataset.cardId);
     if (button.dataset.exchangeAction === "buy") buyCardWithPoints(button.dataset.cardId);
   });
   [qs("#cardLibrary"), qs("#deckList")].forEach((deckArea) => {
@@ -4534,7 +4596,7 @@ function bindEvents() {
     const button = event.target.closest("button[data-exchange-action][data-card-id]");
     if (!button || button.disabled) return;
     event.preventDefault();
-    if (button.dataset.exchangeAction === "sell") exchangeCardForPoints(button.dataset.cardId);
+    if (button.dataset.exchangeAction === "sell") requestExchangeCardForPoints(button.dataset.cardId);
     if (button.dataset.exchangeAction === "buy") buyCardWithPoints(button.dataset.cardId);
   });
   [qs("#cardLibrary"), qs("#deckList")].forEach((deckArea) => {
