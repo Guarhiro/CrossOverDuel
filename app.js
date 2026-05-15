@@ -1352,6 +1352,10 @@ const FREEPLAY_MAX_WINS = 50;
 const REWARD_CARD_COUNT = 4;
 const BATTLE_BGM_STYLE_STORAGE_KEY = "crossover-duel-battle-bgm-style";
 const CARD_EXCHANGE_POINT_STORAGE_KEY = "crossover-duel-card-exchange-points";
+const SIGNED_EXPORT_FORMAT = "crossover-duel.signed-export";
+const SIGNED_EXPORT_VERSION = 1;
+const SIGNED_EXPORT_KDF_ITERATIONS = 150000;
+const SIGNED_EXPORT_MIN_KEY_LENGTH = 8;
 const STARTER_DECK_COUNTS = countBy(PLAYER_DECK, (id) => id);
 
 // AIデッキは高レベルでも低コスト札を残し、強さを「重さ」ではなくコンセプトで上げる。
@@ -3474,6 +3478,293 @@ function toggleBattleBgmStyle() {
   saveBattleBgmStyle(battleBgmStyle === "jazz" ? "standard" : "jazz");
 }
 
+function normalizeTransferCount(value, max = 999999) {
+  const number = Number.parseInt(value, 10);
+  if (!Number.isFinite(number)) return 0;
+  return Math.min(max, Math.max(0, number));
+}
+
+function normalizeCollectionForTransfer(collection) {
+  if (!collection || typeof collection !== "object" || Array.isArray(collection)) return {};
+  return Object.keys(collection)
+    .sort((a, b) => a.localeCompare(b, "en", { numeric: true }))
+    .reduce((normalized, id) => {
+      const count = normalizeTransferCount(collection[id]);
+      if (CARD_DB.has(id) && count > 0) normalized[id] = count;
+      return normalized;
+    }, {});
+}
+
+function ownedCollectionFromRewardCollection(collection) {
+  const owned = countBy(PLAYER_DECK, (id) => id);
+  Object.entries(collection).forEach(([id, count]) => {
+    if (CARD_DB.has(id)) owned[id] = (owned[id] || 0) + normalizeTransferCount(count);
+  });
+  return owned;
+}
+
+function normalizeTransferPayload(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("移行データの形式が正しくありません。");
+  }
+  const collection = normalizeCollectionForTransfer(payload.collection);
+  const playerDeckIds = Array.isArray(payload.playerDeckIds) ? payload.playerDeckIds.filter((id) => typeof id === "string") : [...PLAYER_DECK];
+  const owned = ownedCollectionFromRewardCollection(collection);
+  if (!isValidDeckIds(playerDeckIds, owned)) {
+    throw new Error("デッキ内容が現在のカードDBまたは所持カードと一致しません。");
+  }
+  return {
+    storageVersion: SIGNED_EXPORT_VERSION,
+    exportedFrom: typeof payload.exportedFrom === "string" ? payload.exportedFrom : "unknown",
+    collection,
+    exchangePoints: normalizeTransferCount(payload.exchangePoints),
+    freeplayWins: normalizeTransferCount(payload.freeplayWins),
+    playerDeckIds: [...playerDeckIds],
+    battleBgmStyle: payload.battleBgmStyle === "jazz" ? "jazz" : "standard",
+  };
+}
+
+function buildTransferPayload() {
+  return normalizeTransferPayload({
+    exportedFrom: "CROSSOVER DUEL",
+    collection: loadCollection(),
+    exchangePoints: loadExchangePoints(),
+    freeplayWins: loadFreeplayWins(),
+    playerDeckIds: loadPlayerDeckIds(),
+    battleBgmStyle: loadBattleBgmStyle(),
+  });
+}
+
+function stableJsonStringify(value) {
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map((item) => stableJsonStringify(item)).join(",")}]`;
+  return `{${Object.keys(value)
+    .filter((key) => value[key] !== undefined)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${stableJsonStringify(value[key])}`)
+    .join(",")}}`;
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+function base64ToBytes(value) {
+  const binary = atob(String(value || ""));
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
+function assertTransferCryptoAvailable() {
+  if (!window.crypto?.subtle || !window.crypto?.getRandomValues) {
+    throw new Error("このブラウザでは署名機能を利用できません。");
+  }
+}
+
+async function deriveTransferSigningKey(passphrase, salt, iterations) {
+  const encoder = new TextEncoder();
+  const baseKey = await window.crypto.subtle.importKey("raw", encoder.encode(passphrase), "PBKDF2", false, ["deriveKey"]);
+  return window.crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt,
+      iterations,
+      hash: "SHA-256",
+    },
+    baseKey,
+    {
+      name: "HMAC",
+      hash: "SHA-256",
+      length: 256,
+    },
+    false,
+    ["sign", "verify"],
+  );
+}
+
+async function signTransferObject(unsignedPackage, passphrase) {
+  const salt = base64ToBytes(unsignedPackage.kdf.salt);
+  const iterations = normalizeTransferCount(unsignedPackage.kdf.iterations, 1000000);
+  const key = await deriveTransferSigningKey(passphrase, salt, iterations);
+  const data = new TextEncoder().encode(stableJsonStringify(unsignedPackage));
+  const signature = await window.crypto.subtle.sign("HMAC", key, data);
+  return bytesToBase64(new Uint8Array(signature));
+}
+
+async function verifyTransferObject(packageData, passphrase) {
+  if (!packageData || typeof packageData !== "object" || Array.isArray(packageData)) {
+    throw new Error("移行データの形式が正しくありません。");
+  }
+  if (packageData.format !== SIGNED_EXPORT_FORMAT || packageData.version !== SIGNED_EXPORT_VERSION) {
+    throw new Error("対応していない移行データです。");
+  }
+  if (packageData.algorithm !== "HMAC-SHA-256" || packageData.kdf?.name !== "PBKDF2") {
+    throw new Error("署名方式が一致しません。");
+  }
+  const signature = base64ToBytes(packageData.signature);
+  const unsignedPackage = { ...packageData };
+  delete unsignedPackage.signature;
+  const salt = base64ToBytes(unsignedPackage.kdf.salt);
+  const iterations = normalizeTransferCount(unsignedPackage.kdf.iterations, 1000000);
+  const key = await deriveTransferSigningKey(passphrase, salt, iterations);
+  const data = new TextEncoder().encode(stableJsonStringify(unsignedPackage));
+  const verified = await window.crypto.subtle.verify("HMAC", key, signature, data);
+  if (!verified) throw new Error("署名が一致しません。ファイルまたは署名キーが違います。");
+  return normalizeTransferPayload(packageData.payload);
+}
+
+async function createCardCatalogHash() {
+  const catalog = ALL_CARDS.map((card) => ({
+    id: card.id,
+    name: card.name,
+    rarity: card.rarity,
+    kind: card.kind,
+  }));
+  const digest = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(stableJsonStringify(catalog)));
+  return bytesToBase64(new Uint8Array(digest));
+}
+
+async function createSignedTransferPackage(passphrase) {
+  assertTransferCryptoAvailable();
+  const salt = new Uint8Array(16);
+  window.crypto.getRandomValues(salt);
+  const unsignedPackage = {
+    format: SIGNED_EXPORT_FORMAT,
+    version: SIGNED_EXPORT_VERSION,
+    exportedAt: new Date().toISOString(),
+    app: {
+      name: "CROSSOVER DUEL",
+      cardCount: ALL_CARDS.length,
+      cardCatalogHash: await createCardCatalogHash(),
+    },
+    algorithm: "HMAC-SHA-256",
+    kdf: {
+      name: "PBKDF2",
+      hash: "SHA-256",
+      iterations: SIGNED_EXPORT_KDF_ITERATIONS,
+      salt: bytesToBase64(salt),
+    },
+    payload: buildTransferPayload(),
+  };
+  return {
+    ...unsignedPackage,
+    signature: await signTransferObject(unsignedPackage, passphrase),
+  };
+}
+
+function applyTransferPayload(payload) {
+  const normalized = normalizeTransferPayload(payload);
+  saveCollection(normalized.collection);
+  saveExchangePoints(normalized.exchangePoints);
+  saveFreeplayWins(normalized.freeplayWins);
+  if (!savePlayerDeckIds(normalized.playerDeckIds)) {
+    throw new Error("デッキを保存できませんでした。");
+  }
+  saveBattleBgmStyle(normalized.battleBgmStyle);
+  return normalized;
+}
+
+function refreshAfterTransferImport() {
+  battleBgmStyle = loadBattleBgmStyle();
+  updateBattleBgmStyleButton();
+  if (!qs("#deckEditor")?.classList.contains("hidden")) {
+    deckEditorIds = loadPlayerDeckIds();
+    renderDeckEditor("署名を検証してインポートしました。", true);
+  }
+  if (!qs("#galleryView")?.classList.contains("hidden")) renderGallery();
+  if (state) {
+    state.freeplayWins = loadFreeplayWins();
+    render();
+  } else {
+    renderCollectionSummary();
+  }
+}
+
+function requireTransferPassphrase() {
+  const passphrase = qs("#dataTransferPassphrase")?.value || "";
+  if (passphrase.length < SIGNED_EXPORT_MIN_KEY_LENGTH) {
+    throw new Error(`署名キーは${SIGNED_EXPORT_MIN_KEY_LENGTH}文字以上で入力してください。`);
+  }
+  return passphrase;
+}
+
+function setDataTransferStatus(message, kind = "") {
+  const status = qs("#dataTransferStatus");
+  if (!status) return;
+  status.textContent = message;
+  status.classList.toggle("is-error", kind === "error");
+  status.classList.toggle("is-ready", kind === "ready");
+}
+
+function setDataTransferBusy(busy) {
+  ["#exportSignedDataBtn", "#importSignedDataBtn"].forEach((selector) => {
+    const button = qs(selector);
+    if (button) button.disabled = busy;
+  });
+  qs("#dataTransferModal")?.setAttribute("aria-busy", String(busy));
+}
+
+function downloadTransferPackage(packageData) {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const blob = new Blob([JSON.stringify(packageData, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `crossover-duel-signed-export-${timestamp}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function handleSignedDataExport() {
+  setDataTransferBusy(true);
+  try {
+    const passphrase = requireTransferPassphrase();
+    const packageData = await createSignedTransferPackage(passphrase);
+    downloadTransferPackage(packageData);
+    setDataTransferStatus("署名付きデータを書き出しました。", "ready");
+  } catch (error) {
+    setDataTransferStatus(error.message || "エクスポートに失敗しました。", "error");
+  } finally {
+    setDataTransferBusy(false);
+  }
+}
+
+function handleSignedDataImportRequest() {
+  try {
+    assertTransferCryptoAvailable();
+    requireTransferPassphrase();
+    qs("#signedDataFileInput")?.click();
+  } catch (error) {
+    setDataTransferStatus(error.message || "インポートを開始できません。", "error");
+  }
+}
+
+async function handleSignedDataImportFile(event) {
+  const input = event.currentTarget;
+  const file = input.files?.[0];
+  if (!file) return;
+  setDataTransferBusy(true);
+  try {
+    const passphrase = requireTransferPassphrase();
+    const packageData = JSON.parse(await file.text());
+    const payload = await verifyTransferObject(packageData, passphrase);
+    if (!window.confirm("署名を検証したデータで現在の保存データを上書きします。")) return;
+    applyTransferPayload(payload);
+    refreshAfterTransferImport();
+    setDataTransferStatus("インポートしました。次のDUEL STARTからデッキと進行が反映されます。", "ready");
+  } catch (error) {
+    setDataTransferStatus(error.message || "インポートに失敗しました。", "error");
+  } finally {
+    input.value = "";
+    setDataTransferBusy(false);
+  }
+}
+
 function updateBattleBgmStyleButton() {
   const button = qs("#battleBgmStyleBtn");
   if (!button) return;
@@ -3600,6 +3891,16 @@ function openHowToPlay() {
 
 function closeHowToPlay() {
   qs("#howToPlayModal")?.classList.add("hidden");
+}
+
+function openDataTransfer() {
+  setDataTransferStatus("");
+  qs("#dataTransferModal")?.classList.remove("hidden");
+  qs("#dataTransferPassphrase")?.focus();
+}
+
+function closeDataTransfer() {
+  qs("#dataTransferModal")?.classList.add("hidden");
 }
 
 function ownedGalleryCards() {
@@ -4784,6 +5085,17 @@ function bindEvents() {
   qs("#howToPlayModal").addEventListener("click", (event) => {
     if (event.target.id === "howToPlayModal") closeHowToPlay();
   });
+  qs("#dataTransferBtn").addEventListener("click", () => {
+    audio.unlock();
+    openDataTransfer();
+  });
+  qs("#closeDataTransferBtn").addEventListener("click", closeDataTransfer);
+  qs("#dataTransferModal").addEventListener("click", (event) => {
+    if (event.target.id === "dataTransferModal") closeDataTransfer();
+  });
+  qs("#exportSignedDataBtn").addEventListener("click", handleSignedDataExport);
+  qs("#importSignedDataBtn").addEventListener("click", handleSignedDataImportRequest);
+  qs("#signedDataFileInput").addEventListener("change", handleSignedDataImportFile);
   qs("#deckEditBtn").addEventListener("click", () => {
     audio.unlock();
     openDeckEditor();
@@ -4942,6 +5254,7 @@ function bindEvents() {
     if (!qs("#levelSelectModal").classList.contains("hidden")) closeLevelSelect();
     if (!qs("#openingMovieModal").classList.contains("hidden")) closeOpeningMovie();
     if (!qs("#howToPlayModal").classList.contains("hidden")) closeHowToPlay();
+    if (!qs("#dataTransferModal").classList.contains("hidden")) closeDataTransfer();
     if (!qs("#galleryView").classList.contains("hidden")) closeGallery();
   });
   qs(".field-wrap").addEventListener("click", handleFieldClick);

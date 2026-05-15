@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=card-exchange-2" />
+    <link rel="stylesheet" href="styles.css?v=signed-transfer-1" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -22,6 +22,7 @@
           <button id="openingMovieBtn" class="title-menu-button">OPENING MOVIE</button>
           <button id="galleryBtn" class="title-menu-button">GALLERY</button>
           <button id="deckEditBtn" class="title-menu-button">DECK EDIT</button>
+          <button id="dataTransferBtn" class="title-menu-button">DATA TRANSFER</button>
         </div>
       </div>
     </section>
@@ -236,6 +237,30 @@
       </div>
     </div>
 
+    <div id="dataTransferModal" class="modal data-transfer-modal hidden" role="dialog" aria-modal="true" aria-label="データ移行">
+      <div class="modal-card data-transfer-card">
+        <div class="data-transfer-header">
+          <div>
+            <p class="eyebrow">Data Transfer</p>
+            <h2>署名付きデータ移行</h2>
+          </div>
+          <button id="closeDataTransferBtn" class="icon-button">Close</button>
+        </div>
+        <div class="data-transfer-body">
+          <label class="data-transfer-field">
+            <span>署名キー</span>
+            <input id="dataTransferPassphrase" type="password" autocomplete="new-password" spellcheck="false" />
+          </label>
+          <div class="data-transfer-actions">
+            <button id="exportSignedDataBtn" type="button">署名付きエクスポート</button>
+            <button id="importSignedDataBtn" type="button">署名検証インポート</button>
+            <input id="signedDataFileInput" type="file" accept="application/json,.json" hidden />
+          </div>
+          <p id="dataTransferStatus" class="data-transfer-status" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+
     <div id="choiceModal" class="modal hidden">
       <div class="modal-card">
         <p class="eyebrow">Support Effect</p>
@@ -268,6 +293,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=card-exchange-2"></script>
+    <script src="app.js?v=signed-transfer-1"></script>
   </body>
 </html>

@@ -1881,7 +1881,8 @@ body.title-active .app-shell {
 }
 
 .how-to-play-header,
-.level-select-header {
+.level-select-header,
+.data-transfer-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -1899,6 +1900,80 @@ body.title-active .app-shell {
   width: min(860px, 100%);
   max-height: calc(100vh - 36px);
   overflow: auto;
+}
+
+.data-transfer-modal {
+  z-index: 120;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.data-transfer-card {
+  width: min(560px, 100%);
+}
+
+.data-transfer-body {
+  display: grid;
+  gap: 12px;
+}
+
+.data-transfer-field {
+  display: grid;
+  gap: 7px;
+}
+
+.data-transfer-field span {
+  color: var(--gold);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.data-transfer-field input {
+  min-height: 44px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid rgba(246, 200, 95, 0.34);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(10, 13, 18, 0.82);
+  font: inherit;
+  font-weight: 800;
+}
+
+.data-transfer-field input:focus {
+  outline: 2px solid rgba(246, 200, 95, 0.34);
+  outline-offset: 2px;
+}
+
+.data-transfer-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.data-transfer-actions button {
+  min-height: 44px;
+  padding: 0 12px;
+  border-color: rgba(246, 200, 95, 0.34);
+  font-size: 0.88rem;
+}
+
+.data-transfer-status {
+  min-height: 22px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.data-transfer-status.is-ready {
+  color: var(--green);
+}
+
+.data-transfer-status.is-error {
+  color: var(--red);
 }
 
 .level-select-summary {
@@ -2271,6 +2346,10 @@ body.title-active .app-shell {
   }
 
   .how-to-play-body {
+    grid-template-columns: 1fr;
+  }
+
+  .data-transfer-actions {
     grid-template-columns: 1fr;
   }
 
