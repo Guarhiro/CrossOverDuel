@@ -486,7 +486,7 @@ const CHARACTERS = [
     def: 1,
     hp: 3,
     skill: "甲斐甲斐しい母性",
-    text: "毎ターン味方1体のHP2回復",
+    text: "毎ターン味方1体のHP1回復",
   },
   {
     kind: "character",
@@ -775,7 +775,7 @@ const CHARACTERS = [
     role: "AT",
     cost: 2,
     atk: 3,
-    def: 2,
+    def: 1,
     hp: 3,
     skill: "元騎士の意地",
     text: "スキルなし",
@@ -806,8 +806,8 @@ const CHARACTERS = [
     element: "炎",
     role: "GD",
     cost: 3,
-    atk: 3,
-    def: 4,
+    atk: 2,
+    def: 3,
     hp: 5,
     skill: "グングニル",
     text: "スキルなし。高い基礎戦闘力を持つ。【ガード】",
@@ -1185,7 +1185,7 @@ const SUPPORTS = [
     series: "氷焔に咲く薄雪草",
     element: "水",
     skill: "双剣",
-    text: "炎属性と水属性が場にいる時、相手前衛全体に3ダメージ",
+    text: "炎属性と水属性が場にいる時、相手前衛全体に2ダメージ",
   },
   {
     kind: "support",
@@ -1298,7 +1298,7 @@ const SUPPORTS = [
     rarity: "C",
     name: "鉄壁の修復",
     supportType: "インスタント",
-    cost: 2,
+    cost: 1,
     series: "共通",
     element: "地",
     skill: "修復",
@@ -2384,7 +2384,7 @@ function applyEndEffects(player) {
       case "C27": {
         if (consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) break;
         const target = mostDamagedAlly(player);
-        if (target) healCharacter(target, 2);
+        if (target) healCharacter(target, 1);
         break;
       }
       case "C29":
@@ -2701,7 +2701,7 @@ function resolveSupport(player, foe, card, target) {
       const hasFire = boardCards(player).some((ally) => ally.element === "炎");
       const hasWater = boardCards(player).some((ally) => ally.element === "水");
       if (hasFire && hasWater) {
-        [...foe.front].filter(Boolean).forEach((enemy) => damageCharacter(enemy, 3, player));
+        [...foe.front].filter(Boolean).forEach((enemy) => damageCharacter(enemy, 2, player));
         log("氷焔の双剣が相手前衛全体を斬る。", "effect");
       } else {
         log("炎と水が揃わず、双剣は不発。", "warn");
