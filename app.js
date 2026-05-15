@@ -387,7 +387,7 @@ const CHARACTERS = [
     def: 3,
     hp: 4,
     skill: "熱血実況",
-    text: "味方が攻撃するたびATK+1（最大+5）。壁兼火力。【ガード】",
+    text: "味方が攻撃するたびATK+1（最大+3）。壁兼サブ火力。【ガード】",
     tags: ["guard"],
   },
   {
@@ -2980,7 +2980,7 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
   boardCards(owner)
     .filter((ally) => ally.id === "C21")
     .forEach((te) => {
-      if ((te.heatStacks || 0) < 5) {
+      if ((te.heatStacks || 0) < 3) {
         te.heatStacks = (te.heatStacks || 0) + 1;
         buffAtk(te, 1);
       }
