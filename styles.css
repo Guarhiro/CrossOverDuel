@@ -1784,6 +1784,134 @@ body.title-active .app-shell {
   display: none;
 }
 
+.battle-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(246, 200, 95, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(246, 200, 95, 0.07) 1px, transparent 1px),
+    rgba(3, 5, 9, 0.9);
+  background-size: 32px 32px;
+  backdrop-filter: blur(12px);
+}
+
+.battle-intro-overlay.hidden {
+  display: none;
+}
+
+.battle-intro-overlay.is-leaving {
+  animation: introFadeOut 320ms ease forwards;
+}
+
+.battle-intro-copy,
+.coin-stage {
+  grid-area: 1 / 1;
+}
+
+.battle-intro-copy {
+  width: min(920px, calc(100vw - 48px));
+  text-align: center;
+  transition: opacity 360ms ease, transform 360ms ease, filter 360ms ease;
+}
+
+.battle-intro-overlay.is-coin-stage .battle-intro-copy {
+  opacity: 0;
+  transform: translateY(-16px);
+  filter: blur(3px);
+}
+
+.battle-intro-kicker {
+  margin: 0 0 18px;
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.battle-intro-line {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.6rem, 4.4vw, 4.4rem);
+  font-weight: 950;
+  line-height: 1.05;
+  text-wrap: balance;
+  text-shadow: 0 18px 44px rgba(0, 0, 0, 0.62), 0 0 30px rgba(246, 200, 95, 0.18);
+  animation: introLineIn 520ms cubic-bezier(0.2, 0.88, 0.24, 1) both;
+}
+
+.coin-stage {
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+  opacity: 0;
+  transform: translateY(18px) scale(0.94);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.battle-intro-overlay.is-coin-stage .coin-stage {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.intro-coin {
+  width: min(190px, 44vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #1c1402;
+  background-image: url("assets/ui/duel-coin-sheet.png");
+  background-position: 3% 49%;
+  background-size: 214% auto;
+  box-shadow: 0 28px 56px rgba(0, 0, 0, 0.48), 0 0 36px rgba(246, 200, 95, 0.22);
+  transform-style: preserve-3d;
+}
+
+.intro-coin span {
+  display: grid;
+  place-items: center;
+  width: 54%;
+  aspect-ratio: 1;
+  border: 2px solid rgba(97, 60, 6, 0.32);
+  border-radius: 50%;
+  color: rgba(58, 34, 7, 0.86);
+  background: rgba(255, 246, 203, 0.24);
+  font-size: clamp(1.8rem, 7vw, 3.1rem);
+  font-weight: 950;
+  opacity: 0;
+}
+
+.intro-coin.is-tossing {
+  animation: coinToss 1180ms cubic-bezier(0.18, 0.88, 0.22, 1) forwards;
+}
+
+.intro-coin.is-tails {
+  color: #eef5ff;
+  background-position: 97% 49%;
+  box-shadow: 0 28px 56px rgba(0, 0, 0, 0.48), 0 0 36px rgba(88, 166, 255, 0.22);
+}
+
+.battle-intro-result {
+  min-height: 28px;
+  margin: 0;
+  color: var(--gold);
+  font-size: clamp(0.96rem, 2.4vw, 1.24rem);
+  font-weight: 950;
+  letter-spacing: 0;
+  text-align: center;
+  opacity: 0.78;
+}
+
+.battle-intro-result.is-visible {
+  animation: resultFlash 420ms ease both;
+}
+
 .skill-popup h3 {
   margin: 0 0 6px;
   font-size: 0.94rem;
@@ -2241,6 +2369,59 @@ body.title-active .app-shell {
   }
   50% {
     box-shadow: 0 0 38px rgba(246, 200, 95, 0.42);
+  }
+}
+
+@keyframes introLineIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.98);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes introFadeOut {
+  to {
+    opacity: 0;
+    transform: scale(1.025);
+  }
+}
+
+@keyframes coinToss {
+  0% {
+    transform: translateY(48px) rotateX(0deg) rotateY(0deg) scale(0.76);
+  }
+  36% {
+    transform: translateY(-112px) rotateX(780deg) rotateY(540deg) scale(1.06);
+  }
+  72% {
+    transform: translateY(8px) rotateX(1680deg) rotateY(1180deg) scale(0.98);
+  }
+  100% {
+    transform: translateY(0) rotateX(2160deg) rotateY(1440deg) scale(1);
+  }
+}
+
+@keyframes resultFlash {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    text-shadow: 0 0 0 rgba(246, 200, 95, 0);
+  }
+  42% {
+    opacity: 1;
+    transform: translateY(0);
+    text-shadow: 0 0 28px rgba(246, 200, 95, 0.5);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    text-shadow: 0 0 12px rgba(246, 200, 95, 0.22);
   }
 }
 

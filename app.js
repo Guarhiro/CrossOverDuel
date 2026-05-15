@@ -1357,6 +1357,37 @@ const SIGNED_EXPORT_VERSION = 1;
 const SIGNED_EXPORT_KDF_ITERATIONS = 150000;
 const SIGNED_EXPORT_MIN_KEY_LENGTH = 8;
 const STARTER_DECK_COUNTS = countBy(PLAYER_DECK, (id) => id);
+const BATTLE_INTRO_LINES = [
+  "Every story converges on a single battlefield.",
+  "Creator — stake your world.",
+  "Fifteen worlds collide. Only the victor's tale survives.",
+  "The characters you created now bare their fangs at you.",
+  "They know — they were written.",
+  "One author, one justice. Settle it.",
+  "— Summoning, initiated.",
+  "Pit your stories to the death.",
+  "All timelines, battle stations.",
+  "Fates that were never meant to cross now breathe upon the cards.",
+  "Someone's ending was someone else's beginning.",
+  "A nameless god set the pieces.",
+  "Your worlds. Their war.",
+  "Deal your legacy.",
+  "Every card was once someone's whole world.",
+];
+const FIRST_PLAYER_RESULTS = {
+  player: {
+    side: "表",
+    face: "表",
+    label: "PLAYER FIRST",
+    logName: "プレイヤー",
+  },
+  ai: {
+    side: "裏",
+    face: "裏",
+    label: "AI FIRST",
+    logName: "AI",
+  },
+};
 
 // AIデッキは高レベルでも低コスト札を残し、強さを「重さ」ではなくコンセプトで上げる。
 // Update this staged list when new cards are added to the game.
@@ -1451,6 +1482,7 @@ let battleBgmStyle = "standard";
 let gallerySelectedCardId = null;
 let galleryMusicTrack = "title";
 let lastHandTap = { index: null, instanceId: null, at: 0 };
+let battleIntroRunId = 0;
 
 const TITLE_CARD_COUNT = 10;
 const HAND_DOUBLE_TAP_MS = 420;
@@ -1812,6 +1844,15 @@ const audio = {
         this.rarityLayer(detail.rarity, 0);
         if (detail.rarity === "UR") this.tone(196, 0.32, "triangle", 0.04, 0, 392);
         break;
+      case "coin":
+        this.tone(784, 0.08, "triangle", 0.032, 0, 1175);
+        this.tone(1046, 0.1, "triangle", 0.028, 0.08, 1568);
+        this.noise(0.07, 0.018, 0.03, "highpass", 2100, 0.8);
+        break;
+      case "coinResult":
+        this.tone(392, 0.12, "triangle", 0.042, 0, 523);
+        this.tone(784, 0.18, "sine", 0.034, 0.09);
+        break;
       case "win":
         [523, 659, 784, 1046].forEach((freq, index) => this.tone(freq, 0.18, "triangle", 0.048, index * 0.075));
         break;
@@ -1957,26 +1998,29 @@ function createInstance(base, ownerKey = null) {
   return card;
 }
 
-function startNewGame(aiProfileOverride = null) {
+async function startNewGame(aiProfileOverride = null) {
   hideSkillPopup();
   closeDeckEditor();
   closeLevelSelect();
   hideTitleScreen();
+  const introRunId = ++battleIntroRunId;
   nextInstanceId = 1;
   const freeplayWins = loadFreeplayWins();
   const aiProfile = aiProfileOverride || aiProfileForWins(freeplayWins);
+  const firstPlayerKey = Math.random() < 0.5 ? "player" : "ai";
   state = {
     player: createPlayer("player", "Player", loadPlayerDeckIds()),
     ai: createPlayer("ai", `AI Rival Lv.${aiProfile.level}`, aiProfile.deck),
     aiProfile,
     freeplayWins,
-    current: "player",
-    phase: "main",
+    firstPlayerKey,
+    current: firstPlayerKey,
+    phase: "intro",
     turnNumber: 1,
     selectedHandIndex: null,
     selectedField: null,
     selectedAttackerId: null,
-    busy: false,
+    busy: true,
     gameOver: false,
     rewardsGiven: false,
     pendingDeckChoice: null,
@@ -1992,8 +2036,60 @@ function startNewGame(aiProfileOverride = null) {
 
   log("デュエル開始。初期手札5枚、LP20。", "system");
   log(`AI Lv.${aiProfile.level}「${aiProfile.name}」が参戦。フリープレイ勝利数 ${freeplayWins}/${FREEPLAY_MAX_WINS}。`, "system");
+  render();
+  await playBattleIntro(firstPlayerKey, introRunId);
+  if (!state || introRunId !== battleIntroRunId || state.gameOver) return;
+  log(`コイントスは${FIRST_PLAYER_RESULTS[firstPlayerKey].side}。${FIRST_PLAYER_RESULTS[firstPlayerKey].logName}が先攻。`, "phase");
+  if (firstPlayerKey === "ai") {
+    await runAiTurn();
+    return;
+  }
+  state.busy = false;
   startTurn(state.player);
   render();
+}
+
+async function playBattleIntro(firstPlayerKey, runId) {
+  const overlay = qs("#battleIntroOverlay");
+  const line = qs("#battleIntroLine");
+  const coin = qs("#battleIntroCoin");
+  const coinFace = qs("#battleIntroCoinFace");
+  const result = qs("#battleIntroResult");
+  if (!overlay || !line || !coin || !coinFace || !result) return;
+  const firstPlayer = FIRST_PLAYER_RESULTS[firstPlayerKey] || FIRST_PLAYER_RESULTS.player;
+  overlay.className = "battle-intro-overlay";
+  coin.className = "intro-coin";
+  line.textContent = randomItem(BATTLE_INTRO_LINES);
+  coinFace.textContent = "?";
+  result.textContent = "COIN TOSS";
+  audio.sfx("phase");
+
+  await sleep(1650);
+  if (!isBattleIntroCurrent(runId)) return;
+  overlay.classList.add("is-coin-stage");
+  coin.classList.add("is-tossing");
+  audio.sfx("coin");
+
+  await sleep(1180);
+  if (!isBattleIntroCurrent(runId)) return;
+  coin.classList.remove("is-tossing");
+  coin.classList.add(firstPlayerKey === "ai" ? "is-tails" : "is-heads");
+  coinFace.textContent = firstPlayer.face;
+  result.textContent = `${firstPlayer.side} / ${firstPlayer.label}`;
+  result.classList.add("is-visible");
+  audio.sfx("coinResult");
+
+  await sleep(1250);
+  if (!isBattleIntroCurrent(runId)) return;
+  overlay.classList.add("is-leaving");
+
+  await sleep(320);
+  if (!isBattleIntroCurrent(runId)) return;
+  overlay.className = "battle-intro-overlay hidden";
+}
+
+function isBattleIntroCurrent(runId) {
+  return state && runId === battleIntroRunId;
 }
 
 function startTurn(player) {
@@ -4645,16 +4741,20 @@ function renderControls() {
   qs("#battleBtn").disabled = !isPlayerMain || state.busy;
   qs("#endTurnBtn").disabled = !endTurnAvailable;
   qs("#endTurnBtn").setAttribute("aria-disabled", String(!endTurnAvailable));
-  qs("#turnLabel").textContent = `Turn ${state.turnNumber}`;
-  qs("#phaseLabel").textContent = state.phase === "gameover" ? "Game Over" : state.phase === "battle" ? "Battle" : "Main";
-  qs("#phaseBanner").textContent =
+  const phaseLabel = state.phase === "gameover" ? "Game Over" : state.phase === "intro" ? "Intro" : state.phase === "battle" ? "Battle" : "Main";
+  const phaseBanner =
     state.phase === "gameover"
       ? "GAME SET"
-      : state.current === "player"
-        ? state.phase === "battle"
-          ? "YOUR BATTLE PHASE"
-          : "YOUR MAIN PHASE"
-        : "AI TURN";
+      : state.phase === "intro"
+        ? "COIN TOSS"
+        : state.current === "player"
+          ? state.phase === "battle"
+            ? "YOUR BATTLE PHASE"
+            : "YOUR MAIN PHASE"
+          : "AI TURN";
+  qs("#turnLabel").textContent = `Turn ${state.turnNumber}`;
+  qs("#phaseLabel").textContent = phaseLabel;
+  qs("#phaseBanner").textContent = phaseBanner;
   qs("#hintText").textContent = hintText();
 }
 
@@ -4670,6 +4770,7 @@ function renderCollectionSummary() {
 
 function hintText() {
   if (state.gameOver) return `ゲーム終了。報酬${REWARD_CARD_COUNT}枚を獲得しています。`;
+  if (state.phase === "intro") return "コイントスで先攻を決定中です。";
   if (state.current === "ai") return "AIが思考中です。";
   const pendingSupport = getPendingSupportCard();
   if (pendingSupport) return `${pendingSupport.name} の対象を選択してください。`;

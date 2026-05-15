@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=signed-transfer-1" />
+    <link rel="stylesheet" href="styles.css?v=coin-sheet-1" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -168,6 +168,19 @@
 
     <div id="skillPopup" class="skill-popup hidden" role="status" aria-live="polite"></div>
 
+    <div id="battleIntroOverlay" class="battle-intro-overlay hidden" aria-live="polite" aria-label="バトル開始演出">
+      <div class="battle-intro-copy">
+        <p class="battle-intro-kicker">CROSSOVER DUEL</p>
+        <p id="battleIntroLine" class="battle-intro-line"></p>
+      </div>
+      <div class="coin-stage" aria-label="コイントス">
+        <div id="battleIntroCoin" class="intro-coin" aria-hidden="true">
+          <span id="battleIntroCoinFace">?</span>
+        </div>
+        <p id="battleIntroResult" class="battle-intro-result">COIN TOSS</p>
+      </div>
+    </div>
+
     <div id="levelSelectModal" class="modal level-select-modal hidden" role="dialog" aria-modal="true" aria-label="対戦レベル選択">
       <div class="modal-card level-select-card">
         <div class="level-select-header">
@@ -215,7 +228,7 @@
           </section>
           <section>
             <h3>ターンの流れ</h3>
-            <p>自分のターン開始時にエネルギーが増え、1枚ドローします。メインで配置やサポートを使い、バトルで前衛が攻撃します。</p>
+            <p>バトル開始時のコイントスで先攻を決定します。自分のターン開始時にエネルギーが増え、1枚ドローします。メインで配置やサポートを使い、バトルで前衛が攻撃します。</p>
           </section>
           <section>
             <h3>カード配置</h3>
@@ -293,6 +306,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=signed-transfer-1"></script>
+    <script src="app.js?v=coin-sheet-1"></script>
   </body>
 </html>
