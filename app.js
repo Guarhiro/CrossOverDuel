@@ -39,6 +39,7 @@ const CARD_POINT_COSTS = {
 
 const MAX_LP = 20;
 const C48_CLAIRE_BOOST = 3;
+const ARCADIA_SERIES = "アルカディアパレス";
 const ATTACK_IMPACT_DELAY = 390;
 const IMPACT_SETTLE_DELAY = 460;
 const SUMMON_OUT_DELAY = 260;
@@ -201,7 +202,7 @@ const CHARACTERS = [
     no: "#10",
     rarity: "SR",
     name: "ハナ",
-    series: "P",
+    series: ARCADIA_SERIES,
     element: "地",
     role: "SP",
     cost: 4,
@@ -705,7 +706,7 @@ const CHARACTERS = [
     no: "#41",
     rarity: "C",
     name: "リン",
-    series: "P",
+    series: ARCADIA_SERIES,
     element: "水",
     role: "AT",
     cost: 2,
@@ -942,6 +943,168 @@ const CHARACTERS = [
     skill: "切込隊長",
     text: "配置ターンに攻撃可能。HPダメージを与えた時、自身ATK+1（最大+2）",
     haste: true,
+  },
+  {
+    kind: "character",
+    id: "C56",
+    no: "#56",
+    rarity: "R",
+    name: "リノン",
+    series: ARCADIA_SERIES,
+    element: "炎",
+    role: "AT",
+    cost: 3,
+    atk: 4,
+    def: 1,
+    hp: 4,
+    skill: "スプリントガード",
+    text: "配置ターンに攻撃可能。攻撃後、味方1体の状態異常を1つ解除",
+    haste: true,
+  },
+  {
+    kind: "character",
+    id: "C57",
+    no: "#57",
+    rarity: "SR",
+    name: "雪乃",
+    series: ARCADIA_SERIES,
+    element: "水",
+    role: "SP",
+    cost: 4,
+    atk: 2,
+    def: 3,
+    hp: 5,
+    skill: "筆頭株主の采配",
+    text: "配置時、手札1枚をデッキ下に戻して1ドロー。アルカディアパレス3体以上なら味方全体DEF+1",
+  },
+  {
+    kind: "character",
+    id: "C58",
+    no: "#58",
+    rarity: "C",
+    name: "ミム",
+    series: ARCADIA_SERIES,
+    element: "風",
+    role: "ST",
+    cost: 1,
+    atk: 1,
+    def: 0,
+    hp: 3,
+    skill: "トレンド発信",
+    text: "配置時、1ドローして手札1枚をデッキ下に戻す",
+  },
+  {
+    kind: "character",
+    id: "C59",
+    no: "#59",
+    rarity: "SR",
+    name: "キラ",
+    series: ARCADIA_SERIES,
+    element: "炎",
+    role: "ST",
+    cost: 3,
+    atk: 2,
+    def: 1,
+    hp: 4,
+    skill: "スターライトステージ",
+    text: "配置時、味方全体ATK+1。アルカディアパレス3体以上なら相手前衛全体ATK-2（1ターン）",
+  },
+  {
+    kind: "character",
+    id: "C60",
+    no: "#60",
+    rarity: "R",
+    name: "ルル",
+    series: ARCADIA_SERIES,
+    element: "無",
+    role: "SP",
+    cost: 2,
+    atk: 1,
+    def: 1,
+    hp: 3,
+    skill: "メルヘン予言",
+    text: "配置時、相手手札1枚を確認し、相手ランダム1体のスキルを1ターン封印",
+  },
+  {
+    kind: "character",
+    id: "C61",
+    no: "#61",
+    rarity: "UR",
+    name: "エレーナ",
+    series: ARCADIA_SERIES,
+    element: "水",
+    role: "SP",
+    cost: 5,
+    atk: 3,
+    def: 3,
+    hp: 6,
+    skill: "完全耐性",
+    text: "配置時、相手のサポーター/サポート効果を1回無効化する構え。自身は状態異常を受けない",
+    statusImmune: true,
+  },
+  {
+    kind: "character",
+    id: "C62",
+    no: "#62",
+    rarity: "R",
+    name: "サクラ",
+    series: ARCADIA_SERIES,
+    element: "地",
+    role: "ST",
+    cost: 2,
+    atk: 1,
+    def: 2,
+    hp: 4,
+    skill: "幼馴染の祈り",
+    text: "毎ターン終了時、味方1体HP1回復。ハナが場にいるなら回復量+1",
+  },
+  {
+    kind: "character",
+    id: "C63",
+    no: "#63",
+    rarity: "SR",
+    name: "イザベラ",
+    series: ARCADIA_SERIES,
+    element: "地",
+    role: "SP",
+    cost: 4,
+    atk: 3,
+    def: 1,
+    hp: 4,
+    skill: "裏交渉",
+    text: "配置時、相手後衛1体のDEFを0にする。場にいる間、相手サポートコスト+1",
+  },
+  {
+    kind: "character",
+    id: "C64",
+    no: "#64",
+    rarity: "SR",
+    name: "シオン",
+    series: ARCADIA_SERIES,
+    element: "炎",
+    role: "AT",
+    cost: 4,
+    atk: 5,
+    def: 0,
+    hp: 4,
+    skill: "独占衝動",
+    text: "相手を撤退させた時、1ターンに1回だけ追加攻撃可。自ターン終了時、自身に1ダメージ",
+  },
+  {
+    kind: "character",
+    id: "C65",
+    no: "#65",
+    rarity: "UR",
+    name: "マリア",
+    series: ARCADIA_SERIES,
+    element: "風",
+    role: "ST",
+    cost: 5,
+    atk: 2,
+    def: 4,
+    hp: 7,
+    skill: "パレス統括",
+    text: "配置時、味方全体最大HP+1/DEF+1。アルカディアパレス4体以上なら味方撤退時1回だけ手札に戻す",
   },
 ];
 
@@ -1848,6 +2011,7 @@ function startTurn(player) {
   boardCards(player).forEach((card) => {
     card.attacked = false;
     card.extraAttackUsed = false;
+    card.sionReattackUsed = false;
   });
 
   audio.sfx("phase");
@@ -1971,8 +2135,9 @@ function applySummonEffects(card, player, lane) {
       const target = randomItem(boardCards(foe));
       if (target) {
         buffAtk(target, -3 * scale);
-        target.status.bind = Math.max(target.status.bind, 2);
-        log(`${target.name} は束縛され、ATK-3。`, "effect");
+        if (setStatus(target, "bind", Math.max(target.status.bind, 2))) {
+          log(`${target.name} は束縛され、ATK-3。`, "effect");
+        }
       }
       break;
     }
@@ -2046,8 +2211,9 @@ function applySummonEffects(card, player, lane) {
     case "C42": {
       const target = boardCards(foe).find((enemy) => enemy.role === "ST");
       if (target) {
-        target.status.silenced = Math.max(target.status.silenced, 1);
-        log(`${target.name} のスキルを1ターン封印。`, "effect");
+        if (setStatus(target, "silenced", Math.max(target.status.silenced, 1))) {
+          log(`${target.name} のスキルを1ターン封印。`, "effect");
+        }
       }
       break;
     }
@@ -2074,6 +2240,54 @@ function applySummonEffects(card, player, lane) {
       break;
     case "C53":
       moveEnemyBacklineToFront(player, foe);
+      break;
+    case "C57":
+      cycleHandThroughDeck(player);
+      if (arcadiaCount(player) >= 3) {
+        boardCards(player).forEach((ally) => buffDef(ally, 1 * scale));
+        log("雪乃の采配でアルカディアパレスの守りが固まった。", "effect");
+      }
+      break;
+    case "C58":
+      drawCard(player);
+      cycleHandThroughDeck(player);
+      break;
+    case "C59":
+      boardCards(player).forEach((ally) => buffAtk(ally, 1 * scale));
+      if (arcadiaCount(player) >= 3) {
+        foe.front.filter(Boolean).forEach((enemy) => {
+          enemy.tempAtk -= 2 * scale;
+        });
+        log("キラのステージで相手前衛の勢いを削いだ。", "effect");
+      }
+      break;
+    case "C60": {
+      revealRandomHand(foe, player);
+      const target = randomItem(boardCards(foe));
+      if (target && setStatus(target, "silenced", Math.max(target.status.silenced, 1))) {
+        log(`${target.name} のスキルを1ターン封印。`, "effect");
+      }
+      break;
+    }
+    case "C61":
+      player.effectNullify += 1;
+      log(`${card.name} が監視を開始。次のサポーター/サポート効果を1回無効化。`, "effect");
+      break;
+    case "C63": {
+      const target = foe.back.filter(Boolean).sort((a, b) => effectiveDef(b) - effectiveDef(a))[0];
+      if (target) {
+        target.currentDef = 0;
+        target.tempDef = 0;
+        log(`${card.name} の裏交渉で${target.name}のDEFを0にした。`, "effect");
+      }
+      break;
+    }
+    case "C65":
+      boardCards(player).forEach((ally) => {
+        buffMaxHp(ally, 1 * scale);
+        buffDef(ally, 1 * scale);
+      });
+      log("マリアがパレス全体を統括し、味方を補強した。", "effect");
       break;
     default:
       break;
@@ -2181,6 +2395,17 @@ function applyEndEffects(player) {
         if (fiona) healDef(fiona, 1);
         break;
       }
+      case "C62": {
+        if (consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) break;
+        const target = mostDamagedAlly(player);
+        const amount = hasBoardCard(player, "C10") ? 2 : 1;
+        if (target) healCharacter(target, amount);
+        break;
+      }
+      case "C64":
+        damageCharacter(card, 1, opponentOf(player), { ignoreDef: true, silentDamage: true });
+        log(`${card.name} は独占衝動で自傷した。`, "effect");
+        break;
       default:
         break;
     }
@@ -2243,6 +2468,39 @@ function consumeEffectNullify(card, player, label) {
   foe.effectNullify -= 1;
   audio.sfx("counter");
   log(`${foe.name} のイレーネが${label}を無効化。`, "effect");
+  return true;
+}
+
+function setStatus(card, key, value) {
+  if (!card?.status || !(key in card.status)) return false;
+  if (card.statusImmune) {
+    log(`${card.name} は状態異常を受けない。`, "effect");
+    return false;
+  }
+  card.status[key] = value;
+  return true;
+}
+
+function arcadiaCount(player, extraCard = null) {
+  return boardCards(player).filter((ally) => ally.series === ARCADIA_SERIES).length + (extraCard?.series === ARCADIA_SERIES ? 1 : 0);
+}
+
+function cycleHandThroughDeck(player) {
+  if (!player.hand.length || !player.deck.length) return;
+  const index = Math.floor(Math.random() * player.hand.length);
+  const [sent] = player.hand.splice(index, 1);
+  player.deck.push(sent);
+  const drawn = drawCard(player);
+  if (drawn) log(`${player.name} は手札を整えた。`, "effect");
+}
+
+function clearOneStatusFromAlly(player) {
+  const target = boardCards(player).find((ally) => Object.values(ally.status || {}).some((value) => value > 0));
+  if (!target) return false;
+  const key = ["stun", "guardOff", "bind", "silenced"].find((statusKey) => target.status[statusKey] > 0);
+  if (!key) return false;
+  target.status[key] = 0;
+  log(`${target.name} の状態異常を解除。`, "effect");
   return true;
 }
 
@@ -2326,6 +2584,17 @@ function triggerSerenaRetreatHeal(owner, fallenCard) {
   if (!serena) return;
   if (consumeEffectNullify(serena, owner, "セレナの撤退時回復")) return;
   healLp(owner, 1, "セレナ");
+}
+
+function triggerMariaArcadiaReturn(owner, fallenCard) {
+  if (fallenCard.id === "C65" || fallenCard.series !== ARCADIA_SERIES) return false;
+  const maria = boardCards(owner).find((ally) => ally.id === "C65" && !ally.mariaReturnUsed && ally.status.silenced <= 0);
+  if (!maria || arcadiaCount(owner, fallenCard) < 4) return false;
+  if (consumeEffectNullify(maria, owner, "マリアの撤退保護")) return false;
+  maria.mariaReturnUsed = true;
+  owner.hand.push(createInstance(CARD_DB.get(fallenCard.id), owner.key));
+  log(`マリアの統括で ${fallenCard.name} が手札に戻った。`, "effect");
+  return true;
 }
 
 function useSelectedSupport() {
@@ -2412,9 +2681,9 @@ function resolveSupport(player, foe, card, target) {
     }
     case "S03":
       if (target) {
-        target.status.stun = Math.max(target.status.stun, 1);
-        target.status.guardOff = Math.max(target.status.guardOff, 1);
-        log(`${target.name} は1ターン行動不能。ガードも停止。`, "effect");
+        const stunned = setStatus(target, "stun", Math.max(target.status.stun, 1));
+        const guardOff = setStatus(target, "guardOff", Math.max(target.status.guardOff, 1));
+        if (stunned || guardOff) log(`${target.name} は1ターン行動不能。ガードも停止。`, "effect");
       }
       break;
     case "S04":
@@ -2729,6 +2998,10 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
     log("ヴァネッサが切り込みを成功させ、ATK+1。", "effect");
   }
 
+  if (attacker.id === "C56") {
+    clearOneStatusFromAlly(owner);
+  }
+
   if (killed) {
     if (attacker.id === "C46" && effects.atomicFlareActive) {
       const blastTargets = foe.back.filter(Boolean);
@@ -2744,6 +3017,11 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
         damageLp(foe, 5, attacker.name);
         log("3体撃破。伝説の英雄が相手全体へ5ダメージ。", "effect");
       }
+    }
+    if (attacker.id === "C64" && !attacker.sionReattackUsed) {
+      attacker.sionReattackUsed = true;
+      attacker.attacked = false;
+      log("シオンは排除に成功し、追加攻撃可能。", "effect");
     }
     boardCards(owner)
       .filter((ally) => ally.id === "C10")
@@ -2818,7 +3096,8 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
 
   triggerSerenaRetreatHeal(owner, card);
 
-  if (owner.reviveTrap > 0) {
+  const returnedByMaria = triggerMariaArcadiaReturn(owner, card);
+  if (!returnedByMaria && owner.reviveTrap > 0) {
     owner.reviveTrap -= 1;
     owner.hand.push(createInstance(CARD_DB.get(card.id), owner.key));
     log(`すれ違いの再会で ${card.name} が手札に戻った。`, "effect");
@@ -2840,8 +3119,7 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
     }
     case "C31": {
       const target = randomItem(boardCards(foe));
-      if (target) {
-        target.status.stun = Math.max(target.status.stun, 1);
+      if (target && setStatus(target, "stun", Math.max(target.status.stun, 1))) {
         log(`${target.name} は1ターン行動不能。`, "effect");
       }
       break;
@@ -2962,7 +3240,7 @@ function effectiveCost(card, player) {
   let cost = card.cost || 0;
   if (card.costReduction) cost -= card.costReduction;
   if (card.kind === "character" && player?.bannerTurns > 0) cost -= 1;
-  if (card.kind === "support" && foe && hasBoardCard(foe, "C23")) cost += 1;
+  if (card.kind === "support" && foe && (hasBoardCard(foe, "C23") || hasBoardCard(foe, "C63"))) cost += 1;
   return Math.max(0, cost);
 }
 
