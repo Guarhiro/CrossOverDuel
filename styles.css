@@ -2423,6 +2423,10 @@ body.title-active .app-shell {
   min-height: 230px;
 }
 
+.reward-cards .game-card.has-card-art {
+  --card-position: center 18%;
+}
+
 @keyframes shake {
   0%,
   100% {
