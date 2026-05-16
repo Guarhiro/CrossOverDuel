@@ -4334,10 +4334,11 @@ function renderExchangeCard(card, owned, collection, selected, savedDeckCounts, 
   const cost = cardPointCost(card);
   const canBuy = points >= cost;
   const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
+  const elementLine = `${card.element || "無"}属性`;
   return `
     <div class="deck-exchange-card" style="--element:${color}; --card-image:url('assets/cards/${card.id}.png')" data-card-id="${card.id}">
       <div class="exchange-card-main">
-        <span class="exchange-card-kicker">${escapeHtml(card.no)} ${card.rarity}</span>
+        <span class="exchange-card-kicker">${escapeHtml(card.no)} ${card.rarity} / ${escapeHtml(elementLine)}</span>
         <strong>${escapeHtml(card.name)}</strong>
         <small>所持 ${ownedCount} / デッキ ${usedCount} / 追加分 ${collectionCount}</small>
       </div>
@@ -4358,6 +4359,7 @@ function compareCards(a, b) {
 function renderDeckEditorCard(card, count, meta, disabled, zone) {
   const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
   const image = `assets/cards/${card.id}.png`;
+  const elementLine = `${card.element || "無"}属性`;
   const typeLine = card.kind === "support" ? card.supportType : ROLE_LABELS[card.role];
   const statLine =
     card.kind === "support"
@@ -4373,7 +4375,7 @@ function renderDeckEditorCard(card, count, meta, disabled, zone) {
       <span class="deck-edit-card-inner">
         <span class="deck-card-top">
           <span>${escapeHtml(card.no)} ${card.rarity}</span>
-          <span>${escapeHtml(typeLine)}</span>
+          <span>${escapeHtml(elementLine)} / ${escapeHtml(typeLine)}</span>
           <button class="deck-card-mode-btn" type="button" data-card-id="${card.id}" data-zone="${zone}" aria-label="${escapeHtml(card.name)}の${showingSkill ? "ステータス" : "スキル"}を表示">${showingSkill ? "STATUS" : "SKILL"}</button>
         </span>
         ${detail}
