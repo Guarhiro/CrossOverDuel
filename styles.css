@@ -2801,6 +2801,22 @@ body.title-active .app-shell {
     grid-template-columns: 1fr;
   }
 
+  .modal {
+    place-items: start center;
+    padding: 12px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-card {
+    min-height: 0;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .deck-editor,
   .gallery-view {
     padding: 8px;
