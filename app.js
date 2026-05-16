@@ -44,6 +44,8 @@ const ATTACK_IMPACT_DELAY = 390;
 const IMPACT_SETTLE_DELAY = 460;
 const SUMMON_OUT_DELAY = 260;
 const SUMMON_IN_CLEAR_DELAY = 680;
+const SUPPORT_PLAY_VISUAL_DELAY = 1600;
+const SUPPORT_PLAY_VISUAL_EXIT_DELAY = 260;
 
 const CHARACTERS = [
   {
@@ -4855,7 +4857,7 @@ async function runAiTurn() {
   let safety = 0;
   while (playedSomething && safety < 8 && !state.gameOver) {
     safety += 1;
-    playedSomething = aiPlayBestCard();
+    playedSomething = await aiPlayBestCard();
     if (playedSomething) {
       render();
       await sleep(520);
@@ -4887,7 +4889,7 @@ async function runAiTurn() {
   }
 }
 
-function aiPlayBestCard() {
+async function aiPlayBestCard() {
   const ai = state.ai;
   const playableSupports = ai.hand
     .map((card, index) => ({ card, index }))
@@ -4907,6 +4909,7 @@ function aiPlayBestCard() {
   if (playableSupports.length && !needsBoardPresence && Math.random() < 0.42) {
     const { card, index } = playableSupports[0];
     const target = chooseSupportTarget(card, ai, state.player);
+    await playAiSupportVisual(card, target);
     resolveSupport(ai, state.player, card, target);
     ai.hand.splice(index, 1);
     return true;
@@ -4916,6 +4919,7 @@ function aiPlayBestCard() {
     if (playableSupports.length) {
       const { card, index } = playableSupports[0];
       const target = chooseSupportTarget(card, ai, state.player);
+      await playAiSupportVisual(card, target);
       resolveSupport(ai, state.player, card, target);
       ai.hand.splice(index, 1);
       return true;
@@ -4926,6 +4930,45 @@ function aiPlayBestCard() {
   const { card, index, slot } = playableChars[0];
   playCharacterFromHand(ai, index, slot.lane, slot.index);
   return true;
+}
+
+async function playAiSupportVisual(card, target) {
+  if (!card) return;
+  const overlay = qs("#supportPlayOverlay");
+  if (!overlay) {
+    await sleep(SUPPORT_PLAY_VISUAL_DELAY);
+    return;
+  }
+
+  const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
+  const targetLine = target?.name ? `<p class="support-play-target">対象: ${escapeHtml(target.name)}</p>` : "";
+  overlay.style.setProperty("--element", color);
+  overlay.innerHTML = `
+    <div class="support-play-panel">
+      <div class="support-play-card" style="--card-image:url('assets/cards/${card.id}.png')" aria-hidden="true">
+        <span class="support-play-card-top">${escapeHtml(card.no)} ${escapeHtml(card.rarity)}</span>
+        <span class="support-play-cost">${effectiveCost(card, state.ai)}</span>
+        <span class="support-play-type">${escapeHtml(card.supportType)}</span>
+      </div>
+      <div class="support-play-copy">
+        <p class="support-play-kicker">AI SUPPORT CARD</p>
+        <h3>${escapeHtml(card.name)}</h3>
+        <p class="support-play-skill">${escapeHtml(card.skill)} / ${escapeHtml(card.supportType)}</p>
+        <p class="support-play-text">${escapeHtml(card.text)}</p>
+        ${targetLine}
+      </div>
+    </div>
+  `;
+
+  overlay.classList.remove("hidden", "is-leaving");
+  overlay.classList.add("is-active");
+  void overlay.offsetWidth;
+  await sleep(SUPPORT_PLAY_VISUAL_DELAY);
+  overlay.classList.add("is-leaving");
+  await sleep(SUPPORT_PLAY_VISUAL_EXIT_DELAY);
+  overlay.classList.add("hidden");
+  overlay.classList.remove("is-active", "is-leaving");
+  overlay.innerHTML = "";
 }
 
 function isSupportWorthUsing(card, player, foe) {
