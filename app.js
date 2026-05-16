@@ -290,7 +290,7 @@ const CHARACTERS = [
     def: 1,
     hp: 4,
     skill: "才女の後押し",
-    text: "味方1体の次のスキル効果を2倍にする。前衛配置不可",
+    text: "次の自分ターン開始時まで場にいると、味方1体の次のスキル効果を2倍にする。前衛配置不可",
     backOnly: true,
   },
   {
@@ -1263,7 +1263,7 @@ const SUPPORTS = [
     series: "すれ違いオフィスラブコメ",
     element: "炎",
     skill: "再会",
-    text: "撤退した味方1体を手札に戻す（DEFは初期値で復帰）",
+    text: "次に撤退した味方1体を手札に戻す（DEFは初期値で復帰）",
   },
   {
     kind: "support",
@@ -2242,11 +2242,9 @@ function applySummonEffects(card, player, lane) {
       break;
     }
     case "C15": {
-      const target = strongestAlly(player, card);
-      if (target) {
-        target.doubleNextSkill = true;
-        log(`${target.name} の次のスキルが2倍予約された。`, "effect");
-      }
+      card.sophiaBoostPending = true;
+      card.sophiaSkillMultiplier = 2 * scale;
+      log(`${card.name} は次のターンまで場に残れば後押しを発動する。`, "effect");
       break;
     }
     case "C17":
@@ -2413,6 +2411,9 @@ function applyStartEffects(player) {
         break;
       case "C12":
         randomBotanEffect(card, player, foe);
+        break;
+      case "C15":
+        triggerSophiaBoost(card, player);
         break;
       case "C18":
         if (!card.rageUsed && card.currentHp <= Math.ceil(card.maxHp / 2)) {
@@ -2608,6 +2609,17 @@ function applySerenaBoostsToClaire(card, player) {
   const sources = boardCards(player).filter((ally) => ally.id === "C48");
   sources.forEach(() => applySerenaBoost(card));
   if (sources.length) log(`${card.name} はセレナの号令で強化された。`, "effect");
+}
+
+function triggerSophiaBoost(card, player) {
+  if (!card.sophiaBoostPending || player.turns <= card.summonedOnTurn) return;
+  card.sophiaBoostPending = false;
+  const target = strongestAlly(player, card);
+  if (!target) return;
+  const multiplier = Math.max(2, card.sophiaSkillMultiplier || 2);
+  delete card.sophiaSkillMultiplier;
+  grantNextSkillMultiplier(target, multiplier);
+  log(`${target.name} の次のスキルが${multiplier}倍予約された。`, "effect");
 }
 
 function applySerenaBoostToClaires(player) {
@@ -2921,6 +2933,19 @@ function getPendingSupportCard() {
   return card;
 }
 
+function grantNextSkillMultiplier(card, multiplier) {
+  if (!card || !Number.isFinite(multiplier) || multiplier <= 1) return;
+  card.nextSkillMultiplier = Math.max(card.nextSkillMultiplier || 1, multiplier);
+}
+
+function consumeNextSkillMultiplier(card) {
+  if (!card) return 1;
+  const multiplier = Math.max(1, card.nextSkillMultiplier || (card.doubleNextSkill ? 2 : 1));
+  delete card.nextSkillMultiplier;
+  delete card.doubleNextSkill;
+  return multiplier;
+}
+
 function isSupportTargetable(card) {
   const support = getPendingSupportCard();
   if (!support || state.current !== "player" || state.phase !== "main" || state.busy) return false;
@@ -2979,18 +3004,20 @@ function chooseSupportTarget(card, player, foe) {
 
 function awaken(card, player, forced = false) {
   if (!card.awaken || card.awakened) return;
+  const skillScale = consumeNextSkillMultiplier(card);
   card.awakened = true;
   card.dormant = false;
   if (card.id === "C02") {
-    buffAtk(card, 5);
-    card.maxDef += 3;
+    buffAtk(card, 5 * skillScale);
+    card.maxDef += 3 * skillScale;
     card.currentDef = card.maxDef;
-    boardCards(player).forEach((ally) => healCharacter(ally, 3));
+    boardCards(player).forEach((ally) => healCharacter(ally, 3 * skillScale));
   }
   if (card.id === "C06") {
-    buffAtk(card, 5);
-    buffDef(card, 4);
+    buffAtk(card, 5 * skillScale);
+    buffDef(card, 4 * skillScale);
   }
+  if (skillScale > 1) log(`${card.name} の覚醒効果が${skillScale}倍になった。`, "effect");
   log(`${card.name} が${forced ? "即座に" : ""}覚醒した。`, "effect");
   audio.sfx("awaken", card);
 }
