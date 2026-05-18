@@ -472,7 +472,7 @@ const CHARACTERS = [
     def: 1,
     hp: 4,
     skill: "勇者の血筋",
-    text: "攻撃後味方1体HP2回復。ニィアルが場にいるとATK+2",
+    text: "攻撃後味方1体HP2回復。ニィアル（悠久）が味方場にいる限りATK+2",
   },
   {
     kind: "character",
@@ -2277,7 +2277,6 @@ function applySummonEffects(card, player, lane) {
   if (hasBoardCard(player, "C11") && card.role === "AT" && card.id !== "C11") buffAtk(card, 2 * scale);
   if (hasBoardCard(player, "C32") && card.element === "炎" && card.id !== "C32") buffAtk(card, 1 * scale);
   if (card.id === "C14" && hasBoardCard(player, "C05")) buffAtk(card, 3 * scale);
-  if (card.id === "C26" && boardCards(player).some((ally) => ally.id === "C07" || ally.id === "C19")) buffAtk(card, 2 * scale);
 
   if (card.id === "C47") applySerenaBoostsToClaire(card, player);
   if (card.role === "ST" && consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) return;
@@ -2343,9 +2342,6 @@ function applySummonEffects(card, player, lane) {
         buffAtk(ally, 1 * scale);
         buffDef(ally, 1 * scale);
       });
-      break;
-    case "C26":
-      if (boardCards(player).some((ally) => ally.id === "C07" || ally.id === "C19")) buffAtk(card, 2 * scale);
       break;
     case "C32":
       boardCards(player).forEach((ally) => {
@@ -3472,7 +3468,14 @@ function effectiveCost(card, player) {
 }
 
 function effectiveAtk(card) {
-  return Math.max(0, (card.currentAtk || 0) + (card.tempAtk || 0));
+  return Math.max(0, (card.currentAtk || 0) + (card.tempAtk || 0) + alyusTirisNiallBonus(card));
+}
+
+function alyusTirisNiallBonus(card) {
+  if (card?.id !== "C26" || card.status?.silenced > 0) return 0;
+  const owner = state?.[card.ownerKey];
+  if (!owner) return 0;
+  return hasBoardCard(owner, "C07") ? 2 : 0;
 }
 
 function effectiveDef(card) {
