@@ -4142,6 +4142,38 @@ function exchangeableCardCopies(card, collection, selected, savedDeckCounts) {
   return Math.max(0, collectionCopies - protectedCollectionCopies);
 }
 
+function trimDeckCopiesToOwnedLimit(deckIds, cardId, allowedCopies) {
+  let keptCopies = 0;
+  let removedCopies = 0;
+  const nextDeckIds = deckIds.filter((id) => {
+    if (id !== cardId) return true;
+    keptCopies += 1;
+    if (keptCopies <= allowedCopies) return true;
+    removedCopies += 1;
+    return false;
+  });
+  return { deckIds: nextDeckIds, removedCopies };
+}
+
+function removeExcessDeckCopiesAfterExchange(cardId) {
+  const owned = loadOwnedCollection();
+  const allowedCopies = owned[cardId] || 0;
+  const current = trimDeckCopiesToOwnedLimit(deckEditorIds, cardId, allowedCopies);
+  deckEditorIds = current.deckIds;
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(PLAYER_DECK_STORAGE_KEY) || "null");
+    if (Array.isArray(saved)) {
+      const trimmedSaved = trimDeckCopiesToOwnedLimit(saved, cardId, allowedCopies);
+      if (trimmedSaved.removedCopies > 0) localStorage.removeItem(PLAYER_DECK_STORAGE_KEY);
+    }
+  } catch {
+    // Stale or unreadable saved decks fall back to the starter deck on next load.
+  }
+
+  return current.removedCopies;
+}
+
 function requestExchangeCardForPoints(cardId) {
   const card = CARD_DB.get(cardId);
   if (!card) return;
@@ -4159,8 +4191,12 @@ function openExchangeConfirm(card) {
   const owned = loadOwnedCollection();
   const ownedCount = owned[card.id] || 0;
   const points = cardPointValue(card);
+  const selected = countBy(deckEditorIds, (id) => id);
+  const savedDeckCounts = countBy(loadPlayerDeckIds(), (id) => id);
+  const deckUseCount = Math.max(selected[card.id] || 0, savedDeckCounts[card.id] || 0);
+  const deckNotice = deckUseCount > 0 ? "デッキ使用枚数が所持枚数を超える場合は、交換後にデッキからも外れます。" : "";
   qs("#exchangeConfirmTitle").textContent = `${card.name} をポイント化しますか？`;
-  qs("#exchangeConfirmText").textContent = `所持枚数が ${ownedCount}枚 のカードです。交換すると ${points}P を獲得し、このカードの追加所持が1枚減ります。`;
+  qs("#exchangeConfirmText").textContent = `所持枚数が ${ownedCount}枚 のカードです。交換すると ${points}P を獲得し、このカードの追加所持が1枚減ります。${deckNotice}`;
   qs("#exchangeConfirmModal").classList.remove("hidden");
 }
 
@@ -4172,18 +4208,22 @@ function closeExchangeConfirm() {
 function confirmPendingExchange() {
   const cardId = pendingExchangeCardId;
   closeExchangeConfirm();
-  if (cardId) exchangeCardForPoints(cardId);
+  if (cardId) exchangeCardForPoints(cardId, { allowDeckUse: true });
 }
 
-function exchangeCardForPoints(cardId) {
+function exchangeCardForPoints(cardId, options = {}) {
   const card = CARD_DB.get(cardId);
   if (!card) return;
   const collection = loadCollection();
   const selected = countBy(deckEditorIds, (id) => id);
   const savedDeckCounts = countBy(loadPlayerDeckIds(), (id) => id);
   const sellable = exchangeableCardCopies(card, collection, selected, savedDeckCounts);
-  if (sellable <= 0) {
+  if (sellable <= 0 && !options.allowDeckUse) {
     renderDeckEditor(`${card.name} はデッキ使用分を残すためポイント化できません。`);
+    return;
+  }
+  if (Math.max(0, Number(collection[card.id]) || 0) <= 0) {
+    renderDeckEditor(`${card.name} はポイント化できる追加所持分がありません。`);
     return;
   }
 
@@ -4193,9 +4233,11 @@ function exchangeCardForPoints(cardId) {
   else delete collection[card.id];
 
   saveCollection(collection);
+  const removedFromDeck = options.allowDeckUse ? removeExcessDeckCopiesAfterExchange(card.id) : 0;
   saveExchangePoints(loadExchangePoints() + points);
   hideSkillPopup();
-  renderDeckEditor(`${card.name} を ${points}P に交換しました。`, true);
+  const deckNotice = removedFromDeck > 0 ? ` デッキからも${removedFromDeck}枚外しました。` : "";
+  renderDeckEditor(`${card.name} を ${points}P に交換しました。${deckNotice}`, true);
   renderCollectionSummary();
   if (!qs("#galleryView")?.classList.contains("hidden")) renderGallery();
 }
@@ -4384,6 +4426,7 @@ function renderExchangeCard(card, owned, collection, selected, savedDeckCounts, 
   const usedCount = selected[card.id] || 0;
   const collectionCount = Math.max(0, Number(collection[card.id]) || 0);
   const sellable = exchangeableCardCopies(card, collection, selected, savedDeckCounts);
+  const canSell = collectionCount > 0 && (sellable > 0 || ownedCount <= 2);
   const value = cardPointValue(card);
   const cost = cardPointCost(card);
   const canBuy = points >= cost;
@@ -4397,7 +4440,7 @@ function renderExchangeCard(card, owned, collection, selected, savedDeckCounts, 
         <small>所持 ${ownedCount} / デッキ ${usedCount} / 追加分 ${collectionCount}</small>
       </div>
       <div class="exchange-card-actions">
-        <button type="button" data-exchange-action="sell" data-card-id="${card.id}" ${sellable <= 0 ? "disabled" : ""}>+${value}P</button>
+        <button type="button" data-exchange-action="sell" data-card-id="${card.id}" ${canSell ? "" : "disabled"}>+${value}P</button>
         <button type="button" data-exchange-action="buy" data-card-id="${card.id}" ${canBuy ? "" : "disabled"}>-${cost}P</button>
       </div>
     </div>
@@ -5335,8 +5378,16 @@ function bindEvents() {
   qs("#toggleLibraryBtn").addEventListener("click", toggleLibraryVisibility);
   qs("#toggleExchangeListBtn").addEventListener("click", toggleExchangeVisibility);
   qs("#ownedOnlyLibraryBtn").addEventListener("click", toggleLibraryOwnedOnly);
-  qs("#cancelExchangeBtn").addEventListener("click", closeExchangeConfirm);
-  qs("#confirmExchangeBtn").addEventListener("click", confirmPendingExchange);
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("#cancelExchangeBtn")) {
+      event.preventDefault();
+      closeExchangeConfirm();
+    }
+    if (event.target.closest("#confirmExchangeBtn")) {
+      event.preventDefault();
+      confirmPendingExchange();
+    }
+  });
   qs("#exchangeConfirmModal").addEventListener("click", (event) => {
     if (event.target.id === "exchangeConfirmModal") closeExchangeConfirm();
   });

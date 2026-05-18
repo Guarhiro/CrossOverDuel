@@ -2175,6 +2175,10 @@ body.title-active .app-shell {
   display: none;
 }
 
+#exchangeConfirmModal {
+  z-index: 120;
+}
+
 .modal-card {
   width: min(720px, 100%);
   padding: 22px;

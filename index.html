@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=title-logo-layer-1" />
+    <link rel="stylesheet" href="styles.css?v=exchange-confirm-fix-1" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -293,18 +293,18 @@
       </div>
     </div>
 
-    <div id="exchangeConfirmModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="カード交換確認">
+    <div id="exchangeConfirmModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="カード交換確認" style="z-index: 120">
       <div class="modal-card exchange-confirm-card">
         <p class="eyebrow">Card Exchange</p>
         <h2 id="exchangeConfirmTitle">交換しますか？</h2>
         <p id="exchangeConfirmText" class="exchange-confirm-text"></p>
         <div class="reward-actions">
-          <button id="cancelExchangeBtn">キャンセル</button>
-          <button id="confirmExchangeBtn">交換する</button>
+          <button id="cancelExchangeBtn" type="button">キャンセル</button>
+          <button id="confirmExchangeBtn" type="button">交換する</button>
         </div>
       </div>
     </div>
 
-    <script src="app.js?v=title-logo-layer-1"></script>
+    <script src="app.js?v=exchange-confirm-fix-1"></script>
   </body>
 </html>
