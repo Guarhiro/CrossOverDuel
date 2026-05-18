@@ -993,7 +993,7 @@ const CHARACTERS = [
     def: 0,
     hp: 3,
     skill: "トレンド発信",
-    text: "配置時、1ドローして手札1枚をデッキ下に戻す",
+    text: "配置時、1ドローして手札1枚をデッキ下に戻す。その後、手札のアルカディアパレス1枚のコスト-1",
   },
   {
     kind: "character",
@@ -2349,8 +2349,8 @@ function applySummonEffects(card, player, lane) {
       }
       break;
     case "C58":
-      drawCard(player);
-      cycleHandThroughDeck(player);
+      drawThenReturnHandToDeck(player);
+      discountArcadiaInHand(player);
       break;
     case "C59":
       boardCards(player).forEach((ally) => buffAtk(ally, 1 * scale));
@@ -2595,6 +2595,24 @@ function cycleHandThroughDeck(player) {
   player.deck.push(sent);
   const drawn = drawCard(player);
   if (drawn) log(`${player.name} は手札を整えた。`, "effect");
+}
+
+function drawThenReturnHandToDeck(player) {
+  const drawn = drawCard(player);
+  if (!drawn || !player.hand.length) return;
+  const index = Math.floor(Math.random() * player.hand.length);
+  const [sent] = player.hand.splice(index, 1);
+  player.deck.push(sent);
+  log(`${player.name} は${sent.name}をデッキ下に戻した。`, "effect");
+}
+
+function discountArcadiaInHand(player) {
+  const target = player.hand
+    .filter((card) => card.kind === "character" && card.series === ARCADIA_SERIES)
+    .sort((a, b) => effectiveCost(b, player) - effectiveCost(a, player))[0];
+  if (!target) return;
+  target.costReduction = Math.max(target.costReduction || 0, 1);
+  log(`${target.name} のコストを1下げた。`, "effect");
 }
 
 function clearOneStatusFromAlly(player) {
