@@ -402,11 +402,11 @@ const CHARACTERS = [
     element: "風",
     role: "AT",
     cost: 3,
-    atk: 4,
+    atk: 3,
     def: 0,
     hp: 3,
     skill: "元傭兵の戦技",
-    text: "先制攻撃（配置直後に攻撃可能）。攻撃した相手のATK-1",
+    text: "先制攻撃（配置直後に攻撃可能。この攻撃ではLPを攻撃不可）。攻撃した相手のATK-1",
     haste: true,
   },
   {
@@ -520,7 +520,7 @@ const CHARACTERS = [
     def: 0,
     hp: 2,
     skill: "乙女の一閃",
-    text: "配置ターンに攻撃可能。2ターン後自動撤退",
+    text: "配置ターンに攻撃可能（LP攻撃不可）。2ターン後自動撤退",
     haste: true,
   },
   {
@@ -939,11 +939,11 @@ const CHARACTERS = [
     element: "炎",
     role: "AT",
     cost: 4,
-    atk: 5,
+    atk: 4,
     def: 1,
     hp: 4,
     skill: "切込隊長",
-    text: "配置ターンに攻撃可能。HPダメージを与えた時、自身ATK+1（最大+2）",
+    text: "配置ターンに攻撃可能（LP攻撃不可）。HPダメージを与えた時、自身ATK+1（最大+2）",
     haste: true,
   },
   {
@@ -956,11 +956,11 @@ const CHARACTERS = [
     element: "炎",
     role: "AT",
     cost: 3,
-    atk: 4,
+    atk: 3,
     def: 1,
     hp: 4,
     skill: "スプリントガード",
-    text: "配置ターンに攻撃可能。攻撃後、味方1体の状態異常を1つ解除",
+    text: "配置ターンに攻撃可能（LP攻撃不可）。攻撃後、味方1体の状態異常を1つ解除",
     haste: true,
   },
   {
@@ -3364,7 +3364,8 @@ function canAttack(card, player) {
   if (card.attacked || card.status.stun > 0) return false;
   if (card.dormant && !card.awakened) return false;
   if (effectiveAtk(card) <= 0) return false;
-  return card.haste || player.turns > card.summonedOnTurn;
+  const ready = card.haste || player.turns > card.summonedOnTurn;
+  return ready && getLegalTargets(card, player).length > 0;
 }
 
 function getLegalTargets(attacker, owner) {
@@ -3372,8 +3373,14 @@ function getLegalTargets(attacker, owner) {
   const guards = activeGuards(foe);
   if (guards.length) return guards.map((card) => ({ type: "card", card }));
   const targets = boardCards(foe).map((card) => ({ type: "card", card }));
-  targets.push({ type: "lp", player: foe });
+  if (!isSummonTurnHasteAttack(attacker, owner)) {
+    targets.push({ type: "lp", player: foe });
+  }
   return targets;
+}
+
+function isSummonTurnHasteAttack(card, player) {
+  return Boolean(card?.haste && player && player.turns === card.summonedOnTurn);
 }
 
 function activeGuards(player) {
@@ -5044,7 +5051,8 @@ function canJoinUpcomingAttack(card, player) {
   if (card.attacked || card.status.stun > 0) return false;
   if (card.dormant && !card.awakened) return false;
   if (effectiveAtk(card) <= 0) return false;
-  return card.haste || player.turns > card.summonedOnTurn;
+  const ready = card.haste || player.turns > card.summonedOnTurn;
+  return ready && getLegalTargets(card, player).length > 0;
 }
 
 function chooseAiSlot(card) {
