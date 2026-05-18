@@ -4129,6 +4129,23 @@ function closeDataTransfer() {
   qs("#dataTransferModal")?.classList.add("hidden");
 }
 
+function openNewGameConfirm() {
+  hideSkillPopup();
+  closeHandDock();
+  qs("#newGameConfirmModal")?.classList.remove("hidden");
+  qs("#cancelNewGameBtn")?.focus();
+}
+
+function closeNewGameConfirm() {
+  qs("#newGameConfirmModal")?.classList.add("hidden");
+}
+
+function confirmNewGameRestart() {
+  closeNewGameConfirm();
+  qs("#rewardModal")?.classList.add("hidden");
+  startNewGame(state?.aiProfile || null);
+}
+
 function ownedGalleryCards() {
   const owned = loadOwnedCollection();
   return Object.entries(owned)
@@ -5730,9 +5747,11 @@ function bindEvents() {
     if (toCard === fromCard) return;
     hideSkillPopup();
   });
-  qs("#newGameBtn").addEventListener("click", () => {
-    qs("#rewardModal").classList.add("hidden");
-    startNewGame(state?.aiProfile || null);
+  qs("#newGameBtn").addEventListener("click", openNewGameConfirm);
+  qs("#cancelNewGameBtn").addEventListener("click", closeNewGameConfirm);
+  qs("#confirmNewGameBtn").addEventListener("click", confirmNewGameRestart);
+  qs("#newGameConfirmModal").addEventListener("click", (event) => {
+    if (event.target.id === "newGameConfirmModal") closeNewGameConfirm();
   });
   qs("#battleBtn").addEventListener("click", () => {
     if (state.current !== "player" || state.phase !== "main" || state.busy) return;
@@ -5777,6 +5796,7 @@ function bindEvents() {
     if (!qs("#openingMovieModal").classList.contains("hidden")) closeOpeningMovie();
     if (!qs("#howToPlayModal").classList.contains("hidden")) closeHowToPlay();
     if (!qs("#dataTransferModal").classList.contains("hidden")) closeDataTransfer();
+    if (!qs("#newGameConfirmModal").classList.contains("hidden")) closeNewGameConfirm();
     if (!qs("#galleryView").classList.contains("hidden")) closeGallery();
   });
   qs(".field-wrap").addEventListener("click", handleFieldClick);
