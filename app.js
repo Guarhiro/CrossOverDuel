@@ -1110,6 +1110,79 @@ const CHARACTERS = [
   },
 ];
 
+const AI_LANE_FRONT = "front";
+const AI_LANE_BACK = "back";
+
+const AI_CHARACTER_LANE_PLAN = Object.freeze({
+  C01: AI_LANE_FRONT,
+  C02: AI_LANE_FRONT,
+  C03: AI_LANE_FRONT,
+  C04: AI_LANE_BACK,
+  C05: AI_LANE_FRONT,
+  C06: AI_LANE_FRONT,
+  C07: AI_LANE_FRONT,
+  C08: AI_LANE_BACK,
+  C09: AI_LANE_FRONT,
+  C10: AI_LANE_BACK,
+  C11: AI_LANE_BACK,
+  C12: AI_LANE_FRONT,
+  C13: AI_LANE_BACK,
+  C14: AI_LANE_FRONT,
+  C15: AI_LANE_BACK,
+  C16: AI_LANE_FRONT,
+  C17: AI_LANE_BACK,
+  C18: AI_LANE_FRONT,
+  C19: AI_LANE_BACK,
+  C20: AI_LANE_BACK,
+  C21: AI_LANE_FRONT,
+  C22: AI_LANE_FRONT,
+  C23: AI_LANE_BACK,
+  C24: AI_LANE_BACK,
+  C25: AI_LANE_FRONT,
+  C26: AI_LANE_FRONT,
+  C27: AI_LANE_BACK,
+  C28: AI_LANE_FRONT,
+  C29: AI_LANE_FRONT,
+  C30: AI_LANE_FRONT,
+  C31: AI_LANE_BACK,
+  C32: AI_LANE_BACK,
+  C33: AI_LANE_BACK,
+  C34: AI_LANE_FRONT,
+  C35: AI_LANE_FRONT,
+  C36: AI_LANE_BACK,
+  C37: AI_LANE_FRONT,
+  C38: AI_LANE_BACK,
+  C39: AI_LANE_BACK,
+  C40: AI_LANE_FRONT,
+  C41: AI_LANE_FRONT,
+  C42: AI_LANE_BACK,
+  C43: AI_LANE_BACK,
+  C44: AI_LANE_FRONT,
+  C45: AI_LANE_FRONT,
+  C46: AI_LANE_FRONT,
+  C47: AI_LANE_FRONT,
+  C48: AI_LANE_BACK,
+  C49: AI_LANE_FRONT,
+  C50: AI_LANE_BACK,
+  C51: AI_LANE_BACK,
+  C52: AI_LANE_BACK,
+  C53: AI_LANE_BACK,
+  C54: AI_LANE_BACK,
+  C55: AI_LANE_FRONT,
+  C56: AI_LANE_FRONT,
+  C57: AI_LANE_BACK,
+  C58: AI_LANE_BACK,
+  C59: AI_LANE_BACK,
+  C60: AI_LANE_BACK,
+  C61: AI_LANE_BACK,
+  C62: AI_LANE_BACK,
+  C63: AI_LANE_BACK,
+  C64: AI_LANE_FRONT,
+  C65: AI_LANE_BACK,
+});
+
+const AI_FRONT_PRESSURE_EFFECT_IDS = new Set(["C16", "C28", "C34", "C44", "C55", "C56", "C64"]);
+
 const SUPPORTS = [
   {
     kind: "support",
@@ -4971,7 +5044,7 @@ async function aiPlayBestCard() {
     .filter(({ card }) => card.kind === "character" && canPay(ai, card))
     .map((entry) => ({ ...entry, slot: chooseAiSlot(entry.card) }))
     .filter((entry) => entry.slot)
-    .sort((a, b) => scoreCardForAi(b.card) - scoreCardForAi(a.card));
+    .sort((a, b) => scoreCardForAi(b.card, b.slot, ai) - scoreCardForAi(a.card, a.slot, ai));
 
   const needsBoardPresence = !ai.front.some(Boolean) && playableChars.length > 0;
   if (playableSupports.length && !needsBoardPresence && Math.random() < 0.42) {
@@ -5098,20 +5171,212 @@ function canJoinUpcomingAttack(card, player) {
   return ready && getLegalTargets(card, player).length > 0;
 }
 
+function aiLanePlanFor(card) {
+  if (!card || card.kind !== "character") return AI_LANE_BACK;
+  if (card.backOnly) return AI_LANE_BACK;
+  return AI_CHARACTER_LANE_PLAN[card.id] || (["AT", "GD"].includes(card.role) ? AI_LANE_FRONT : AI_LANE_BACK);
+}
+
+function aiFrontPressureValue(card) {
+  if (!card || card.backOnly) return 0;
+  let score = effectiveAtk(card);
+  if (card.haste) score += 2;
+  if (card.dormant && !card.awakened) score -= 4;
+  if (AI_FRONT_PRESSURE_EFFECT_IDS.has(card.id)) score += 1;
+  return Math.max(0, score);
+}
+
+function shouldAiAdvanceBackPlanToFront(card, player) {
+  if (!card || card.backOnly || aiLanePlanFor(card) !== AI_LANE_BACK) return false;
+  if (!player.front.some((slot) => !slot)) return false;
+
+  const pressure = aiFrontPressureValue(card);
+  if (pressure < 2) return false;
+
+  const frontCards = player.front.filter(Boolean);
+  if (!frontCards.length) return true;
+
+  const frontPressureCards = frontCards.filter((ally) => aiFrontPressureValue(ally) >= 2);
+  if (!frontPressureCards.length) return true;
+
+  const earlyBoard = player.turns <= 3;
+  if (earlyBoard && frontCards.length < 2 && pressure >= 3) return true;
+
+  const backIsFull = !player.back.some((slot) => !slot);
+  return backIsFull && frontCards.length < player.front.length && pressure >= 3;
+}
+
 function chooseAiSlot(card) {
   const ai = state.ai;
   const frontOpen = ai.front.findIndex((slot) => !slot);
   const backOpen = ai.back.findIndex((slot) => !slot);
-  if (card.backOnly) return backOpen >= 0 ? { lane: "back", index: backOpen } : null;
-  if (["GD", "AT"].includes(card.role) && frontOpen >= 0) return { lane: "front", index: frontOpen };
-  if (["ST", "SP"].includes(card.role) && backOpen >= 0) return { lane: "back", index: backOpen };
-  if (frontOpen >= 0) return { lane: "front", index: frontOpen };
-  if (backOpen >= 0) return { lane: "back", index: backOpen };
+  if (card.backOnly) return backOpen >= 0 ? { lane: AI_LANE_BACK, index: backOpen } : null;
+
+  const lanePlan = aiLanePlanFor(card);
+  if (lanePlan === AI_LANE_FRONT) {
+    return frontOpen >= 0 ? { lane: AI_LANE_FRONT, index: frontOpen } : null;
+  }
+
+  if (frontOpen >= 0 && shouldAiAdvanceBackPlanToFront(card, ai)) {
+    return { lane: AI_LANE_FRONT, index: frontOpen };
+  }
+  if (backOpen >= 0) return { lane: AI_LANE_BACK, index: backOpen };
   return null;
 }
 
-function scoreCardForAi(card) {
-  return RARITY_ORDER[card.rarity] * 10 + (card.atk || 0) + (card.def || 0) + (card.hp || 0) - card.cost * 0.4;
+function scoreCardForAi(card, slot = null, player = state.ai) {
+  let score = RARITY_ORDER[card.rarity] * 10 + (card.atk || 0) + (card.def || 0) + (card.hp || 0) - card.cost * 0.4;
+  if (!slot || card.kind !== "character") return score;
+
+  const lanePlan = aiLanePlanFor(card);
+  const frontCount = player.front.filter(Boolean).length;
+  if (slot.lane === AI_LANE_FRONT) {
+    score += aiFrontPressureValue(card) * 2;
+    score += lanePlan === AI_LANE_FRONT ? 20 : -6;
+    if (!frontCount) {
+      score += lanePlan === AI_LANE_FRONT ? 28 : 8;
+    } else if (frontCount < 2 && player.turns <= 3) {
+      score += lanePlan === AI_LANE_FRONT ? 10 : 3;
+    }
+  } else if (slot.lane === AI_LANE_BACK) {
+    score += lanePlan === AI_LANE_BACK ? 8 : -20;
+    if (player.nextBackSkillDouble && isBackSkillCandidate(card)) score += 6;
+  }
+
+  return score;
+}
+
+function aiAttackValueForTarget(attacker, targetCard) {
+  let attackValue = effectiveAtk(attacker);
+  if (attacker.id === "C44" && targetCard?.role === "ST") attackValue += 2;
+  if (targetCard?.id === "C03") attackValue = Math.max(1, attackValue - 1);
+  return Math.max(0, attackValue);
+}
+
+function aiAttackIgnoresDef(attacker) {
+  return attacker.id === "C28" || (attacker.id === "C46" && !attacker.atomicFlareUsed);
+}
+
+function aiPredictedDamageProfile(attacker, targetCard, availableDef = effectiveDef(targetCard)) {
+  const attackValue = aiAttackValueForTarget(attacker, targetCard);
+  if (aiAttackIgnoresDef(attacker)) {
+    return { hpDamage: attackValue, shieldDamage: 0, totalDamage: attackValue };
+  }
+
+  const shieldDamage = Math.min(Math.max(0, availableDef), attackValue);
+  const hpDamage = Math.max(0, attackValue - shieldDamage);
+  return { hpDamage, shieldDamage, totalDamage: attackValue };
+}
+
+function aiCanRemoveTargetWithDamage(targetCard, hpDamage) {
+  if (!targetCard || hpDamage < targetCard.currentHp) return false;
+  return targetCard.id !== "C49" || targetCard.lastStandUsed;
+}
+
+function aiAttackersForTarget(targetCard) {
+  return state.ai.front.filter((candidate) => {
+    if (!canAttack(candidate, state.ai)) return false;
+    return getLegalTargets(candidate, state.ai).some((target) => target.type === "card" && target.card === targetCard);
+  });
+}
+
+function aiFocusedDamageProfile(targetCard, attackers) {
+  let availableDef = effectiveDef(targetCard);
+  let remainingHp = targetCard.currentHp;
+  let lastStandAvailable = targetCard.id === "C49" && !targetCard.lastStandUsed;
+  let removes = false;
+  let hpDamage = 0;
+  let shieldDamage = 0;
+  attackers
+    .slice()
+    .sort((a, b) => aiAttackValueForTarget(b, targetCard) - aiAttackValueForTarget(a, targetCard))
+    .forEach((candidate) => {
+      if (removes) return;
+      const profile = aiPredictedDamageProfile(candidate, targetCard, availableDef);
+      hpDamage += profile.hpDamage;
+      shieldDamage += profile.shieldDamage;
+      if (!aiAttackIgnoresDef(candidate)) availableDef = Math.max(0, availableDef - profile.shieldDamage);
+      if (profile.hpDamage >= remainingHp) {
+        if (lastStandAvailable) {
+          lastStandAvailable = false;
+          remainingHp = 1;
+        } else {
+          removes = true;
+        }
+      } else {
+        remainingHp -= profile.hpDamage;
+      }
+    });
+  return {
+    hpDamage,
+    shieldDamage,
+    removes,
+  };
+}
+
+function isHighValueBacklineTarget(card) {
+  if (!card) return false;
+  return ["ST", "SP"].includes(card.role) || effectiveAtk(card) >= 4 || card.awaken || card.effectNullify > 0;
+}
+
+function aiShouldFocusFrontline(cardTargets) {
+  const frontTargets = cardTargets.filter((target) => findCardLocation(target.card)?.lane === AI_LANE_FRONT);
+  if (!frontTargets.length) return false;
+  if (activeGuards(state.player).length) return true;
+
+  const attackers = state.ai.front.filter((candidate) => canAttack(candidate, state.ai));
+  if (attackers.length >= 2) return true;
+
+  return frontTargets.some(({ card }) => {
+    const focused = aiFocusedDamageProfile(card, aiAttackersForTarget(card));
+    return focused.removes || card.tags?.includes("guard") || effectiveAtk(card) >= 3;
+  });
+}
+
+function aiAttackSynergyScore(attacker, targetCard, profile, removes, location) {
+  let score = 0;
+  if (attacker.id === "C14" && location?.lane === AI_LANE_FRONT) score += 6;
+  if (attacker.id === "C22" && !removes && effectiveAtk(targetCard) > 0) score += 4;
+  if (attacker.id === "C34" && profile.hpDamage > 0) score += 5;
+  if (attacker.id === "C35" && !removes && effectiveDef(targetCard) > 0) score += 3;
+  if (attacker.id === "C44" && targetCard.role === "ST") score += 10;
+  if (attacker.id === "C46" && removes) {
+    score += location?.lane === AI_LANE_FRONT ? 12 : 4;
+    if (state.player.back.some(Boolean)) score += 6;
+  }
+  if (attacker.id === "C64" && removes && !attacker.sionReattackUsed) score += 10;
+  return score;
+}
+
+function scoreAiAttackTarget(attacker, target, context) {
+  const card = target.card;
+  const location = findCardLocation(card);
+  const profile = aiPredictedDamageProfile(attacker, card);
+  const focused = aiFocusedDamageProfile(card, aiAttackersForTarget(card));
+  const removesNow = aiCanRemoveTargetWithDamage(card, profile.hpDamage);
+  const breaksLastStand = card.id === "C49" && !card.lastStandUsed && profile.hpDamage >= card.currentHp;
+  const lowHpValue = Math.max(0, 7 - card.currentHp);
+  const threatValue = effectiveAtk(card) * 1.1;
+  let score = lowHpValue + threatValue + profile.hpDamage * 4 + profile.shieldDamage * 1.5;
+
+  if (location?.lane === AI_LANE_FRONT) {
+    score += context.focusFrontline ? 34 : 20;
+    if (card.tags?.includes("guard")) score += 16;
+    if (["AT", "GD"].includes(card.role)) score += 5;
+    if (removesNow) score += 36;
+    if (focused.removes) score += 24;
+    if (breaksLastStand) score += 18;
+    score += focused.hpDamage * 1.2 + focused.shieldDamage * 0.6;
+  } else {
+    score += ["ST", "SP"].includes(card.role) ? 8 : 0;
+    if (removesNow) score += isHighValueBacklineTarget(card) ? 38 : 24;
+    if (breaksLastStand) score += 12;
+    if (context.frontExists) score -= context.focusFrontline ? 34 : 16;
+    if (context.frontRemovable && !removesNow) score -= 18;
+    if (removesNow && isHighValueBacklineTarget(card)) score += 18;
+  }
+
+  return score + aiAttackSynergyScore(attacker, card, profile, removesNow, location);
 }
 
 function chooseAiAttackTarget(attacker) {
@@ -5120,13 +5385,17 @@ function chooseAiAttackTarget(attacker) {
   if (lpTarget && state.player.lp <= effectiveAtk(attacker)) return lpTarget;
   const cardTargets = targets.filter((target) => target.type === "card");
   if (!cardTargets.length) return lpTarget;
-  return cardTargets.sort((a, b) => {
-    const guardA = a.card.tags?.includes("guard") ? 5 : 0;
-    const guardB = b.card.tags?.includes("guard") ? 5 : 0;
-    const scoreA = guardA + (8 - a.card.currentHp) + effectiveAtk(a.card) * 0.25;
-    const scoreB = guardB + (8 - b.card.currentHp) + effectiveAtk(b.card) * 0.25;
-    return scoreB - scoreA;
-  })[0];
+  const focusFrontline = aiShouldFocusFrontline(cardTargets);
+  const frontTargets = cardTargets.filter((target) => findCardLocation(target.card)?.lane === AI_LANE_FRONT);
+  const context = {
+    focusFrontline,
+    frontExists: frontTargets.length > 0,
+    frontRemovable: frontTargets.some(({ card }) => aiFocusedDamageProfile(card, aiAttackersForTarget(card)).removes),
+  };
+
+  return cardTargets
+    .map((target) => ({ target, score: scoreAiAttackTarget(attacker, target, context) }))
+    .sort((a, b) => b.score - a.score)[0].target;
 }
 
 function getHandCardFromEvent(event) {
