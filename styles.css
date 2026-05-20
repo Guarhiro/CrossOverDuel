@@ -348,6 +348,10 @@ body.title-active .app-shell {
   box-shadow: var(--shadow);
 }
 
+.deck-editor-shell {
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+}
+
 .deck-editor-header,
 .deck-editor-actions,
 .gallery-header,
@@ -390,6 +394,47 @@ body.title-active .app-shell {
 .gallery-header-actions {
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.deck-slot-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+}
+
+.deck-slot-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.deck-slot-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.deck-slot-button {
+  width: 38px;
+  min-height: 34px;
+  padding: 0;
+  border-color: rgba(246, 200, 95, 0.34);
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.22);
+  font-weight: 1000;
+}
+
+.deck-slot-button.is-active {
+  border-color: var(--gold);
+  color: #111318;
+  background: var(--gold);
+}
+
+.deck-slot-button.is-dirty {
+  box-shadow: 0 0 0 2px rgba(255, 95, 87, 0.42);
 }
 
 .deck-editor-actions button,
@@ -612,6 +657,10 @@ body.title-active .app-shell {
   max-width: 440px;
 }
 
+.deck-slot-confirm-card {
+  max-width: 460px;
+}
+
 .exchange-confirm-text {
   margin: 0 0 16px;
   color: var(--muted);
@@ -620,7 +669,8 @@ body.title-active .app-shell {
   line-height: 1.55;
 }
 
-.new-game-confirm-text {
+.new-game-confirm-text,
+.deck-slot-confirm-text {
   margin: 0 0 16px;
   color: var(--muted);
   font-size: 0.92rem;
@@ -637,6 +687,11 @@ body.title-active .app-shell {
 .new-game-confirm-actions button:last-child:hover:not(:disabled) {
   border-color: rgba(255, 95, 87, 0.92);
   background: rgba(255, 95, 87, 0.34);
+}
+
+.deck-slot-confirm-actions button:last-child {
+  color: #111318;
+  background: var(--gold);
 }
 
 .gallery-card-stage,
@@ -2206,6 +2261,10 @@ body.title-active .app-shell {
   z-index: 120;
 }
 
+#deckSlotConfirmModal {
+  z-index: 120;
+}
+
 .modal-card {
   width: min(720px, 100%);
   padding: 22px;
@@ -2872,6 +2931,21 @@ body.title-active .app-shell {
   .gallery-header-actions {
     width: 100%;
     justify-content: stretch;
+  }
+
+  .deck-slot-bar {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .deck-slot-buttons {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .deck-slot-button {
+    width: auto;
   }
 
   .deck-editor-actions button,

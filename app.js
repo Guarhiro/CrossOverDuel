@@ -1421,9 +1421,12 @@ const PLAYER_DECK = [
 ];
 
 const PLAYER_DECK_STORAGE_KEY = "crossover-duel-player-deck";
+const PLAYER_DECK_SLOTS_STORAGE_KEY = "crossover-duel-player-deck-slots";
+const PLAYER_DECK_ACTIVE_SLOT_STORAGE_KEY = "crossover-duel-player-deck-active-slot";
+const PLAYER_DECK_SLOT_COUNT = 5;
 const PLAYER_DECK_SIZE = PLAYER_DECK.length;
 const FREEPLAY_WIN_STORAGE_KEY = "crossover-duel-freeplay-wins";
-const FREEPLAY_MAX_WINS = 50;
+const FREEPLAY_MAX_WINS = 55;
 const REWARD_CARD_COUNT = 4;
 const BATTLE_BGM_STYLE_STORAGE_KEY = "crossover-duel-battle-bgm-style";
 const CARD_EXCHANGE_POINT_STORAGE_KEY = "crossover-duel-card-exchange-points";
@@ -1537,6 +1540,18 @@ const AI_DECKS = [
     concept: "URフィニッシャーを低中コストの展開札と探索で確実に着地させる。",
     deck: ["C01", "C02", "C03", "C07", "C19", "C21", "C22", "C23", "C25", "C30", "C33", "C40", "C46", "S01", "S03", "S05", "S08", "S10", "S14", "S15"],
   },
+  {
+    level: 11,
+    wins: 55,
+    name: "Arcadia Rearguard",
+    concept: "先制攻撃で前衛を押し込み、後衛ガーディアンとパレス支援で守りを厚くする。",
+    lanePlan: {
+      C47: AI_LANE_BACK,
+      C49: AI_LANE_BACK,
+    },
+    lockedBackline: ["C47", "C49"],
+    deck: ["C10", "C41", "C56", "C56", "C57", "C58", "C58", "C59", "C60", "C61", "C62", "C62", "C63", "C64", "C65", "C22", "C47", "C49", "C55", "S16"],
+  },
 ];
 
 const qs = (selector) => document.querySelector(selector);
@@ -1547,6 +1562,8 @@ let nextInstanceId = 1;
 let state = null;
 let activeScreen = "title";
 let deckEditorIds = [];
+let activeDeckSlot = 1;
+let pendingDeckSlotSwitch = null;
 let deckEditorDeckHidden = false;
 let deckEditorLibraryHidden = false;
 let deckEditorExchangeHidden = false;
@@ -3650,20 +3667,128 @@ function isValidDeckIds(deckIds, owned = loadOwnedCollection()) {
   return Object.entries(deckCounts).every(([id, count]) => CARD_DB.has(id) && count <= (owned[id] || 0));
 }
 
-function loadPlayerDeckIds() {
+function normalizeDeckSlot(slot) {
+  const normalized = Number.parseInt(slot, 10);
+  if (!Number.isFinite(normalized)) return 1;
+  return Math.min(PLAYER_DECK_SLOT_COUNT, Math.max(1, normalized));
+}
+
+function buildDefaultPlayerDeckSlots() {
+  return Array.from({ length: PLAYER_DECK_SLOT_COUNT }, () => [...PLAYER_DECK]);
+}
+
+function loadActiveDeckSlot() {
+  try {
+    return normalizeDeckSlot(localStorage.getItem(PLAYER_DECK_ACTIVE_SLOT_STORAGE_KEY) || "1");
+  } catch {
+    return 1;
+  }
+}
+
+function saveActiveDeckSlot(slot) {
+  const normalized = normalizeDeckSlot(slot);
+  try {
+    localStorage.setItem(PLAYER_DECK_ACTIVE_SLOT_STORAGE_KEY, String(normalized));
+  } catch {
+    // The active in-memory slot still works if localStorage is temporarily unavailable.
+  }
+  activeDeckSlot = normalized;
+  return normalized;
+}
+
+function loadLegacyPlayerDeckIds(owned = loadOwnedCollection()) {
   try {
     const saved = JSON.parse(localStorage.getItem(PLAYER_DECK_STORAGE_KEY) || "null");
-    if (isValidDeckIds(saved)) return [...saved];
+    if (isValidDeckIds(saved, owned)) return [...saved];
   } catch {
     // Fall back to the starter deck when local storage has stale data.
   }
-  return [...PLAYER_DECK];
+  return null;
 }
 
-function savePlayerDeckIds(deckIds) {
+function normalizeStoredDeckSlots(rawSlots, owned = loadOwnedCollection()) {
+  const slots = buildDefaultPlayerDeckSlots();
+  let hasStoredSlots = false;
+  if (Array.isArray(rawSlots)) {
+    rawSlots.slice(0, PLAYER_DECK_SLOT_COUNT).forEach((deckIds, index) => {
+      hasStoredSlots = true;
+      if (isValidDeckIds(deckIds, owned)) slots[index] = [...deckIds];
+    });
+    return hasStoredSlots ? slots : null;
+  }
+  if (rawSlots && typeof rawSlots === "object") {
+    for (let slot = 1; slot <= PLAYER_DECK_SLOT_COUNT; slot += 1) {
+      const deckIds = rawSlots[String(slot)];
+      if (deckIds === undefined) continue;
+      hasStoredSlots = true;
+      if (isValidDeckIds(deckIds, owned)) slots[slot - 1] = [...deckIds];
+    }
+    return hasStoredSlots ? slots : null;
+  }
+  return null;
+}
+
+function loadPlayerDeckSlots(owned = loadOwnedCollection()) {
+  try {
+    const storedSlots = normalizeStoredDeckSlots(JSON.parse(localStorage.getItem(PLAYER_DECK_SLOTS_STORAGE_KEY) || "null"), owned);
+    if (storedSlots) return storedSlots;
+  } catch {
+    // Old or malformed slot saves fall through to the legacy single-deck save.
+  }
+  const slots = buildDefaultPlayerDeckSlots();
+  const legacyDeck = loadLegacyPlayerDeckIds(owned);
+  if (legacyDeck) slots[0] = legacyDeck;
+  return slots;
+}
+
+function savePlayerDeckSlots(deckSlots, slot = activeDeckSlot) {
+  const owned = loadOwnedCollection();
+  const normalizedSlot = saveActiveDeckSlot(slot);
+  const normalizedSlots = normalizeStoredDeckSlots(deckSlots, owned) || buildDefaultPlayerDeckSlots();
+  localStorage.setItem(PLAYER_DECK_SLOTS_STORAGE_KEY, JSON.stringify(normalizedSlots));
+  localStorage.setItem(PLAYER_DECK_STORAGE_KEY, JSON.stringify(normalizedSlots[normalizedSlot - 1]));
+  return normalizedSlots;
+}
+
+function loadPlayerDeckIds(slot = loadActiveDeckSlot()) {
+  const slots = loadPlayerDeckSlots();
+  return [...slots[normalizeDeckSlot(slot) - 1]];
+}
+
+function savePlayerDeckIds(deckIds, slot = activeDeckSlot) {
   if (!isValidDeckIds(deckIds)) return false;
-  localStorage.setItem(PLAYER_DECK_STORAGE_KEY, JSON.stringify(deckIds));
+  const normalizedSlot = normalizeDeckSlot(slot);
+  const slots = loadPlayerDeckSlots();
+  slots[normalizedSlot - 1] = [...deckIds];
+  savePlayerDeckSlots(slots, normalizedSlot);
   return true;
+}
+
+function maxDeckCounts(deckLists) {
+  const maxCounts = {};
+  deckLists.forEach((deckIds) => {
+    const deckCounts = countBy(deckIds, (id) => id);
+    Object.entries(deckCounts).forEach(([id, count]) => {
+      maxCounts[id] = Math.max(maxCounts[id] || 0, count);
+    });
+  });
+  return maxCounts;
+}
+
+function loadSavedDeckSlotCounts(owned = loadOwnedCollection()) {
+  return maxDeckCounts(loadPlayerDeckSlots(owned));
+}
+
+function deckIdsHaveSameCounts(leftDeckIds, rightDeckIds) {
+  if (!Array.isArray(leftDeckIds) || !Array.isArray(rightDeckIds) || leftDeckIds.length !== rightDeckIds.length) return false;
+  const leftCounts = countBy(leftDeckIds, (id) => id);
+  const rightCounts = countBy(rightDeckIds, (id) => id);
+  const ids = new Set([...Object.keys(leftCounts), ...Object.keys(rightCounts)]);
+  return [...ids].every((id) => leftCounts[id] === rightCounts[id]);
+}
+
+function isDeckEditorDirty() {
+  return !deckIdsHaveSameCounts(deckEditorIds, loadPlayerDeckIds(activeDeckSlot));
 }
 
 function loadFreeplayWins() {
@@ -3729,6 +3854,30 @@ function ownedCollectionFromRewardCollection(collection) {
   return owned;
 }
 
+function normalizeTransferDeckSlots(rawSlots, fallbackDeckIds, owned) {
+  const slots = buildDefaultPlayerDeckSlots();
+  let hasDeckSlots = false;
+  const setSlot = (deckIds, index) => {
+    hasDeckSlots = true;
+    if (!isValidDeckIds(deckIds, owned)) {
+      throw new Error(`デッキ${index + 1}の内容が現在のカードDBまたは所持カードと一致しません。`);
+    }
+    slots[index] = [...deckIds];
+  };
+
+  if (Array.isArray(rawSlots)) {
+    rawSlots.slice(0, PLAYER_DECK_SLOT_COUNT).forEach((deckIds, index) => setSlot(deckIds, index));
+  } else if (rawSlots && typeof rawSlots === "object") {
+    for (let slot = 1; slot <= PLAYER_DECK_SLOT_COUNT; slot += 1) {
+      const deckIds = rawSlots[String(slot)];
+      if (deckIds !== undefined) setSlot(deckIds, slot - 1);
+    }
+  }
+
+  if (!hasDeckSlots) slots[0] = [...fallbackDeckIds];
+  return slots;
+}
+
 function normalizeTransferPayload(payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     throw new Error("移行データの形式が正しくありません。");
@@ -3739,13 +3888,17 @@ function normalizeTransferPayload(payload) {
   if (!isValidDeckIds(playerDeckIds, owned)) {
     throw new Error("デッキ内容が現在のカードDBまたは所持カードと一致しません。");
   }
+  const deckSlots = normalizeTransferDeckSlots(payload.deckSlots, playerDeckIds, owned);
+  const activeSlot = normalizeDeckSlot(payload.activeDeckSlot || 1);
   return {
     storageVersion: SIGNED_EXPORT_VERSION,
     exportedFrom: typeof payload.exportedFrom === "string" ? payload.exportedFrom : "unknown",
     collection,
     exchangePoints: normalizeTransferCount(payload.exchangePoints),
     freeplayWins: normalizeTransferCount(payload.freeplayWins),
-    playerDeckIds: [...playerDeckIds],
+    playerDeckIds: [...deckSlots[activeSlot - 1]],
+    deckSlots,
+    activeDeckSlot: activeSlot,
     battleBgmStyle: payload.battleBgmStyle === "jazz" ? "jazz" : "standard",
   };
 }
@@ -3757,6 +3910,8 @@ function buildTransferPayload() {
     exchangePoints: loadExchangePoints(),
     freeplayWins: loadFreeplayWins(),
     playerDeckIds: loadPlayerDeckIds(),
+    deckSlots: loadPlayerDeckSlots(),
+    activeDeckSlot: loadActiveDeckSlot(),
     battleBgmStyle: loadBattleBgmStyle(),
   });
 }
@@ -3886,7 +4041,7 @@ function applyTransferPayload(payload) {
   saveCollection(normalized.collection);
   saveExchangePoints(normalized.exchangePoints);
   saveFreeplayWins(normalized.freeplayWins);
-  if (!savePlayerDeckIds(normalized.playerDeckIds)) {
+  if (!savePlayerDeckSlots(normalized.deckSlots, normalized.activeDeckSlot)) {
     throw new Error("デッキを保存できませんでした。");
   }
   saveBattleBgmStyle(normalized.battleBgmStyle);
@@ -3894,6 +4049,7 @@ function applyTransferPayload(payload) {
 }
 
 function refreshAfterTransferImport() {
+  activeDeckSlot = loadActiveDeckSlot();
   battleBgmStyle = loadBattleBgmStyle();
   updateBattleBgmStyleButton();
   if (!qs("#deckEditor")?.classList.contains("hidden")) {
@@ -4067,7 +4223,8 @@ function summarizeDeckCurve(deckIds) {
 
 function openDeckEditor() {
   activeScreen = "deckEdit";
-  deckEditorIds = loadPlayerDeckIds();
+  activeDeckSlot = loadActiveDeckSlot();
+  deckEditorIds = loadPlayerDeckIds(activeDeckSlot);
   qs("#deckEditor").classList.remove("hidden");
   renderDeckEditor();
   audio.updateMusic();
@@ -4253,18 +4410,15 @@ function removeExcessDeckCopiesAfterExchange(cardId) {
   const allowedCopies = owned[cardId] || 0;
   const current = trimDeckCopiesToOwnedLimit(deckEditorIds, cardId, allowedCopies);
   deckEditorIds = current.deckIds;
-
-  try {
-    const saved = JSON.parse(localStorage.getItem(PLAYER_DECK_STORAGE_KEY) || "null");
-    if (Array.isArray(saved)) {
-      const trimmedSaved = trimDeckCopiesToOwnedLimit(saved, cardId, allowedCopies);
-      if (trimmedSaved.removedCopies > 0) localStorage.removeItem(PLAYER_DECK_STORAGE_KEY);
-    }
-  } catch {
-    // Stale or unreadable saved decks fall back to the starter deck on next load.
-  }
-
-  return current.removedCopies;
+  const slots = loadPlayerDeckSlots(owned);
+  let removedFromSavedSlots = 0;
+  const nextSlots = slots.map((deckIds) => {
+    const trimmed = trimDeckCopiesToOwnedLimit(deckIds, cardId, allowedCopies);
+    removedFromSavedSlots += trimmed.removedCopies;
+    return trimmed.removedCopies > 0 ? [...PLAYER_DECK] : deckIds;
+  });
+  savePlayerDeckSlots(nextSlots, activeDeckSlot);
+  return current.removedCopies + removedFromSavedSlots;
 }
 
 function requestExchangeCardForPoints(cardId) {
@@ -4285,7 +4439,7 @@ function openExchangeConfirm(card) {
   const ownedCount = owned[card.id] || 0;
   const points = cardPointValue(card);
   const selected = countBy(deckEditorIds, (id) => id);
-  const savedDeckCounts = countBy(loadPlayerDeckIds(), (id) => id);
+  const savedDeckCounts = loadSavedDeckSlotCounts(owned);
   const deckUseCount = Math.max(selected[card.id] || 0, savedDeckCounts[card.id] || 0);
   const deckNotice = deckUseCount > 0 ? "デッキ使用枚数が所持枚数を超える場合は、交換後にデッキからも外れます。" : "";
   qs("#exchangeConfirmTitle").textContent = `${card.name} をポイント化しますか？`;
@@ -4309,7 +4463,7 @@ function exchangeCardForPoints(cardId, options = {}) {
   if (!card) return;
   const collection = loadCollection();
   const selected = countBy(deckEditorIds, (id) => id);
-  const savedDeckCounts = countBy(loadPlayerDeckIds(), (id) => id);
+  const savedDeckCounts = loadSavedDeckSlotCounts();
   const sellable = exchangeableCardCopies(card, collection, selected, savedDeckCounts);
   if (sellable <= 0 && !options.allowDeckUse) {
     renderDeckEditor(`${card.name} はデッキ使用分を残すためポイント化できません。`);
@@ -4375,15 +4529,58 @@ function removeDeckCard(cardId) {
 
 function resetDeckEditor() {
   deckEditorIds = [...PLAYER_DECK];
-  renderDeckEditor("初期デッキに戻しました。");
+  renderDeckEditor("初期デッキに戻しました。保存すると現在のデッキスロットに反映されます。");
 }
 
 function saveDeckEditor() {
-  if (savePlayerDeckIds(deckEditorIds)) {
-    renderDeckEditor("デッキを保存しました。", true);
+  if (savePlayerDeckIds(deckEditorIds, activeDeckSlot)) {
+    renderDeckEditor(`デッキ${activeDeckSlot}を保存しました。`, true);
     return;
   }
   renderDeckEditor("20枚ちょうどで保存できます。");
+}
+
+function renderDeckSlotButtons() {
+  const slotButtons = qs("#deckSlotButtons");
+  if (!slotButtons) return;
+  const dirty = isDeckEditorDirty();
+  slotButtons.innerHTML = Array.from({ length: PLAYER_DECK_SLOT_COUNT }, (_, index) => {
+    const slot = index + 1;
+    const active = slot === activeDeckSlot;
+    const dirtyClass = active && dirty ? " is-dirty" : "";
+    return `<button class="deck-slot-button ${active ? "is-active" : ""}${dirtyClass}" type="button" data-deck-slot="${slot}" aria-pressed="${active}" title="デッキ${slot}を呼び出す">${slot}</button>`;
+  }).join("");
+}
+
+function switchDeckSlot(slot) {
+  const normalizedSlot = saveActiveDeckSlot(slot);
+  deckEditorIds = loadPlayerDeckIds(normalizedSlot);
+  pendingDeckSlotSwitch = null;
+  hideSkillPopup();
+  renderDeckEditor(`デッキ${normalizedSlot}に切り替えました。`, true);
+  renderCollectionSummary();
+}
+
+function requestDeckSlotSwitch(slot) {
+  const normalizedSlot = normalizeDeckSlot(slot);
+  if (normalizedSlot === activeDeckSlot) return;
+  if (isDeckEditorDirty()) {
+    pendingDeckSlotSwitch = normalizedSlot;
+    qs("#deckSlotConfirmModal")?.classList.remove("hidden");
+    return;
+  }
+  switchDeckSlot(normalizedSlot);
+}
+
+function closeDeckSlotSwitchConfirm() {
+  pendingDeckSlotSwitch = null;
+  qs("#deckSlotConfirmModal")?.classList.add("hidden");
+}
+
+function confirmDeckSlotSwitch() {
+  const slot = pendingDeckSlotSwitch;
+  closeDeckSlotSwitchConfirm();
+  if (slot) switchDeckSlot(slot);
 }
 
 function toggleDeckListVisibility() {
@@ -4453,19 +4650,22 @@ function updateDeckEditorToggleButtons() {
 }
 
 function renderDeckEditor(message = "", ready = false) {
+  activeDeckSlot = loadActiveDeckSlot();
   const owned = loadOwnedCollection();
   const collection = loadCollection();
   const selected = countBy(deckEditorIds, (id) => id);
-  const savedDeckCounts = countBy(loadPlayerDeckIds(), (id) => id);
+  const savedDeckCounts = loadSavedDeckSlotCounts(owned);
   const deckCount = deckEditorIds.length;
   const valid = isValidDeckIds(deckEditorIds, owned);
+  const dirty = isDeckEditorDirty();
   qs("#deckCount").textContent = `${deckCount}/${PLAYER_DECK_SIZE}`;
   qs("#exchangePointBalance").textContent = `${loadExchangePoints()}P`;
   qs("#saveDeckBtn").disabled = !valid;
+  renderDeckSlotButtons();
   updateDeckEditorToggleButtons();
   const status = qs("#deckEditorStatus");
-  status.classList.toggle("is-ready", ready || valid);
-  status.textContent = message || (valid ? "保存できます。" : `${PLAYER_DECK_SIZE - deckCount}枚追加できます。`);
+  status.classList.toggle("is-ready", ready || (valid && !dirty));
+  status.textContent = message || (valid ? (dirty ? `デッキ${activeDeckSlot}に未保存の変更があります。` : `デッキ${activeDeckSlot}は保存済みです。`) : `${PLAYER_DECK_SIZE - deckCount}枚追加できます。`);
 
   const deckCards = Object.entries(selected)
     .sort(([idA], [idB]) => compareCards(CARD_DB.get(idA), CARD_DB.get(idB)))
@@ -5194,7 +5394,13 @@ function canJoinUpcomingAttack(card, player) {
 function aiLanePlanFor(card) {
   if (!card || card.kind !== "character") return AI_LANE_BACK;
   if (card.backOnly) return AI_LANE_BACK;
+  const profileLane = state?.aiProfile?.lanePlan?.[card.id];
+  if (profileLane === AI_LANE_FRONT || profileLane === AI_LANE_BACK) return profileLane;
   return AI_CHARACTER_LANE_PLAN[card.id] || (["AT", "GD"].includes(card.role) ? AI_LANE_FRONT : AI_LANE_BACK);
+}
+
+function isAiProfileBacklineLocked(card) {
+  return Boolean(card?.id && state?.aiProfile?.lockedBackline?.includes(card.id));
 }
 
 function aiFrontPressureValue(card) {
@@ -5208,6 +5414,7 @@ function aiFrontPressureValue(card) {
 
 function shouldAiAdvanceBackPlanToFront(card, player) {
   if (!card || card.backOnly || aiLanePlanFor(card) !== AI_LANE_BACK) return false;
+  if (isAiProfileBacklineLocked(card)) return false;
   if (!player.front.some((slot) => !slot)) return false;
 
   const pressure = aiFrontPressureValue(card);
@@ -5235,6 +5442,10 @@ function chooseAiSlot(card) {
   const lanePlan = aiLanePlanFor(card);
   if (lanePlan === AI_LANE_FRONT) {
     return frontOpen >= 0 ? { lane: AI_LANE_FRONT, index: frontOpen } : null;
+  }
+
+  if (isAiProfileBacklineLocked(card)) {
+    return backOpen >= 0 ? { lane: AI_LANE_BACK, index: backOpen } : null;
   }
 
   if (frontOpen >= 0 && shouldAiAdvanceBackPlanToFront(card, ai)) {
@@ -5663,6 +5874,16 @@ function bindEvents() {
   });
   qs("#resetDeckBtn").addEventListener("click", resetDeckEditor);
   qs("#saveDeckBtn").addEventListener("click", saveDeckEditor);
+  qs("#deckSlotButtons").addEventListener("click", (event) => {
+    const button = event.target.closest(".deck-slot-button[data-deck-slot]");
+    if (!button) return;
+    requestDeckSlotSwitch(button.dataset.deckSlot);
+  });
+  qs("#cancelDeckSlotSwitchBtn").addEventListener("click", closeDeckSlotSwitchConfirm);
+  qs("#confirmDeckSlotSwitchBtn").addEventListener("click", confirmDeckSlotSwitch);
+  qs("#deckSlotConfirmModal").addEventListener("click", (event) => {
+    if (event.target.id === "deckSlotConfirmModal") closeDeckSlotSwitchConfirm();
+  });
   qs("#toggleDeckListBtn").addEventListener("click", toggleDeckListVisibility);
   qs("#toggleLibraryBtn").addEventListener("click", toggleLibraryVisibility);
   qs("#toggleExchangeListBtn").addEventListener("click", toggleExchangeVisibility);
@@ -5797,6 +6018,7 @@ function bindEvents() {
     if (!qs("#howToPlayModal").classList.contains("hidden")) closeHowToPlay();
     if (!qs("#dataTransferModal").classList.contains("hidden")) closeDataTransfer();
     if (!qs("#newGameConfirmModal").classList.contains("hidden")) closeNewGameConfirm();
+    if (!qs("#deckSlotConfirmModal").classList.contains("hidden")) closeDeckSlotSwitchConfirm();
     if (!qs("#galleryView").classList.contains("hidden")) closeGallery();
   });
   qs(".field-wrap").addEventListener("click", handleFieldClick);

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=exchange-confirm-fix-1" />
+    <link rel="stylesheet" href="styles.css?v=deck-slots-1" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -40,6 +40,10 @@
             <button id="closeDeckEditorBtn">戻る</button>
           </div>
         </header>
+        <div class="deck-slot-bar" aria-label="デッキ保存スロット">
+          <span class="deck-slot-label">デッキ</span>
+          <div id="deckSlotButtons" class="deck-slot-buttons"></div>
+        </div>
         <p id="deckEditorStatus" class="deck-editor-status"></p>
         <div class="deck-editor-grid">
           <section id="deckPanel" class="deck-editor-panel">
@@ -305,6 +309,18 @@
       </div>
     </div>
 
+    <div id="deckSlotConfirmModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="deckSlotConfirmTitle" aria-describedby="deckSlotConfirmText">
+      <div class="modal-card deck-slot-confirm-card">
+        <p class="eyebrow">Deck Switch</p>
+        <h2 id="deckSlotConfirmTitle">デッキを切り替えますか？</h2>
+        <p id="deckSlotConfirmText" class="deck-slot-confirm-text">現在の状態で保存をしていませんがデッキを切り替えてよろしいですか？</p>
+        <div class="reward-actions deck-slot-confirm-actions">
+          <button id="cancelDeckSlotSwitchBtn" type="button">キャンセル</button>
+          <button id="confirmDeckSlotSwitchBtn" type="button">切り替える</button>
+        </div>
+      </div>
+    </div>
+
     <div id="exchangeConfirmModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="カード交換確認" style="z-index: 120">
       <div class="modal-card exchange-confirm-card">
         <p class="eyebrow">Card Exchange</p>
@@ -317,6 +333,6 @@
       </div>
     </div>
 
-    <script src="app.js?v=new-game-confirm-1"></script>
+    <script src="app.js?v=deck-slots-1"></script>
   </body>
 </html>
