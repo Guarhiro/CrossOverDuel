@@ -1543,14 +1543,9 @@ const AI_DECKS = [
   {
     level: 11,
     wins: 55,
-    name: "Arcadia Rearguard",
-    concept: "先制攻撃で前衛を押し込み、後衛ガーディアンとパレス支援で守りを厚くする。",
-    lanePlan: {
-      C47: AI_LANE_BACK,
-      C49: AI_LANE_BACK,
-    },
-    lockedBackline: ["C47", "C49"],
-    deck: ["C10", "C41", "C56", "C56", "C57", "C58", "C58", "C59", "C60", "C61", "C62", "C62", "C63", "C64", "C65", "C22", "C47", "C49", "C55", "S16"],
+    name: "Arcadia Bond Guard",
+    concept: "前衛ガーディアンで守りを作り、パレス支援と姉妹の絆で盤面全体を厚くする。",
+    deck: ["C10", "C41", "C56", "C56", "C57", "C58", "C58", "C59", "C60", "C61", "C62", "C62", "C63", "C64", "C65", "C47", "C49", "C55", "S13", "S13"],
   },
 ];
 
