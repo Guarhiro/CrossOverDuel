@@ -5228,8 +5228,12 @@ async function runAiTurn() {
 
   const attackers = () => state.ai.front.filter((card) => canAttack(card, state.ai));
   while (attackers().length && !state.gameOver) {
-    const attacker = attackers().sort((a, b) => effectiveAtk(b) - effectiveAtk(a))[0];
-    const target = chooseAiAttackTarget(attacker);
+    const action = chooseAiBattleAction(attackers());
+    if (!action) {
+      log("AIは紫禁の策謀を警戒し、攻撃を見送った。", "effect");
+      break;
+    }
+    const { attacker, target } = action;
     await performAttack(attacker, target, { allowWhileBusy: true });
     await sleep(560);
   }
@@ -5572,6 +5576,77 @@ function aiAttackSynergyScore(attacker, targetCard, profile, removes, location) 
   }
   if (attacker.id === "C64" && removes && !attacker.sionReattackUsed) score += 10;
   return score;
+}
+
+function aiCounterAttackDamage(attacker, target) {
+  let attackValue = effectiveAtk(attacker);
+  if (attacker.id === "C16") attackValue += 3;
+  if (target?.type === "card" && attacker.id === "C44" && target.card.role === "ST") attackValue += 2;
+  if (attacker.id === "C03") attackValue = Math.max(1, attackValue - 1);
+  return Math.max(0, attackValue);
+}
+
+function aiCounterAttackOutcome(attacker, target) {
+  const reflectedDamage = aiCounterAttackDamage(attacker, target);
+  const usesLastStand = attacker.id === "C49" && !attacker.lastStandUsed && reflectedDamage >= attacker.currentHp;
+  const survives = reflectedDamage < attacker.currentHp || usesLastStand;
+  return {
+    reflectedDamage,
+    survives,
+    usesLastStand,
+    remainingHp: usesLastStand ? 1 : Math.max(0, attacker.currentHp - reflectedDamage),
+  };
+}
+
+function chooseAiCounterBaitTarget(attacker) {
+  return getLegalTargets(attacker, state.ai)
+    .map((target) => ({ target, outcome: aiCounterAttackOutcome(attacker, target) }))
+    .sort((a, b) => a.outcome.reflectedDamage - b.outcome.reflectedDamage)[0]?.target;
+}
+
+function isAiCounterBaitAcceptable(attacker, outcome) {
+  if (!outcome.survives || outcome.usesLastStand) return false;
+  if (effectiveAtk(attacker) <= 1 && outcome.reflectedDamage <= 1) return true;
+  if (outcome.remainingHp < 2) return false;
+  if (outcome.reflectedDamage <= 2) return true;
+  return effectiveAtk(attacker) <= 3 && outcome.reflectedDamage <= Math.ceil(attacker.currentHp / 2);
+}
+
+function scoreAiCounterBait(attacker, outcome) {
+  let score = outcome.reflectedDamage * 20 + effectiveAtk(attacker) * 4 + aiFrontPressureValue(attacker) * 3;
+  if (outcome.remainingHp === 1) score += 12;
+  if (outcome.remainingHp === 2) score += 4;
+  if (attacker.id === "C16") score += 12;
+  if (attacker.id === "C46" && !attacker.atomicFlareUsed) score += 28;
+  if (attacker.id === "C64" && !attacker.sionReattackUsed) score += 14;
+  return score;
+}
+
+function chooseAiCounterBaitAction(availableAttackers) {
+  if (state.player.counterAttack <= 0) return null;
+  if (availableAttackers.length <= state.player.counterAttack) return null;
+
+  return availableAttackers
+    .map((attacker) => {
+      const target = chooseAiCounterBaitTarget(attacker);
+      if (!target) return null;
+      const outcome = aiCounterAttackOutcome(attacker, target);
+      if (!isAiCounterBaitAcceptable(attacker, outcome)) return null;
+      return {
+        attacker,
+        target,
+        score: scoreAiCounterBait(attacker, outcome),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.score - b.score)[0] || null;
+}
+
+function chooseAiBattleAction(availableAttackers) {
+  const counterBait = chooseAiCounterBaitAction(availableAttackers);
+  if (state.player.counterAttack > 0) return counterBait;
+  const attacker = availableAttackers.slice().sort((a, b) => effectiveAtk(b) - effectiveAtk(a))[0];
+  return attacker ? { attacker, target: chooseAiAttackTarget(attacker) } : null;
 }
 
 function scoreAiAttackTarget(attacker, target, context) {
