@@ -1724,6 +1724,13 @@ const BGM_TRACKS = {
 };
 
 const GALLERY_BGM_KEYS = ["title", "titleJazz", "deckEdit", "normal", "normalJazz", "advantage", "advantageJazz", "crisis", "crisisJazz", "victory", "defeat"];
+const VOICE_EVENT_FILE_NAMES = {
+  summon: ["summon.mp3", "sumon.mp3"],
+  attack: ["atack.mp3", "attack.mp3"],
+  retreat: ["retreat.mp3"],
+};
+const voicePathCache = new Map();
+const missingVoiceCache = new Set();
 
 function desiredMusicTrack() {
   if (activeScreen === "title") return "title";
@@ -1747,8 +1754,10 @@ function battleMusicTrack(track) {
 const audio = {
   ctx: null,
   musicAudio: null,
+  voiceAudios: new Set(),
   musicTrack: null,
   bgmVolume: 0.42,
+  voiceVolume: 0.86,
   musicOn: true,
   sfxOn: true,
   voiceOn: true,
@@ -1955,8 +1964,88 @@ const audio = {
         break;
     }
   },
+  stopVoiceFiles() {
+    this.voiceAudios.forEach((clip) => {
+      clip.pause();
+      clip.currentTime = 0;
+    });
+    this.voiceAudios.clear();
+  },
+  stopVoice() {
+    this.stopVoiceFiles();
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  },
+  playVoicePath(path, fallbackText = "") {
+    const clip = new Audio(path);
+    clip.volume = this.voiceVolume;
+    clip.preload = "auto";
+    let failed = false;
+    const handleFailure = () => {
+      if (failed) return;
+      failed = true;
+      this.voiceAudios.delete(clip);
+      if (fallbackText) this.speak(fallbackText);
+    };
+    clip.addEventListener("error", handleFailure, { once: true });
+    clip.addEventListener("ended", () => {
+      this.voiceAudios.delete(clip);
+    }, { once: true });
+    this.voiceAudios.add(clip);
+    const playPromise = clip.play();
+    if (playPromise) playPromise.catch(handleFailure);
+  },
+  tryVoiceCandidates(cacheKey, candidates, index = 0, fallbackText = "") {
+    if (!this.voiceOn) return;
+    if (index >= candidates.length) {
+      missingVoiceCache.add(cacheKey);
+      if (fallbackText) this.speak(fallbackText);
+      return;
+    }
+    const path = candidates[index];
+    const clip = new Audio(path);
+    clip.volume = this.voiceVolume;
+    clip.preload = "auto";
+    let failed = false;
+    const tryNext = () => {
+      if (failed) return;
+      failed = true;
+      this.voiceAudios.delete(clip);
+      this.tryVoiceCandidates(cacheKey, candidates, index + 1, fallbackText);
+    };
+    clip.addEventListener("error", tryNext, { once: true });
+    clip.addEventListener("ended", () => {
+      this.voiceAudios.delete(clip);
+    }, { once: true });
+    this.voiceAudios.add(clip);
+    const playPromise = clip.play();
+    if (playPromise) {
+      playPromise.then(() => voicePathCache.set(cacheKey, path)).catch(tryNext);
+    } else {
+      voicePathCache.set(cacheKey, path);
+    }
+  },
+  voice(card, eventName, fallbackText = "") {
+    if (!this.voiceOn || !card?.id) return false;
+    const cacheKey = `${card.id}:${eventName}`;
+    const cachedPath = voicePathCache.get(cacheKey);
+    if (missingVoiceCache.has(cacheKey)) {
+      if (fallbackText) this.speak(fallbackText);
+      return false;
+    }
+    if (cachedPath) {
+      this.playVoicePath(cachedPath, fallbackText);
+      return true;
+    }
+    const candidates = voiceCandidatePaths(card.id, eventName);
+    if (!candidates.length) {
+      if (fallbackText) this.speak(fallbackText);
+      return false;
+    }
+    this.tryVoiceCandidates(cacheKey, candidates, 0, fallbackText);
+    return true;
+  },
   speak(text) {
-    if (!this.voiceOn || !("speechSynthesis" in window)) return;
+    if (!this.voiceOn || !text || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ja-JP";
@@ -1966,6 +2055,11 @@ const audio = {
     window.speechSynthesis.speak(utterance);
   },
 };
+
+function voiceCandidatePaths(cardId, eventName) {
+  const fileNames = VOICE_EVENT_FILE_NAMES[eventName] || [];
+  return [...new Set(fileNames.map((fileName) => `assets/voice/${cardId}/${fileName}`))];
+}
 
 document.addEventListener("pointerdown", () => audio.unlock(), { once: true });
 
@@ -2262,7 +2356,7 @@ function playCharacterFromHand(player, handIndex, lane, slotIndex) {
   state.summonDropId = card.instanceId;
 
   audio.sfx("summon", card);
-  audio.speak(card.name);
+  audio.voice(card, "summon", card.name);
   log(`${player.name} は <strong>${card.name}</strong> を${lane === "front" ? "前衛" : "後衛"}に配置。`, "summon");
   applySummonEffects(card, player, lane);
   state.selectedHandIndex = null;
@@ -3140,6 +3234,7 @@ async function performAttack(attacker, target, options = {}) {
   state.selectedAttackerId = null;
   const atomicFlareReady = attacker.id === "C46" && !attacker.atomicFlareUsed;
   audio.sfx(atomicFlareReady ? "atomic" : "attack", { ...attacker, amount: effectiveAtk(attacker) });
+  audio.voice(attacker, "attack");
   animateCard(attacker.instanceId, "attack-lift");
   await sleep(ATTACK_IMPACT_DELAY);
 
@@ -3319,6 +3414,7 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
   if (card.id === "C48") removeSerenaBoostFromClaires(owner);
   if (!options.silentDamage) {
     audio.sfx("retreat", card);
+    audio.voice(card, "retreat");
     log(`${card.name} は撤退。`, "damage");
   }
 
@@ -6133,7 +6229,7 @@ function bindEvents() {
   qs("#voiceBtn").addEventListener("click", () => {
     audio.voiceOn = !audio.voiceOn;
     qs("#voiceBtn").classList.toggle("is-on", audio.voiceOn);
-    if (!audio.voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    if (!audio.voiceOn) audio.stopVoice();
   });
 }
 
