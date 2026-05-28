@@ -2468,21 +2468,28 @@ body.title-active .app-shell {
 .deck-sort-options {
   min-height: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(128px, 0.36fr) minmax(128px, 0.36fr) minmax(180px, 0.5fr) minmax(0, 1.9fr);
   gap: 10px;
   overflow: auto;
   padding-right: 4px;
+  align-items: start;
 }
 
 .deck-sort-section {
   min-height: 0;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
   gap: 8px;
+  align-self: start;
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   background: rgba(31, 37, 47, 0.72);
+}
+
+.deck-sort-section-series {
+  align-self: stretch;
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 .deck-sort-section h3 {
@@ -2494,10 +2501,21 @@ body.title-active .app-shell {
 .deck-sort-choice-grid {
   min-height: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(142px, 1fr));
+  grid-template-columns: 1fr;
   gap: 7px;
   align-content: start;
+  overflow: visible;
+}
+
+.deck-sort-section-series .deck-sort-choice-grid {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   overflow: auto;
+}
+
+.deck-sort-section-series .deck-sort-choice span {
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .deck-sort-choice {
@@ -3415,10 +3433,17 @@ body.title-active .app-shell {
 
   .deck-sort-section {
     max-height: min(42vh, 320px);
+    align-self: stretch;
+    grid-template-rows: auto minmax(0, 1fr);
     padding: 8px;
   }
 
   .deck-sort-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: auto;
+  }
+
+  .deck-sort-section-series .deck-sort-choice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -3432,6 +3457,10 @@ body.title-active .app-shell {
     font-size: 0.72rem;
   }
 
+  .deck-sort-section-series .deck-sort-choice span {
+    white-space: nowrap;
+  }
+
   .deck-sort-choice small {
     min-width: 36px;
     padding-inline: 5px;
@@ -3440,7 +3469,7 @@ body.title-active .app-shell {
 
   .deck-sort-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .card-library {

@@ -4834,7 +4834,7 @@ function renderDeckEditorSortModal() {
       })
       .join("");
     return `
-      <section class="deck-sort-section">
+      <section class="deck-sort-section deck-sort-section-${key}">
         <h3>${escapeHtml(DECK_LIBRARY_FILTER_LABELS[key])}</h3>
         <div class="deck-sort-choice-grid">${options}</div>
       </section>
@@ -4859,6 +4859,11 @@ function applyDeckSortModal() {
   closeDeckSortModal();
   clearDeckEditorLibraryDetail();
   renderDeckEditor();
+}
+
+function resetDeckSortModal() {
+  pendingDeckEditorLibraryFilters = createEmptyDeckEditorLibraryFilters();
+  renderDeckEditorSortModal();
 }
 
 function togglePendingDeckSortFilter(input) {
@@ -6373,6 +6378,7 @@ function bindEvents() {
   qs("#ownedOnlyLibraryBtn").addEventListener("click", toggleLibraryOwnedOnly);
   qs("#librarySortBtn").addEventListener("click", openDeckSortModal);
   qs("#cancelDeckSortBtn").addEventListener("click", closeDeckSortModal);
+  qs("#resetDeckSortBtn").addEventListener("click", resetDeckSortModal);
   qs("#applyDeckSortBtn").addEventListener("click", applyDeckSortModal);
   qs("#deckSortOptions").addEventListener("change", (event) => {
     const input = event.target.closest("input[type='checkbox'][data-filter-key]");
