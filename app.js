@@ -3742,6 +3742,16 @@ function cardPointCost(card) {
   return CARD_POINT_COSTS[card?.rarity] || 9999;
 }
 
+function deckCopyLimitForCard(card) {
+  return card?.rarity === "UR" ? 1 : 2;
+}
+
+function deckAllowedCopies(cardId, owned = loadOwnedCollection()) {
+  const card = CARD_DB.get(cardId);
+  if (!card) return 0;
+  return Math.min(Math.max(0, Number(owned[cardId]) || 0), deckCopyLimitForCard(card));
+}
+
 function loadOwnedCollection() {
   const owned = countBy(PLAYER_DECK, (id) => id);
   const rewards = loadCollection();
@@ -3755,7 +3765,25 @@ function loadOwnedCollection() {
 function isValidDeckIds(deckIds, owned = loadOwnedCollection()) {
   if (!Array.isArray(deckIds) || deckIds.length !== PLAYER_DECK_SIZE) return false;
   const deckCounts = countBy(deckIds, (id) => id);
-  return Object.entries(deckCounts).every(([id, count]) => CARD_DB.has(id) && count <= (owned[id] || 0));
+  return Object.entries(deckCounts).every(([id, count]) => CARD_DB.has(id) && count <= deckAllowedCopies(id, owned));
+}
+
+function deckValidationMessage(deckIds, owned = loadOwnedCollection()) {
+  if (!Array.isArray(deckIds)) return "デッキ内容を確認してください。";
+  if (deckIds.length !== PLAYER_DECK_SIZE) {
+    const remaining = PLAYER_DECK_SIZE - deckIds.length;
+    return remaining > 0 ? `${remaining}枚追加できます。` : `${PLAYER_DECK_SIZE}枚ちょうどで保存できます。`;
+  }
+  const deckCounts = countBy(deckIds, (id) => id);
+  for (const [id, count] of Object.entries(deckCounts)) {
+    const card = CARD_DB.get(id);
+    if (!card) return "登録できないカードが含まれています。";
+    const ownedCount = Math.max(0, Number(owned[id]) || 0);
+    if (count > ownedCount) return `${card.name} の所持枚数が足りません。`;
+    const copyLimit = deckCopyLimitForCard(card);
+    if (count > copyLimit) return `${card.name} はデッキに${copyLimit}枚まで入れられます。`;
+  }
+  return "デッキ内容を確認してください。";
 }
 
 function normalizeDeckSlot(slot) {
@@ -3951,7 +3979,7 @@ function normalizeTransferDeckSlots(rawSlots, fallbackDeckIds, owned) {
   const setSlot = (deckIds, index) => {
     hasDeckSlots = true;
     if (!isValidDeckIds(deckIds, owned)) {
-      throw new Error(`デッキ${index + 1}の内容が現在のカードDBまたは所持カードと一致しません。`);
+      throw new Error(`デッキ${index + 1}の内容が現在のカードDB、所持カード、または投入上限と一致しません。`);
     }
     slots[index] = [...deckIds];
   };
@@ -3977,7 +4005,7 @@ function normalizeTransferPayload(payload) {
   const playerDeckIds = Array.isArray(payload.playerDeckIds) ? payload.playerDeckIds.filter((id) => typeof id === "string") : [...PLAYER_DECK];
   const owned = ownedCollectionFromRewardCollection(collection);
   if (!isValidDeckIds(playerDeckIds, owned)) {
-    throw new Error("デッキ内容が現在のカードDBまたは所持カードと一致しません。");
+    throw new Error("デッキ内容が現在のカードDB、所持カード、または投入上限と一致しません。");
   }
   const deckSlots = normalizeTransferDeckSlots(payload.deckSlots, playerDeckIds, owned);
   const activeSlot = normalizeDeckSlot(payload.activeDeckSlot || 1);
@@ -4498,7 +4526,7 @@ function trimDeckCopiesToOwnedLimit(deckIds, cardId, allowedCopies) {
 
 function removeExcessDeckCopiesAfterExchange(cardId) {
   const owned = loadOwnedCollection();
-  const allowedCopies = owned[cardId] || 0;
+  const allowedCopies = deckAllowedCopies(cardId, owned);
   const current = trimDeckCopiesToOwnedLimit(deckEditorIds, cardId, allowedCopies);
   deckEditorIds = current.deckIds;
   const slots = loadPlayerDeckSlots(owned);
@@ -4604,7 +4632,7 @@ function addDeckCard(cardId) {
   const owned = loadOwnedCollection();
   const selected = countBy(deckEditorIds, (id) => id);
   if (!CARD_DB.has(cardId) || deckEditorIds.length >= PLAYER_DECK_SIZE) return;
-  if ((selected[cardId] || 0) >= (owned[cardId] || 0)) return;
+  if ((selected[cardId] || 0) >= deckAllowedCopies(cardId, owned)) return;
   hideSkillPopup();
   deckEditorIds.push(cardId);
   renderDeckEditor();
@@ -4628,7 +4656,7 @@ function saveDeckEditor() {
     renderDeckEditor(`デッキ${activeDeckSlot}を保存しました。`, true);
     return;
   }
-  renderDeckEditor("20枚ちょうどで保存できます。");
+  renderDeckEditor(deckValidationMessage(deckEditorIds));
 }
 
 function renderDeckSlotButtons() {
@@ -4756,11 +4784,14 @@ function renderDeckEditor(message = "", ready = false) {
   updateDeckEditorToggleButtons();
   const status = qs("#deckEditorStatus");
   status.classList.toggle("is-ready", ready || (valid && !dirty));
-  status.textContent = message || (valid ? (dirty ? `デッキ${activeDeckSlot}に未保存の変更があります。` : `デッキ${activeDeckSlot}は保存済みです。`) : `${PLAYER_DECK_SIZE - deckCount}枚追加できます。`);
+  status.textContent = message || (valid ? (dirty ? `デッキ${activeDeckSlot}に未保存の変更があります。` : `デッキ${activeDeckSlot}は保存済みです。`) : deckValidationMessage(deckEditorIds, owned));
 
   const deckCards = Object.entries(selected)
     .sort(([idA], [idB]) => compareCards(CARD_DB.get(idA), CARD_DB.get(idB)))
-    .map(([id, count]) => renderDeckEditorCard(CARD_DB.get(id), count, `所持 ${owned[id] || 0}`, false, "deck"))
+    .map(([id, count]) => {
+      const card = CARD_DB.get(id);
+      return renderDeckEditorCard(card, count, `所持 ${owned[id] || 0} / 上限 ${deckCopyLimitForCard(card)}`, false, "deck");
+    })
     .join("");
   qs("#deckList").innerHTML = deckEditorDeckHidden ? '<p class="deck-empty">デッキ内カードを非表示中です。</p>' : deckCards || '<p class="deck-empty">0枚</p>';
 
@@ -4770,9 +4801,10 @@ function renderDeckEditor(message = "", ready = false) {
     .map((card) => {
       const ownedCount = owned[card.id] || 0;
       const usedCount = selected[card.id] || 0;
-      const remaining = ownedCount - usedCount;
+      const copyLimit = deckCopyLimitForCard(card);
+      const remaining = Math.min(ownedCount, copyLimit) - usedCount;
       const disabled = remaining <= 0 || deckCount >= PLAYER_DECK_SIZE;
-      return renderDeckEditorCard(card, remaining, `所持 ${ownedCount} / デッキ ${usedCount}`, disabled, "library");
+      return renderDeckEditorCard(card, remaining, `所持 ${ownedCount} / デッキ ${usedCount} / 上限 ${copyLimit}`, disabled, "library");
     })
     .join("");
   qs("#cardLibrary").innerHTML = deckEditorLibraryHidden
