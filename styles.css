@@ -939,6 +939,14 @@ body.title-active .app-shell {
   outline: none;
 }
 
+.deck-edit-card.is-detail-active {
+  transform: translateY(-1px);
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 2px rgba(246, 200, 95, 0.34),
+    0 0 18px rgba(246, 200, 95, 0.22);
+}
+
 .deck-edit-card.is-unavailable {
   cursor: not-allowed;
 }

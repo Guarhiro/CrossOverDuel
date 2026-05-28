@@ -1565,6 +1565,8 @@ let deckEditorExchangeHidden = false;
 let deckEditorLibraryOwnedOnly = false;
 let deckEditorLibrarySort = "rarity";
 let deckEditorSkillViews = new Set();
+let deckEditorLibraryDetailCardId = null;
+let deckEditorPreviewSuppressedUntil = 0;
 let pendingExchangeCardId = null;
 let battleBgmStyle = "standard";
 let gallerySelectedCardId = null;
@@ -4634,9 +4636,10 @@ function addDeckCard(cardId) {
   const selected = countBy(deckEditorIds, (id) => id);
   if (!CARD_DB.has(cardId) || deckEditorIds.length >= PLAYER_DECK_SIZE) return;
   if ((selected[cardId] || 0) >= deckAllowedCopies(cardId, owned)) return;
-  hideSkillPopup();
+  suppressDeckEditorCardPreview();
   deckEditorIds.push(cardId);
   renderDeckEditor();
+  hideSkillPopup();
 }
 
 function removeDeckCard(cardId) {
@@ -4732,6 +4735,49 @@ function setLibrarySort(event) {
   deckEditorLibrarySort = ["rarity", "type", "element"].includes(value) ? value : "rarity";
   hideSkillPopup();
   renderDeckEditor();
+}
+
+function deckEditorNow() {
+  return window.performance?.now?.() || Date.now();
+}
+
+function suppressDeckEditorCardPreview(duration = 500) {
+  deckEditorPreviewSuppressedUntil = deckEditorNow() + duration;
+}
+
+function isDeckEditorCardPreviewSuppressed() {
+  return deckEditorNow() < deckEditorPreviewSuppressedUntil;
+}
+
+function updateDeckEditorLibraryDetailState() {
+  qsa("#cardLibrary .deck-edit-card[data-card-id]").forEach((cardButton) => {
+    const active = cardButton.dataset.cardId === deckEditorLibraryDetailCardId;
+    cardButton.classList.toggle("is-detail-active", active);
+    cardButton.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function clearDeckEditorLibraryDetail() {
+  if (!deckEditorLibraryDetailCardId) return;
+  deckEditorLibraryDetailCardId = null;
+  updateDeckEditorLibraryDetailState();
+}
+
+function showDeckEditorLibraryDetail(cardButton) {
+  if (!cardButton?.dataset?.cardId || !CARD_DB.has(cardButton.dataset.cardId)) return;
+  deckEditorLibraryDetailCardId = cardButton.dataset.cardId;
+  showDeckCardPopup(cardButton.dataset.cardId, cardButton);
+  updateDeckEditorLibraryDetailState();
+}
+
+function handleDeckEditorLibraryCardActivation(cardButton) {
+  const cardId = cardButton?.dataset?.cardId;
+  if (!cardId) return;
+  if (deckEditorLibraryDetailCardId === cardId && cardButton.dataset.disabled !== "true") {
+    addDeckCard(cardId);
+    return;
+  }
+  showDeckEditorLibraryDetail(cardButton);
 }
 
 function deckEditorViewKey(zone, cardId) {
@@ -4921,9 +4967,10 @@ function renderDeckEditorCard(card, count, meta, disabled, zone) {
     .join("");
   const mobileNameClass = [...card.name].length >= 8 ? " is-compact" : "";
   const cardLabel = `${card.name}、${elementLine}、${typeLine}、Cost ${card.cost}、${card.skill}。${card.text}`;
+  const detailActive = zone === "library" && deckEditorLibraryDetailCardId === card.id;
   return `
-    <div class="deck-edit-card deck-edit-card-${card.kind} ${count <= 0 ? "is-empty" : ""} ${disabled ? "is-unavailable" : ""}" style="--element:${color}; --card-image:url('${image}'); --deck-card-position:center 28%"
-      data-card-id="${card.id}" data-zone="${zone}" data-disabled="${disabled}" aria-disabled="${disabled}" aria-label="${escapeHtml(cardLabel)}" role="button" tabindex="0">
+    <div class="deck-edit-card deck-edit-card-${card.kind} ${count <= 0 ? "is-empty" : ""} ${disabled ? "is-unavailable" : ""} ${detailActive ? "is-detail-active" : ""}" style="--element:${color}; --card-image:url('${image}'); --deck-card-position:center 28%"
+      data-card-id="${card.id}" data-zone="${zone}" data-disabled="${disabled}" aria-disabled="${disabled}" aria-pressed="${detailActive}" aria-label="${escapeHtml(cardLabel)}" role="button" tabindex="0">
       <span class="deck-edit-card-inner">
         <span class="deck-card-mobile-face" aria-hidden="true">
           <span class="deck-card-mobile-frame"></span>
@@ -5235,6 +5282,7 @@ function positionSkillPopup(popup, anchor) {
 function hideSkillPopup() {
   const popup = qs("#skillPopup");
   if (popup) popup.classList.add("hidden");
+  clearDeckEditorLibraryDetail();
 }
 
 function renderSigil(card, color) {
@@ -5921,9 +5969,11 @@ function handleHandOut(event) {
 
 function handleDeckEditorCardPreview(event) {
   if (event.pointerType === "touch") return;
+  if (isDeckEditorCardPreviewSuppressed()) return;
   const cardButton = event.target.closest(".deck-edit-card[data-card-id]");
   if (!cardButton || !qs("#deckEditor")?.contains(cardButton)) return;
   if (event.target.closest(".deck-card-mode-btn")) return;
+  if (deckEditorLibraryDetailCardId) return;
   showDeckCardPopup(cardButton.dataset.cardId, cardButton);
 }
 
@@ -5932,6 +5982,7 @@ function handleDeckEditorCardOut(event) {
   if (!fromCard) return;
   const toCard = event.relatedTarget?.closest?.(".deck-edit-card[data-card-id]");
   if (toCard === fromCard) return;
+  if (deckEditorLibraryDetailCardId) return;
   hideSkillPopup();
 }
 
@@ -6139,6 +6190,13 @@ function bindEvents() {
   qs("#ownedOnlyLibraryBtn").addEventListener("click", toggleLibraryOwnedOnly);
   qs("#librarySortSelect").addEventListener("change", setLibrarySort);
   document.addEventListener("click", (event) => {
+    if (
+      deckEditorLibraryDetailCardId &&
+      !event.target.closest("#cardLibrary .deck-edit-card") &&
+      !event.target.closest("#skillPopup")
+    ) {
+      hideSkillPopup();
+    }
     if (event.target.closest("#cancelExchangeBtn")) {
       event.preventDefault();
       closeExchangeConfirm();
@@ -6158,8 +6216,8 @@ function bindEvents() {
       return;
     }
     const cardButton = event.target.closest(".deck-edit-card[data-card-id]");
-    if (!cardButton || cardButton.dataset.disabled === "true") return;
-    addDeckCard(cardButton.dataset.cardId);
+    if (!cardButton) return;
+    handleDeckEditorLibraryCardActivation(cardButton);
   });
   qs("#deckList").addEventListener("click", (event) => {
     const modeButton = event.target.closest(".deck-card-mode-btn[data-card-id]");
@@ -6185,7 +6243,7 @@ function bindEvents() {
       if (!cardButton) return;
       event.preventDefault();
       if (cardButton.dataset.zone === "library") {
-        if (cardButton.dataset.disabled !== "true") addDeckCard(cardButton.dataset.cardId);
+        handleDeckEditorLibraryCardActivation(cardButton);
       } else {
         removeDeckCard(cardButton.dataset.cardId);
       }
@@ -6208,6 +6266,8 @@ function bindEvents() {
   });
   qs("#exchangeList").addEventListener("pointerover", (event) => {
     if (event.pointerType === "touch") return;
+    if (isDeckEditorCardPreviewSuppressed()) return;
+    if (deckEditorLibraryDetailCardId) return;
     const card = event.target.closest(".deck-exchange-card[data-card-id]");
     if (card) showDeckCardPopup(card.dataset.cardId, card);
   });
@@ -6216,6 +6276,7 @@ function bindEvents() {
     if (!fromCard) return;
     const toCard = event.relatedTarget?.closest?.(".deck-exchange-card[data-card-id]");
     if (toCard === fromCard) return;
+    if (deckEditorLibraryDetailCardId) return;
     hideSkillPopup();
   });
   qs("#newGameBtn").addEventListener("click", openNewGameConfirm);
