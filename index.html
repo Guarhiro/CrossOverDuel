@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=deck-library-detail-add-1" />
+    <link rel="stylesheet" href="styles.css?v=deck-library-sort-modal-1" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -57,12 +57,8 @@
             <div class="deck-editor-panel-head">
               <h3>所持カード</h3>
               <div class="deck-editor-panel-actions">
-                <button id="ownedOnlyLibraryBtn" class="panel-toggle" type="button" aria-pressed="false">入手済みのみ</button>
-                <select id="librarySortSelect" class="library-sort-select" aria-label="所持カードの並び替え">
-                  <option value="rarity">レア毎</option>
-                  <option value="type">タイプ毎</option>
-                  <option value="element">属性毎</option>
-                </select>
+                <button id="ownedOnlyLibraryBtn" class="panel-toggle is-on" type="button" aria-pressed="true">全カード</button>
+                <button id="librarySortBtn" class="panel-toggle library-sort-button" type="button">ソート</button>
                 <button id="toggleLibraryBtn" class="panel-toggle" type="button">非表示</button>
               </div>
             </div>
@@ -338,6 +334,26 @@
       </div>
     </div>
 
-    <script src="app.js?v=deck-detail-scroll-dismiss-1"></script>
+    <div id="deckSortModal" class="modal deck-sort-modal hidden" role="dialog" aria-modal="true" aria-labelledby="deckSortTitle">
+      <div class="modal-card deck-sort-card">
+        <header class="deck-sort-header">
+          <div>
+            <p class="eyebrow">Library Sort</p>
+            <h2 id="deckSortTitle">カード条件</h2>
+          </div>
+          <div class="deck-sort-target">
+            <span>対象</span>
+            <strong id="deckSortTargetCount">0/0枚</strong>
+          </div>
+        </header>
+        <div id="deckSortOptions" class="deck-sort-options"></div>
+        <div class="deck-sort-actions">
+          <button id="cancelDeckSortBtn" type="button">キャンセル</button>
+          <button id="applyDeckSortBtn" type="button">実行</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js?v=deck-library-sort-modal-1"></script>
   </body>
 </html>

@@ -1396,6 +1396,13 @@ const SUPPORTS = [
 
 const ALL_CARDS = [...CHARACTERS, ...SUPPORTS];
 const CARD_DB = new Map(ALL_CARDS.map((card) => [card.id, card]));
+const DECK_LIBRARY_FILTER_KEYS = ["rarity", "element", "type", "series"];
+const DECK_LIBRARY_FILTER_LABELS = {
+  rarity: "レア別",
+  element: "属性別",
+  type: "タイプ別",
+  series: "作品別",
+};
 
 const PLAYER_DECK = [
   "C01",
@@ -1563,7 +1570,8 @@ let deckEditorDeckHidden = false;
 let deckEditorLibraryHidden = false;
 let deckEditorExchangeHidden = true;
 let deckEditorLibraryOwnedOnly = false;
-let deckEditorLibrarySort = "rarity";
+let deckEditorLibraryFilters = createEmptyDeckEditorLibraryFilters();
+let pendingDeckEditorLibraryFilters = null;
 let deckEditorSkillViews = new Set();
 let deckEditorLibraryDetailCardId = null;
 let deckEditorPreviewSuppressedUntil = 0;
@@ -4731,11 +4739,137 @@ function toggleLibraryOwnedOnly() {
   renderDeckEditor();
 }
 
-function setLibrarySort(event) {
-  const value = event.currentTarget.value;
-  deckEditorLibrarySort = ["rarity", "type", "element"].includes(value) ? value : "rarity";
+function createEmptyDeckEditorLibraryFilters() {
+  return DECK_LIBRARY_FILTER_KEYS.reduce((filters, key) => {
+    filters[key] = [];
+    return filters;
+  }, {});
+}
+
+function cloneDeckEditorLibraryFilters(filters = deckEditorLibraryFilters) {
+  const source = filters || {};
+  return DECK_LIBRARY_FILTER_KEYS.reduce((clone, key) => {
+    clone[key] = [...new Set(source[key] || [])];
+    return clone;
+  }, {});
+}
+
+function selectedDeckEditorLibraryFilterCount(filters = deckEditorLibraryFilters) {
+  return DECK_LIBRARY_FILTER_KEYS.reduce((count, key) => count + (filters[key]?.length || 0), 0);
+}
+
+function deckEditorLibraryBaseCards(owned = loadOwnedCollection()) {
+  return ALL_CARDS.filter((card) => !deckEditorLibraryOwnedOnly || (owned[card.id] || 0) > 0);
+}
+
+function deckEditorCardFilterValue(card, key) {
+  if (key === "rarity") return card.rarity;
+  if (key === "element") return card.element || "無";
+  if (key === "type") return deckEditorTypeLabel(card);
+  if (key === "series") return card.series || "共通";
+  return "";
+}
+
+function deckEditorCardMatchesFilters(card, filters = deckEditorLibraryFilters) {
+  return DECK_LIBRARY_FILTER_KEYS.every((key) => {
+    const selectedValues = filters[key] || [];
+    return !selectedValues.length || selectedValues.includes(deckEditorCardFilterValue(card, key));
+  });
+}
+
+function deckEditorLibraryTargetCards(owned = loadOwnedCollection(), filters = deckEditorLibraryFilters) {
+  return deckEditorLibraryBaseCards(owned).filter((card) => deckEditorCardMatchesFilters(card, filters));
+}
+
+function deckEditorLibraryFilterOptions(key) {
+  const values = [...new Set(ALL_CARDS.map((card) => deckEditorCardFilterValue(card, key)))];
+  if (key === "rarity") return values.sort((a, b) => (RARITY_ORDER[b] || 0) - (RARITY_ORDER[a] || 0));
+  if (key === "element") {
+    const order = Object.keys(ELEMENT_COLORS);
+    return values.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  }
+  if (key === "type") {
+    const order = [...Object.values(ROLE_LABELS), "インスタント", "設置型", "カウンター"];
+    return values.sort((a, b) => {
+      const aIndex = order.indexOf(a);
+      const bIndex = order.indexOf(b);
+      if (aIndex !== bIndex) return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+      return a.localeCompare(b, "ja");
+    });
+  }
+  return values.sort((a, b) => a.localeCompare(b, "ja"));
+}
+
+function deckEditorFilterOptionCount(baseCards, filters, key, value) {
+  return baseCards.filter((card) =>
+    DECK_LIBRARY_FILTER_KEYS.every((filterKey) => {
+      if (filterKey === key) return deckEditorCardFilterValue(card, filterKey) === value;
+      const selectedValues = filters[filterKey] || [];
+      return !selectedValues.length || selectedValues.includes(deckEditorCardFilterValue(card, filterKey));
+    }),
+  ).length;
+}
+
+function renderDeckEditorSortModal() {
+  const optionsRoot = qs("#deckSortOptions");
+  const targetCount = qs("#deckSortTargetCount");
+  if (!optionsRoot || !targetCount) return;
+  const owned = loadOwnedCollection();
+  const baseCards = deckEditorLibraryBaseCards(owned);
+  const filters = pendingDeckEditorLibraryFilters || deckEditorLibraryFilters;
+  const targetCards = baseCards.filter((card) => deckEditorCardMatchesFilters(card, filters));
+  targetCount.textContent = `${targetCards.length}/${baseCards.length}枚`;
+  optionsRoot.innerHTML = DECK_LIBRARY_FILTER_KEYS.map((key) => {
+    const options = deckEditorLibraryFilterOptions(key)
+      .map((value) => {
+        const checked = (filters[key] || []).includes(value);
+        const count = deckEditorFilterOptionCount(baseCards, filters, key, value);
+        return `
+          <label class="deck-sort-choice ${checked ? "is-checked" : ""} ${count <= 0 ? "is-empty" : ""}">
+            <input type="checkbox" data-filter-key="${key}" value="${escapeHtml(value)}" ${checked ? "checked" : ""} />
+            <span>${escapeHtml(value)}</span>
+            <small>${count}枚</small>
+          </label>
+        `;
+      })
+      .join("");
+    return `
+      <section class="deck-sort-section">
+        <h3>${escapeHtml(DECK_LIBRARY_FILTER_LABELS[key])}</h3>
+        <div class="deck-sort-choice-grid">${options}</div>
+      </section>
+    `;
+  }).join("");
+}
+
+function openDeckSortModal() {
+  pendingDeckEditorLibraryFilters = cloneDeckEditorLibraryFilters();
   hideSkillPopup();
+  renderDeckEditorSortModal();
+  qs("#deckSortModal")?.classList.remove("hidden");
+}
+
+function closeDeckSortModal() {
+  pendingDeckEditorLibraryFilters = null;
+  qs("#deckSortModal")?.classList.add("hidden");
+}
+
+function applyDeckSortModal() {
+  deckEditorLibraryFilters = cloneDeckEditorLibraryFilters(pendingDeckEditorLibraryFilters);
+  closeDeckSortModal();
+  clearDeckEditorLibraryDetail();
   renderDeckEditor();
+}
+
+function togglePendingDeckSortFilter(input) {
+  if (!input?.dataset?.filterKey || !DECK_LIBRARY_FILTER_KEYS.includes(input.dataset.filterKey)) return;
+  if (!pendingDeckEditorLibraryFilters) pendingDeckEditorLibraryFilters = cloneDeckEditorLibraryFilters();
+  const key = input.dataset.filterKey;
+  const nextValues = new Set(pendingDeckEditorLibraryFilters[key] || []);
+  if (input.checked) nextValues.add(input.value);
+  else nextValues.delete(input.value);
+  pendingDeckEditorLibraryFilters[key] = [...nextValues];
+  renderDeckEditorSortModal();
 }
 
 function deckEditorNow() {
@@ -4841,7 +4975,7 @@ function updateDeckEditorToggleButtons() {
   const libraryButton = qs("#toggleLibraryBtn");
   const exchangeButton = qs("#toggleExchangeListBtn");
   const ownedOnlyButton = qs("#ownedOnlyLibraryBtn");
-  const librarySortSelect = qs("#librarySortSelect");
+  const librarySortButton = qs("#librarySortBtn");
   const deckPanel = qs("#deckPanel");
   const libraryPanel = qs("#libraryPanel");
   const exchangePanel = qs("#exchangePanel");
@@ -4864,11 +4998,17 @@ function updateDeckEditorToggleButtons() {
   deckEditorGrid?.classList.toggle("is-deck-collapsed", deckEditorDeckHidden);
   deckEditorGrid?.classList.toggle("is-library-collapsed", deckEditorLibraryHidden);
   deckEditorGrid?.classList.toggle("is-exchange-collapsed", deckEditorExchangeHidden);
-  ownedOnlyButton.textContent = deckEditorLibraryOwnedOnly ? "全カード" : "入手済みのみ";
-  ownedOnlyButton.title = deckEditorLibraryOwnedOnly ? "全カードを表示" : "入手済みカードのみ表示";
-  ownedOnlyButton.setAttribute("aria-pressed", String(deckEditorLibraryOwnedOnly));
-  ownedOnlyButton.classList.toggle("is-on", deckEditorLibraryOwnedOnly);
-  if (librarySortSelect) librarySortSelect.value = deckEditorLibrarySort;
+  const showingAllCards = !deckEditorLibraryOwnedOnly;
+  ownedOnlyButton.textContent = showingAllCards ? "全カード" : "入手済みのみ";
+  ownedOnlyButton.title = showingAllCards ? "全カードを表示中" : "入手済みカードのみ表示中";
+  ownedOnlyButton.setAttribute("aria-pressed", String(showingAllCards));
+  ownedOnlyButton.classList.toggle("is-on", showingAllCards);
+  const owned = loadOwnedCollection();
+  const activeFilterCount = selectedDeckEditorLibraryFilterCount();
+  const targetCardCount = deckEditorLibraryTargetCards(owned).length;
+  librarySortButton.textContent = activeFilterCount ? `ソート ${targetCardCount}枚` : "ソート";
+  librarySortButton.title = activeFilterCount ? `${activeFilterCount}条件 / 対象${targetCardCount}枚` : "ソート条件を開く";
+  librarySortButton.classList.toggle("is-on", activeFilterCount > 0);
 }
 
 function renderDeckEditor(message = "", ready = false) {
@@ -4898,8 +5038,8 @@ function renderDeckEditor(message = "", ready = false) {
     .join("");
   qs("#deckList").innerHTML = deckEditorDeckHidden ? '<p class="deck-empty">デッキ内カードを非表示中です。</p>' : deckCards || '<p class="deck-empty">0枚</p>';
 
-  const libraryCards = [...ALL_CARDS]
-    .filter((card) => !deckEditorLibraryOwnedOnly || (owned[card.id] || 0) > 0)
+  const libraryCards = deckEditorLibraryBaseCards(owned)
+    .filter((card) => deckEditorCardMatchesFilters(card))
     .sort(compareDeckEditorLibraryCards)
     .map((card) => {
       const ownedCount = owned[card.id] || 0;
@@ -4976,16 +5116,16 @@ function deckEditorTypeLabel(card) {
   return card.kind === "support" ? card.supportType : ROLE_LABELS[card.role];
 }
 
+function compareDeckEditorFilterValue(a, b, key) {
+  if (key === "rarity") return (RARITY_ORDER[b.rarity] || 0) - (RARITY_ORDER[a.rarity] || 0);
+  return deckEditorCardFilterValue(a, key).localeCompare(deckEditorCardFilterValue(b, key), "ja");
+}
+
 function compareDeckEditorLibraryCards(a, b) {
-  if (deckEditorLibrarySort === "type") {
-    const typeCompare = deckEditorTypeLabel(a).localeCompare(deckEditorTypeLabel(b), "ja");
-    if (typeCompare) return typeCompare;
-    return compareCards(a, b);
-  }
-  if (deckEditorLibrarySort === "element") {
-    const elementCompare = (a.element || "無").localeCompare(b.element || "無", "ja");
-    if (elementCompare) return elementCompare;
-    return compareCards(a, b);
+  const activeKeys = DECK_LIBRARY_FILTER_KEYS.filter((key) => deckEditorLibraryFilters[key]?.length);
+  for (const key of activeKeys) {
+    const compared = compareDeckEditorFilterValue(a, b, key);
+    if (compared) return compared;
   }
   return compareCards(a, b);
 }
@@ -6231,7 +6371,13 @@ function bindEvents() {
   qs("#toggleLibraryBtn").addEventListener("click", toggleLibraryVisibility);
   qs("#toggleExchangeListBtn").addEventListener("click", toggleExchangeVisibility);
   qs("#ownedOnlyLibraryBtn").addEventListener("click", toggleLibraryOwnedOnly);
-  qs("#librarySortSelect").addEventListener("change", setLibrarySort);
+  qs("#librarySortBtn").addEventListener("click", openDeckSortModal);
+  qs("#cancelDeckSortBtn").addEventListener("click", closeDeckSortModal);
+  qs("#applyDeckSortBtn").addEventListener("click", applyDeckSortModal);
+  qs("#deckSortOptions").addEventListener("change", (event) => {
+    const input = event.target.closest("input[type='checkbox'][data-filter-key]");
+    if (input) togglePendingDeckSortFilter(input);
+  });
   qs("#cardLibrary").addEventListener("scroll", scheduleDeckEditorLibraryDetailVisibilityCheck, { passive: true });
   qs("#deckEditor .deck-editor-shell").addEventListener("scroll", scheduleDeckEditorLibraryDetailVisibilityCheck, { passive: true });
   document.addEventListener("click", (event) => {
