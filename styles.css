@@ -574,6 +574,25 @@ body.title-active .app-shell {
 }
 
 @media (min-width: 761px) {
+  .card-library {
+    align-content: start;
+  }
+
+  .card-library .deck-edit-card {
+    min-height: 190px;
+  }
+
+  .card-library .deck-edit-card-inner {
+    min-height: 188px;
+    grid-template-rows: auto auto auto auto;
+  }
+
+  .card-library .deck-card-skill span {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+  }
+
   .deck-editor-grid.is-deck-collapsed {
     --deck-column: fit-content(152px);
     --library-column: minmax(0, 1fr);
