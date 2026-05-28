@@ -984,6 +984,10 @@ body.title-active .app-shell {
   background: #ffe08a;
 }
 
+.deck-card-mobile-face {
+  display: none;
+}
+
 .deck-card-name {
   margin: 0;
   align-self: end;
@@ -3196,9 +3200,11 @@ body.title-active .app-shell {
 
   .card-library {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: clamp(200px, calc((100vw - 50px) * 0.75), 280px);
+    grid-auto-rows: clamp(200px, calc((100vw - 50px) * 0.75), 460px);
     gap: 8px;
     align-items: stretch;
+    min-height: clamp(200px, calc((100vw - 50px) * 0.75), 460px);
+    max-height: min(70vh, 680px);
     padding-right: 0;
   }
 
@@ -3209,10 +3215,7 @@ body.title-active .app-shell {
     min-height: 0;
     align-self: stretch;
     position: relative;
-    background:
-      linear-gradient(180deg, rgba(5, 7, 11, 0.22), rgba(5, 7, 11, 0.08) 42%, rgba(5, 7, 11, 0.32)),
-      var(--card-image) center / contain no-repeat,
-      #05070b;
+    background: #05070b;
     filter: none;
   }
 
@@ -3226,6 +3229,190 @@ body.title-active .app-shell {
     padding: 6px;
     background: none;
     pointer-events: none;
+  }
+
+  .card-library .deck-card-mobile-face {
+    position: absolute;
+    inset: 0;
+    display: block;
+    overflow: hidden;
+    border-radius: inherit;
+    color: #07080b;
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "Times New Roman", serif;
+    font-feature-settings: "palt";
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.72), 0 0 5px rgba(255, 255, 255, 0.42);
+    pointer-events: none;
+  }
+
+  .card-library .deck-card-mobile-face::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: var(--card-image) center / cover no-repeat;
+  }
+
+  .card-library .deck-card-mobile-face::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 28%, rgba(255, 255, 255, 0.1) 83%, rgba(255, 255, 255, 0.22)),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.04), transparent 35%, rgba(0, 0, 0, 0.1));
+  }
+
+  .card-library .deck-card-mobile-frame {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: url("assets/ui/deck-card-frame-mobile.png") center / 100% 100% no-repeat;
+  }
+
+  .card-library .deck-card-mobile-cost,
+  .card-library .deck-card-mobile-name,
+  .card-library .deck-card-mobile-type,
+  .card-library .deck-card-mobile-element,
+  .card-library .deck-card-mobile-effect,
+  .card-library .deck-card-mobile-stats {
+    position: absolute;
+    z-index: 4;
+  }
+
+  .card-library .deck-card-mobile-cost {
+    top: 7.8%;
+    left: 6.4%;
+    width: 9%;
+    color: #07080b;
+    font-size: 1.24rem;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .card-library .deck-card-mobile-name {
+    top: 4.9%;
+    left: 22.4%;
+    right: 18.6%;
+    overflow: hidden;
+    color: #07080b;
+    font-size: 0.98rem;
+    font-weight: 900;
+    line-height: 1.05;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.78), 0 0 6px rgba(255, 255, 255, 0.55);
+  }
+
+  .card-library .deck-card-mobile-type {
+    top: 12.2%;
+    left: 32.5%;
+    right: 32%;
+    overflow: hidden;
+    color: #07080b;
+    font-size: 0.56rem;
+    font-weight: 900;
+    line-height: 1.05;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.78), 0 0 5px rgba(255, 255, 255, 0.55);
+  }
+
+  .card-library .deck-card-mobile-element {
+    top: 5%;
+    right: 7%;
+    width: 8.8%;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background:
+      radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.78), transparent 25%),
+      radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--element) 72%, #ffffff), color-mix(in srgb, var(--element) 76%, #05070b) 68%);
+    font-family: serif;
+    font-size: 0.7rem;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.82);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.54), 0 1px 5px rgba(0, 0, 0, 0.38);
+  }
+
+  .card-library .deck-card-mobile-effect {
+    top: 63.5%;
+    left: 8.9%;
+    right: 8.8%;
+    height: 20.1%;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: start;
+    gap: 2px;
+    overflow: hidden;
+    padding: 4px 6px 3px;
+    border: 1px solid rgba(255, 255, 255, 0.46);
+    border-radius: 4px;
+    color: #07080b;
+    background: rgba(238, 244, 248, 0.74);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62), 0 1px 6px rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(1.5px);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.58);
+  }
+
+  .card-library .deck-card-mobile-effect strong {
+    overflow: hidden;
+    font-size: 0.62rem;
+    font-weight: 900;
+    line-height: 1.06;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .card-library .deck-card-mobile-effect span {
+    display: -webkit-box;
+    overflow: hidden;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.5rem;
+    font-weight: 900;
+    line-height: 1.14;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+  }
+
+  .card-library .deck-card-mobile-stats {
+    left: 0;
+    right: 0;
+    bottom: 4.05%;
+    height: 5.2%;
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "Times New Roman", serif;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .card-library .deck-card-mobile-stat {
+    position: absolute;
+    top: 50%;
+    width: 8%;
+    transform: translate(-50%, -50%);
+    color: #07080b;
+    font-size: 0.74rem;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.82), 0 0 4px rgba(255, 255, 255, 0.48);
+  }
+
+  .card-library .deck-card-mobile-stat:nth-child(1) {
+    left: 28.5%;
+  }
+
+  .card-library .deck-card-mobile-stat:nth-child(2) {
+    left: 56.3%;
+  }
+
+  .card-library .deck-card-mobile-stat:nth-child(3) {
+    left: 86.4%;
   }
 
   .deck-list .deck-edit-card {

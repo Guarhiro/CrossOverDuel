@@ -4915,10 +4915,27 @@ function renderDeckEditorCard(card, count, meta, disabled, zone) {
   const detail = showingSkill
     ? `<span class="deck-card-skill"><strong>${escapeHtml(card.skill)}</strong><span>${escapeHtml(card.text)}</span></span>`
     : `<span class="deck-card-name">${escapeHtml(card.name)}</span>`;
+  const mobileStatValues = card.kind === "support" ? ["-", "-", "-"] : [card.atk, card.def, card.hp];
+  const mobileStats = mobileStatValues
+    .map((value) => `<span class="deck-card-mobile-stat"><span>${escapeHtml(value)}</span></span>`)
+    .join("");
+  const cardLabel = `${card.name}、${elementLine}、${typeLine}、Cost ${card.cost}、${card.skill}。${card.text}`;
   return `
-    <div class="deck-edit-card ${count <= 0 ? "is-empty" : ""} ${disabled ? "is-unavailable" : ""}" style="--element:${color}; --card-image:url('${image}'); --deck-card-position:center 28%"
-      data-card-id="${card.id}" data-zone="${zone}" data-disabled="${disabled}" aria-disabled="${disabled}" role="button" tabindex="0">
+    <div class="deck-edit-card deck-edit-card-${card.kind} ${count <= 0 ? "is-empty" : ""} ${disabled ? "is-unavailable" : ""}" style="--element:${color}; --card-image:url('${image}'); --deck-card-position:center 28%"
+      data-card-id="${card.id}" data-zone="${zone}" data-disabled="${disabled}" aria-disabled="${disabled}" aria-label="${escapeHtml(cardLabel)}" role="button" tabindex="0">
       <span class="deck-edit-card-inner">
+        <span class="deck-card-mobile-face" aria-hidden="true">
+          <span class="deck-card-mobile-frame"></span>
+          <span class="deck-card-mobile-cost">${escapeHtml(card.cost)}</span>
+          <span class="deck-card-mobile-name">${escapeHtml(card.name)}</span>
+          <span class="deck-card-mobile-type">${escapeHtml(typeLine)}</span>
+          <span class="deck-card-mobile-element">${escapeHtml(card.element || "無")}</span>
+          <span class="deck-card-mobile-effect">
+            <strong>【${escapeHtml(card.skill)}】</strong>
+            <span>${escapeHtml(card.text)}</span>
+          </span>
+          <span class="deck-card-mobile-stats">${mobileStats}</span>
+        </span>
         <span class="deck-card-top">
           <span class="deck-card-id">${escapeHtml(card.no)} ${card.rarity}</span>
           <span class="deck-card-kind">${escapeHtml(elementLine)} / ${escapeHtml(typeLine)}</span>
