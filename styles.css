@@ -2889,7 +2889,14 @@ body.title-active .app-shell {
   }
 
   .title-screen {
-    padding: 18px;
+    place-items: start center;
+    overflow: hidden;
+    padding: 14px 18px 18px;
+  }
+
+  .title-visuals {
+    z-index: 1;
+    overflow: hidden;
   }
 
   .title-card {
@@ -2903,21 +2910,74 @@ body.title-active .app-shell {
 
   .title-content {
     width: min(420px, calc(100vw - 36px));
-    padding-top: clamp(210px, 48vh, 330px);
+    padding-top: clamp(190px, 33vh, 278px);
   }
 
   .title-logo-backdrop {
-    width: min(760px, 150vw);
-    max-height: 58vh;
-    opacity: 0.84;
+    top: clamp(12px, 3.5vh, 26px);
+    z-index: 2;
+    width: min(420px, calc(100vw - 30px));
+    max-height: min(30vh, 250px);
+    opacity: 0.9;
+    transform: translate(-50%, 0);
+  }
+
+  .title-kicker {
+    margin-bottom: 8px;
+  }
+
+  .title-subtitle {
+    margin: 8px 0 18px;
+    font-size: clamp(0.94rem, 4.1vw, 1.08rem);
+  }
+
+  .title-actions {
+    gap: 8px;
   }
 
   .title-start {
     width: 100%;
+    min-height: 44px;
   }
 
   .title-menu-button {
     width: 100%;
+    min-height: 44px;
+  }
+
+  @media (max-height: 700px) {
+    .title-screen {
+      padding: 10px 18px 12px;
+    }
+
+    .title-logo-backdrop {
+      top: 10px;
+      width: min(360px, calc(100vw - 28px));
+      max-height: min(27vh, 190px);
+    }
+
+    .title-content {
+      padding-top: clamp(168px, 30vh, 210px);
+    }
+
+    .title-kicker {
+      margin-bottom: 6px;
+      font-size: 0.74rem;
+    }
+
+    .title-subtitle {
+      margin: 6px 0 14px;
+      font-size: 0.9rem;
+    }
+
+    .title-actions {
+      gap: 7px;
+    }
+
+    .title-start,
+    .title-menu-button {
+      min-height: 40px;
+    }
   }
 
   .how-to-play-card {
