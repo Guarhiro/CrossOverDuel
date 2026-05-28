@@ -4747,6 +4747,7 @@ function updateDeckEditorToggleButtons() {
   const deckPanel = qs("#deckPanel");
   const libraryPanel = qs("#libraryPanel");
   const exchangePanel = qs("#exchangePanel");
+  const deckEditorGrid = qs(".deck-editor-grid");
   deckButton.textContent = deckEditorDeckHidden ? "表示" : "非表示";
   deckButton.title = deckEditorDeckHidden ? "デッキ内カードを表示" : "デッキ内カードを非表示";
   deckButton.setAttribute("aria-pressed", String(deckEditorDeckHidden));
@@ -4762,6 +4763,9 @@ function updateDeckEditorToggleButtons() {
   exchangeButton.setAttribute("aria-pressed", String(deckEditorExchangeHidden));
   exchangeButton.classList.toggle("is-on", deckEditorExchangeHidden);
   exchangePanel?.classList.toggle("is-collapsed", deckEditorExchangeHidden);
+  deckEditorGrid?.classList.toggle("is-deck-collapsed", deckEditorDeckHidden);
+  deckEditorGrid?.classList.toggle("is-library-collapsed", deckEditorLibraryHidden);
+  deckEditorGrid?.classList.toggle("is-exchange-collapsed", deckEditorExchangeHidden);
   ownedOnlyButton.textContent = deckEditorLibraryOwnedOnly ? "全カード" : "入手済みのみ";
   ownedOnlyButton.title = deckEditorLibraryOwnedOnly ? "全カードを表示" : "入手済みカードのみ表示";
   ownedOnlyButton.setAttribute("aria-pressed", String(deckEditorLibraryOwnedOnly));
