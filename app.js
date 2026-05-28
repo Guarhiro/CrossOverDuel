@@ -4919,6 +4919,7 @@ function renderDeckEditorCard(card, count, meta, disabled, zone) {
   const mobileStats = mobileStatValues
     .map((value) => `<span class="deck-card-mobile-stat"><span>${escapeHtml(value)}</span></span>`)
     .join("");
+  const mobileNameClass = [...card.name].length >= 8 ? " is-compact" : "";
   const cardLabel = `${card.name}、${elementLine}、${typeLine}、Cost ${card.cost}、${card.skill}。${card.text}`;
   return `
     <div class="deck-edit-card deck-edit-card-${card.kind} ${count <= 0 ? "is-empty" : ""} ${disabled ? "is-unavailable" : ""}" style="--element:${color}; --card-image:url('${image}'); --deck-card-position:center 28%"
@@ -4927,7 +4928,7 @@ function renderDeckEditorCard(card, count, meta, disabled, zone) {
         <span class="deck-card-mobile-face" aria-hidden="true">
           <span class="deck-card-mobile-frame"></span>
           <span class="deck-card-mobile-cost">${escapeHtml(card.cost)}</span>
-          <span class="deck-card-mobile-name">${escapeHtml(card.name)}</span>
+          <span class="deck-card-mobile-name${mobileNameClass}"><span>${escapeHtml(card.name)}</span></span>
           <span class="deck-card-mobile-type">${escapeHtml(typeLine)}</span>
           <span class="deck-card-mobile-element">${escapeHtml(card.element || "無")}</span>
           <span class="deck-card-mobile-effect">
