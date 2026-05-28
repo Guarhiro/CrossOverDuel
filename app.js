@@ -2440,7 +2440,7 @@ function applySummonEffects(card, player, lane) {
       break;
     }
     case "C17":
-      foe.supportNullify += 1;
+      player.supportNullify += 1;
       revealRandomHand(foe, player);
       break;
     case "C19":
