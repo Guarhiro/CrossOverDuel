@@ -1563,6 +1563,7 @@ let deckEditorDeckHidden = false;
 let deckEditorLibraryHidden = false;
 let deckEditorExchangeHidden = false;
 let deckEditorLibraryOwnedOnly = false;
+let deckEditorLibrarySort = "rarity";
 let deckEditorSkillViews = new Set();
 let pendingExchangeCardId = null;
 let battleBgmStyle = "standard";
@@ -4726,6 +4727,13 @@ function toggleLibraryOwnedOnly() {
   renderDeckEditor();
 }
 
+function setLibrarySort(event) {
+  const value = event.currentTarget.value;
+  deckEditorLibrarySort = ["rarity", "type", "element"].includes(value) ? value : "rarity";
+  hideSkillPopup();
+  renderDeckEditor();
+}
+
 function deckEditorViewKey(zone, cardId) {
   return `${zone}:${cardId}`;
 }
@@ -4744,6 +4752,7 @@ function updateDeckEditorToggleButtons() {
   const libraryButton = qs("#toggleLibraryBtn");
   const exchangeButton = qs("#toggleExchangeListBtn");
   const ownedOnlyButton = qs("#ownedOnlyLibraryBtn");
+  const librarySortSelect = qs("#librarySortSelect");
   const deckPanel = qs("#deckPanel");
   const libraryPanel = qs("#libraryPanel");
   const exchangePanel = qs("#exchangePanel");
@@ -4770,6 +4779,7 @@ function updateDeckEditorToggleButtons() {
   ownedOnlyButton.title = deckEditorLibraryOwnedOnly ? "全カードを表示" : "入手済みカードのみ表示";
   ownedOnlyButton.setAttribute("aria-pressed", String(deckEditorLibraryOwnedOnly));
   ownedOnlyButton.classList.toggle("is-on", deckEditorLibraryOwnedOnly);
+  if (librarySortSelect) librarySortSelect.value = deckEditorLibrarySort;
 }
 
 function renderDeckEditor(message = "", ready = false) {
@@ -4800,8 +4810,8 @@ function renderDeckEditor(message = "", ready = false) {
   qs("#deckList").innerHTML = deckEditorDeckHidden ? '<p class="deck-empty">デッキ内カードを非表示中です。</p>' : deckCards || '<p class="deck-empty">0枚</p>';
 
   const libraryCards = [...ALL_CARDS]
-    .sort(compareCards)
     .filter((card) => !deckEditorLibraryOwnedOnly || (owned[card.id] || 0) > 0)
+    .sort(compareDeckEditorLibraryCards)
     .map((card) => {
       const ownedCount = owned[card.id] || 0;
       const usedCount = selected[card.id] || 0;
@@ -4873,15 +4883,34 @@ function compareCards(a, b) {
   return a.id.localeCompare(b.id, "en", { numeric: true });
 }
 
+function deckEditorTypeLabel(card) {
+  return card.kind === "support" ? card.supportType : ROLE_LABELS[card.role];
+}
+
+function compareDeckEditorLibraryCards(a, b) {
+  if (deckEditorLibrarySort === "type") {
+    const typeCompare = deckEditorTypeLabel(a).localeCompare(deckEditorTypeLabel(b), "ja");
+    if (typeCompare) return typeCompare;
+    return compareCards(a, b);
+  }
+  if (deckEditorLibrarySort === "element") {
+    const elementCompare = (a.element || "無").localeCompare(b.element || "無", "ja");
+    if (elementCompare) return elementCompare;
+    return compareCards(a, b);
+  }
+  return compareCards(a, b);
+}
+
 function renderDeckEditorCard(card, count, meta, disabled, zone) {
   const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
   const image = `assets/cards/${card.id}.png`;
   const elementLine = `${card.element || "無"}属性`;
-  const typeLine = card.kind === "support" ? card.supportType : ROLE_LABELS[card.role];
-  const statLine =
+  const typeLine = deckEditorTypeLabel(card);
+  const statItems =
     card.kind === "support"
-      ? `Cost ${card.cost} / ${card.supportType}`
-      : `Cost ${card.cost} / ATK ${card.atk} / DEF ${card.def} / HP ${card.hp}`;
+      ? [`Cost ${card.cost}`, card.supportType]
+      : [`Cost ${card.cost}`, `ATK ${card.atk}`, `DEF ${card.def}`, `HP ${card.hp}`];
+  const statLine = statItems.map((item) => `<span>${escapeHtml(item)}</span>`).join("");
   const showingSkill = deckEditorSkillViews.has(deckEditorViewKey(zone, card.id));
   const detail = showingSkill
     ? `<span class="deck-card-skill"><strong>${escapeHtml(card.skill)}</strong><span>${escapeHtml(card.text)}</span></span>`
@@ -4891,16 +4920,16 @@ function renderDeckEditorCard(card, count, meta, disabled, zone) {
       data-card-id="${card.id}" data-zone="${zone}" data-disabled="${disabled}" aria-disabled="${disabled}" role="button" tabindex="0">
       <span class="deck-edit-card-inner">
         <span class="deck-card-top">
-          <span>${escapeHtml(card.no)} ${card.rarity}</span>
-          <span>${escapeHtml(elementLine)} / ${escapeHtml(typeLine)}</span>
+          <span class="deck-card-id">${escapeHtml(card.no)} ${card.rarity}</span>
+          <span class="deck-card-kind">${escapeHtml(elementLine)} / ${escapeHtml(typeLine)}</span>
           <button class="deck-card-mode-btn" type="button" data-card-id="${card.id}" data-zone="${zone}" aria-label="${escapeHtml(card.name)}の${showingSkill ? "ステータス" : "スキル"}を表示">${showingSkill ? "STATUS" : "SKILL"}</button>
         </span>
         ${detail}
-        <span class="deck-card-bottom">
-          <span>${escapeHtml(statLine)}</span>
+        <span class="deck-card-bottom deck-card-stats">
+          <span class="deck-card-stat-line">${statLine}</span>
           <span class="deck-card-count">x${count}</span>
         </span>
-        <span class="deck-card-bottom">${escapeHtml(meta)}</span>
+        <span class="deck-card-bottom deck-card-meta">${escapeHtml(meta)}</span>
       </span>
     </div>
   `;
@@ -6090,6 +6119,7 @@ function bindEvents() {
   qs("#toggleLibraryBtn").addEventListener("click", toggleLibraryVisibility);
   qs("#toggleExchangeListBtn").addEventListener("click", toggleExchangeVisibility);
   qs("#ownedOnlyLibraryBtn").addEventListener("click", toggleLibraryOwnedOnly);
+  qs("#librarySortSelect").addEventListener("change", setLibrarySort);
   document.addEventListener("click", (event) => {
     if (event.target.closest("#cancelExchangeBtn")) {
       event.preventDefault();
