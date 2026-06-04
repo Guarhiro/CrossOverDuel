@@ -1436,6 +1436,7 @@ const PLAYER_DECK_SIZE = PLAYER_DECK.length;
 const FREEPLAY_WIN_STORAGE_KEY = "crossover-duel-freeplay-wins";
 const FREEPLAY_MAX_WINS = 55;
 const REWARD_CARD_COUNT = 4;
+const DEFEAT_REWARD_CARD_COUNT = 2;
 const BATTLE_BGM_STYLE_STORAGE_KEY = "crossover-duel-battle-bgm-style";
 const CARD_EXCHANGE_POINT_STORAGE_KEY = "crossover-duel-card-exchange-points";
 const SIGNED_EXPORT_FORMAT = "crossover-duel.signed-export";
@@ -3695,6 +3696,7 @@ function checkGameOver() {
 function giveRewards(playerWon) {
   if (state.rewardsGiven) return;
   state.rewardsGiven = true;
+  const rewardCount = rewardCardCountForResult(playerWon);
   if (playerWon) {
     const previousLevel = state.aiProfile?.level || aiProfileForWins(state.freeplayWins).level;
     const wins = addFreeplayWin();
@@ -3705,13 +3707,13 @@ function giveRewards(playerWon) {
       log(`AI Lv.${nextProfile.level}「${nextProfile.name}」が次のDUEL STARTから解放。`, "system");
     }
   }
-  const rewards = Array.from({ length: REWARD_CARD_COUNT }, () => randomRewardCard());
+  const rewards = Array.from({ length: rewardCount }, () => randomRewardCard());
   const collection = loadCollection();
   rewards.forEach((card) => {
     collection[card.id] = (collection[card.id] || 0) + 1;
   });
   saveCollection(collection);
-  qs("#rewardTitle").textContent = playerWon ? `勝利報酬 ${REWARD_CARD_COUNT}枚獲得` : `対戦報酬 ${REWARD_CARD_COUNT}枚獲得`;
+  qs("#rewardTitle").textContent = playerWon ? `勝利報酬 ${rewardCount}枚獲得` : `対戦報酬 ${rewardCount}枚獲得`;
   qs("#rewardCards").innerHTML = rewards.map((card) => renderCard(createInstance(card, "player"), { inReward: true })).join("");
   qs("#rewardModal").classList.remove("hidden");
   const topReward = rewards.reduce((best, card) => (RARITY_ORDER[card.rarity] > RARITY_ORDER[best.rarity] ? card : best), rewards[0]);
@@ -3730,6 +3732,10 @@ function randomRewardCard() {
     for (let i = 0; i < weight; i += 1) pool.push(card);
   });
   return randomItem(pool);
+}
+
+function rewardCardCountForResult(playerWon) {
+  return playerWon ? REWARD_CARD_COUNT : DEFEAT_REWARD_CARD_COUNT;
 }
 
 function loadCollection() {
@@ -5603,7 +5609,7 @@ function renderCollectionSummary() {
 }
 
 function hintText() {
-  if (state.gameOver) return `ゲーム終了。報酬${REWARD_CARD_COUNT}枚を獲得しています。`;
+  if (state.gameOver) return `ゲーム終了。報酬${rewardCardCountForResult(state.ai.lp <= 0)}枚を獲得しています。`;
   if (state.phase === "intro") return "コイントスで先攻を決定中です。";
   if (state.current === "ai") return "AIが思考中です。";
   const pendingSupport = getPendingSupportCard();
