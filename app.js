@@ -46,6 +46,7 @@ const SUMMON_OUT_DELAY = 260;
 const SUMMON_IN_CLEAR_DELAY = 680;
 const SUPPORT_PLAY_VISUAL_DELAY = 1600;
 const SUPPORT_PLAY_VISUAL_EXIT_DELAY = 260;
+const ENERGY_TURN_PULSE_MS = 1400;
 
 const CHARACTERS = [
   {
@@ -2139,6 +2140,7 @@ function createPlayer(key, name, deckIds) {
     lp: MAX_LP,
     energyMax: 0,
     energy: 0,
+    energyPulseUntil: 0,
     deck: shuffle(deckIds.map((id) => createInstance(CARD_DB.get(id), key))),
     hand: [],
     front: [null, null, null],
@@ -2285,6 +2287,15 @@ function isBattleIntroCurrent(runId) {
   return state && runId === battleIntroRunId;
 }
 
+function triggerEnergyPulse(player) {
+  player.energyPulseUntil = Date.now() + ENERGY_TURN_PULSE_MS;
+  window.setTimeout(() => {
+    if (!state || state[player.key] !== player || Date.now() < player.energyPulseUntil) return;
+    player.energyPulseUntil = 0;
+    renderHud();
+  }, ENERGY_TURN_PULSE_MS + 80);
+}
+
 function startTurn(player) {
   if (state.gameOver) return;
   state.current = player.key;
@@ -2301,6 +2312,7 @@ function startTurn(player) {
   player.turns += 1;
   player.energyMax = Math.min(10, player.energyMax + 1);
   player.energy = player.energyMax;
+  triggerEnergyPulse(player);
   boardCards(player).forEach((card) => {
     card.attacked = false;
     card.extraAttackUsed = false;
@@ -2333,6 +2345,7 @@ function endTurn(player) {
   });
   tickBannerEffect(player);
   player.energy = 0;
+  player.energyPulseUntil = 0;
 }
 
 function drawCard(player, announce = true) {
@@ -5205,6 +5218,25 @@ function renderHud() {
   qs("#playerHud").innerHTML = renderDuelistHud(state.player, false);
 }
 
+function renderEnergyPill(player) {
+  const pulseActive = player.energyPulseUntil && Date.now() < player.energyPulseUntil;
+  const classes = [
+    "stat-pill",
+    "energy-pill",
+    state.current === player.key && !state.gameOver ? "is-current-turn" : "",
+    pulseActive ? "is-turn-start" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return `
+    <span class="${classes}" aria-label="エネルギー ${player.energy}/${player.energyMax}">
+      <span class="energy-pill-label">EN</span>
+      <strong class="energy-pill-current">${player.energy}</strong>
+      <span class="energy-pill-max">/${player.energyMax}</span>
+    </span>
+  `;
+}
+
 function renderDuelistHud(player, hiddenHand) {
   const hidden = hiddenHand
     ? `<div class="hidden-hand">${player.hand.map(() => '<div class="card-back"></div>').join("")}</div>`
@@ -5218,7 +5250,7 @@ function renderDuelistHud(player, hiddenHand) {
       <div class="duelist-name">${escapeHtml(player.name)}</div>
       <div class="duelist-stats">
         <span class="stat-pill">LP ${player.lp}</span>
-        <span class="stat-pill">EN ${player.energy}/${player.energyMax}</span>
+        ${renderEnergyPill(player)}
         <span class="stat-pill">Deck ${player.deck.length}</span>
         <span class="stat-pill">Hand ${player.hand.length}</span>
         ${aiStats}
