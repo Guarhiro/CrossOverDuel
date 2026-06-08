@@ -2530,7 +2530,8 @@ function applySummonEffects(card, player, lane) {
       break;
     }
     case "C48":
-      applySerenaBoostToClaires(player);
+      card.c48BoostAmount = C48_CLAIRE_BOOST * scale;
+      applySerenaBoostToClaires(card, player);
       break;
     case "C50":
       clearAllyStatusesAndBolsterGuards(player);
@@ -2826,9 +2827,13 @@ function clearOneStatusFromAlly(player) {
   return true;
 }
 
+function serenaBoostAmount(serena) {
+  return Number.isFinite(serena?.c48BoostAmount) ? serena.c48BoostAmount : C48_CLAIRE_BOOST;
+}
+
 function applySerenaBoostsToClaire(card, player) {
   const sources = boardCards(player).filter((ally) => ally.id === "C48");
-  sources.forEach(() => applySerenaBoost(card));
+  sources.forEach((serena) => applySerenaBoost(card, serena));
   if (sources.length) log(`${card.name} はセレナの号令で強化された。`, "effect");
 }
 
@@ -2843,27 +2848,38 @@ function triggerSophiaBoost(card, player) {
   log(`${target.name} の次のスキルが${multiplier}倍予約された。`, "effect");
 }
 
-function applySerenaBoostToClaires(player) {
+function applySerenaBoostToClaires(serena, player) {
   const claires = boardCards(player).filter((ally) => ally.id === "C47");
-  claires.forEach((claire) => applySerenaBoost(claire));
+  claires.forEach((claire) => applySerenaBoost(claire, serena));
   if (claires.length) log("セレナの号令でクレアが強化された。", "effect");
 }
 
-function applySerenaBoost(card) {
+function applySerenaBoost(card, serena) {
+  const amount = serenaBoostAmount(serena);
   card.c48Boosts = (card.c48Boosts || 0) + 1;
-  card.currentAtk += C48_CLAIRE_BOOST;
-  card.maxDef += C48_CLAIRE_BOOST;
-  card.currentDef += C48_CLAIRE_BOOST;
+  if (!Array.isArray(card.c48BoostSources)) card.c48BoostSources = [];
+  card.c48BoostSources.push({ sourceId: serena?.instanceId || null, amount });
+  card.currentAtk += amount;
+  card.maxDef += amount;
+  card.currentDef += amount;
 }
 
-function removeSerenaBoostFromClaires(player) {
+function removeSerenaBoostFromClaires(player, serena) {
+  const sourceId = serena?.instanceId || null;
   boardCards(player)
     .filter((ally) => ally.id === "C47" && (ally.c48Boosts || 0) > 0)
     .forEach((claire) => {
-      claire.c48Boosts -= 1;
-      claire.currentAtk = Math.max(0, claire.currentAtk - C48_CLAIRE_BOOST);
-      claire.maxDef = Math.max(claire.originalDef, claire.maxDef - C48_CLAIRE_BOOST);
-      claire.currentDef = Math.min(claire.maxDef, Math.max(0, claire.currentDef - C48_CLAIRE_BOOST));
+      let amount = C48_CLAIRE_BOOST;
+      if (Array.isArray(claire.c48BoostSources) && claire.c48BoostSources.length) {
+        const sourceIndex = sourceId ? claire.c48BoostSources.findIndex((boost) => boost.sourceId === sourceId) : -1;
+        const boostIndex = sourceIndex >= 0 ? sourceIndex : claire.c48BoostSources.length - 1;
+        const [boost] = claire.c48BoostSources.splice(boostIndex, 1);
+        amount = Number.isFinite(boost?.amount) ? boost.amount : C48_CLAIRE_BOOST;
+      }
+      claire.c48Boosts = Math.max(0, claire.c48Boosts - 1);
+      claire.currentAtk = Math.max(0, claire.currentAtk - amount);
+      claire.maxDef = Math.max(claire.originalDef, claire.maxDef - amount);
+      claire.currentDef = Math.min(claire.maxDef, Math.max(0, claire.currentDef - amount));
     });
 }
 
@@ -3437,7 +3453,7 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
   if (!loc) return;
   owner[loc.lane][loc.index] = null;
   owner.grave.push(card);
-  if (card.id === "C48") removeSerenaBoostFromClaires(owner);
+  if (card.id === "C48") removeSerenaBoostFromClaires(owner, card);
   if (!options.silentDamage) {
     audio.sfx("retreat", card);
     audio.voice(card, "retreat");
