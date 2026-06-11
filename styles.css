@@ -4009,3 +4009,666 @@ body.title-active .app-shell {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+ * Battle FX（fx.js が生成するレイヤーと演出）
+ * ========================================================= */
+
+#fxVignette,
+#fxLayer,
+#fxBannerLayer,
+#fxResultLayer,
+#fxCanvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#fxVignette {
+  z-index: 58;
+  opacity: 0;
+}
+
+#fxVignette.is-damage {
+  background: radial-gradient(ellipse at center, transparent 46%, rgba(255, 48, 48, 0.38) 100%);
+  animation: fxVignetteFlash 520ms ease-out forwards;
+}
+
+#fxVignette.is-heal {
+  background: radial-gradient(ellipse at center, transparent 52%, rgba(115, 216, 138, 0.3) 100%);
+  animation: fxVignetteFlash 560ms ease-out forwards;
+}
+
+#fxVignette.is-gold {
+  background: radial-gradient(ellipse at center, transparent 52%, rgba(246, 200, 95, 0.3) 100%);
+  animation: fxVignetteFlash 560ms ease-out forwards;
+}
+
+#fxLayer {
+  z-index: 60;
+}
+
+#fxBannerLayer {
+  z-index: 96;
+}
+
+#fxResultLayer {
+  z-index: 105;
+}
+
+#fxCanvas {
+  z-index: 106;
+  width: 100vw;
+  height: 100vh;
+}
+
+@keyframes fxVignetteFlash {
+  0% {
+    opacity: 0;
+  }
+  16% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---- 衝撃波 / 斬撃 / 閃光 ---- */
+
+.fx-shockwave {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--fx-color, var(--gold));
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 0 18px var(--fx-color, var(--gold)),
+    inset 0 0 12px var(--fx-color, var(--gold));
+  animation: fxShockwave var(--fx-duration, 460ms) cubic-bezier(0.16, 0.84, 0.3, 1) forwards;
+}
+
+@keyframes fxShockwave {
+  0% {
+    width: 14px;
+    height: 14px;
+    opacity: 0.95;
+    border-width: 4px;
+  }
+  100% {
+    width: var(--fx-size, 150px);
+    height: var(--fx-size, 150px);
+    opacity: 0;
+    border-width: 1px;
+  }
+}
+
+.fx-slash {
+  position: absolute;
+  width: var(--fx-length, 170px);
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #fff 32%,
+    var(--fx-color, var(--gold)) 50%,
+    #fff 68%,
+    transparent
+  );
+  transform: translate(-50%, -50%) rotate(var(--fx-angle, -32deg)) scaleX(0);
+  filter: drop-shadow(0 0 9px var(--fx-color, var(--gold)));
+  animation: fxSlash 300ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes fxSlash {
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--fx-angle, -32deg)) scaleX(0);
+    opacity: 0;
+  }
+  16% {
+    transform: translate(-50%, -50%) rotate(var(--fx-angle, -32deg)) scaleX(1.06);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -50%) rotate(var(--fx-angle, -32deg)) scaleX(1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(var(--fx-angle, -32deg)) scaleX(0.92);
+    opacity: 0;
+  }
+}
+
+.fx-impact-flash {
+  position: absolute;
+  width: var(--fx-size, 90px);
+  height: var(--fx-size, 90px);
+  border-radius: 999px;
+  background: radial-gradient(circle, #fff 0 18%, var(--fx-color, #fff) 36%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0.3);
+  mix-blend-mode: screen;
+  animation: fxImpactFlash 340ms ease-out forwards;
+}
+
+@keyframes fxImpactFlash {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0;
+  }
+  14% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.24);
+    opacity: 0;
+  }
+}
+
+/* ---- 攻撃中カード / 被弾リアクション ---- */
+
+.fx-attacking {
+  position: relative;
+  z-index: 40;
+  will-change: transform;
+}
+
+.hit-up {
+  animation: fxHitUp 460ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.hit-down {
+  animation: fxHitDown 460ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes fxHitUp {
+  0% {
+    transform: translate(0, 0);
+    filter: brightness(1);
+  }
+  12% {
+    transform: translate(-4px, -13px) rotate(-2.2deg);
+    filter: brightness(2.3) saturate(0.5);
+  }
+  32% {
+    transform: translate(4px, -7px) rotate(1.6deg);
+    filter: brightness(1.5);
+  }
+  58% {
+    transform: translate(-2px, -2px);
+    filter: brightness(1.12);
+  }
+  100% {
+    transform: translate(0, 0);
+    filter: brightness(1);
+  }
+}
+
+@keyframes fxHitDown {
+  0% {
+    transform: translate(0, 0);
+    filter: brightness(1);
+  }
+  12% {
+    transform: translate(4px, 13px) rotate(2.2deg);
+    filter: brightness(2.3) saturate(0.5);
+  }
+  32% {
+    transform: translate(-4px, 7px) rotate(-1.6deg);
+    filter: brightness(1.5);
+  }
+  58% {
+    transform: translate(2px, 2px);
+    filter: brightness(1.12);
+  }
+  100% {
+    transform: translate(0, 0);
+    filter: brightness(1);
+  }
+}
+
+/* ---- カード破壊 ---- */
+
+.fx-card-death {
+  pointer-events: none;
+  overflow: hidden;
+  animation: fxCardDeath 640ms cubic-bezier(0.5, 0, 0.78, 0.4) forwards;
+}
+
+@keyframes fxCardDeath {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  20% {
+    transform: scale(1.05);
+    filter: brightness(2.2) saturate(1.5);
+  }
+  52% {
+    opacity: 1;
+    transform: scale(1.02) skewX(2deg);
+    filter: brightness(1.7) contrast(1.25);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.84) translateY(12px);
+    filter: brightness(2.6) blur(7px);
+  }
+}
+
+/* ---- ターン / フェーズバナー ---- */
+
+.fx-banner {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  --fx-banner-color: var(--gold);
+}
+
+.fx-banner.is-enemy {
+  --fx-banner-color: #ff5f57;
+}
+
+.fx-banner-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: clamp(86px, 17vh, 150px);
+  transform: translateY(-50%) skewY(-1.6deg) scaleY(1);
+  background:
+    linear-gradient(90deg, transparent, rgba(5, 8, 13, 0.92) 16% 84%, transparent),
+    linear-gradient(180deg, transparent, rgba(5, 8, 13, 0.4));
+  border-top: 1px solid color-mix(in srgb, var(--fx-banner-color) 70%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--fx-banner-color) 70%, transparent);
+  box-shadow: 0 0 44px rgba(0, 0, 0, 0.5);
+  transform-origin: center;
+  animation: fxBannerBand 220ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.fx-banner-inner {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  animation: fxBannerText 360ms cubic-bezier(0.16, 0.9, 0.24, 1) 90ms both;
+}
+
+.fx-banner-text {
+  color: var(--text);
+  font-size: clamp(1.9rem, 6.4vw, 4rem);
+  font-weight: 950;
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+  text-shadow:
+    0 4px 0 rgba(0, 0, 0, 0.55),
+    0 0 34px color-mix(in srgb, var(--fx-banner-color) 65%, transparent);
+}
+
+.fx-banner-sub {
+  color: var(--fx-banner-color);
+  font-size: clamp(0.74rem, 1.8vw, 0.95rem);
+  font-weight: 900;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+}
+
+.fx-banner.is-leaving .fx-banner-band {
+  animation: fxBannerBandOut 230ms ease-in forwards;
+}
+
+.fx-banner.is-leaving .fx-banner-inner {
+  animation: fxBannerTextOut 230ms ease-in forwards;
+}
+
+@keyframes fxBannerBand {
+  from {
+    transform: translateY(-50%) skewY(-1.6deg) scaleY(0.05);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(-50%) skewY(-1.6deg) scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fxBannerBandOut {
+  to {
+    transform: translateY(-50%) skewY(-1.6deg) scaleY(0.05);
+    opacity: 0;
+  }
+}
+
+@keyframes fxBannerText {
+  from {
+    transform: translateX(-72px);
+    opacity: 0;
+    filter: blur(7px);
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes fxBannerTextOut {
+  to {
+    transform: translateX(64px);
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+
+/* ---- スキルカットイン ---- */
+
+.fx-cutin {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.fx-cutin-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(100deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 56px),
+    linear-gradient(100deg, transparent 6%, rgba(3, 5, 9, 0.82) 26% 74%, transparent 94%);
+  animation: fxCutinBg 280ms ease both;
+}
+
+.fx-cutin-panel {
+  position: relative;
+  display: flex;
+  width: min(740px, 94vw);
+  height: clamp(170px, 30vh, 250px);
+  overflow: hidden;
+  border: 2px solid var(--fx-color, var(--gold));
+  background: linear-gradient(115deg, #11141b 0%, #1a2029 58%, #11141b 100%);
+  clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%);
+  box-shadow:
+    0 26px 60px rgba(0, 0, 0, 0.6),
+    0 0 38px color-mix(in srgb, var(--fx-color, var(--gold)) 36%, transparent);
+  animation: fxCutinIn 430ms cubic-bezier(0.16, 0.92, 0.24, 1) both;
+}
+
+.fx-cutin-art {
+  flex: 0 0 44%;
+  background-size: cover;
+  background-position: center 18%;
+  clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+  filter: saturate(1.12);
+  animation: fxCutinArt 1300ms ease-out both;
+}
+
+.fx-cutin-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  padding: 14px 22px;
+  min-width: 0;
+}
+
+.fx-cutin-label {
+  color: var(--fx-color, var(--gold));
+  font-size: clamp(0.72rem, 1.8vw, 0.9rem);
+  font-weight: 950;
+  letter-spacing: 0.34em;
+}
+
+.fx-cutin-name {
+  color: var(--text);
+  font-size: clamp(1.3rem, 4.4vw, 2.3rem);
+  font-weight: 950;
+  line-height: 1.1;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.5);
+}
+
+.fx-cutin-skill {
+  color: var(--muted);
+  font-size: clamp(0.78rem, 2vw, 0.95rem);
+  font-weight: 700;
+}
+
+.fx-cutin.is-leaving .fx-cutin-panel {
+  animation: fxCutinOut 250ms cubic-bezier(0.6, 0, 0.8, 0.4) forwards;
+}
+
+.fx-cutin.is-leaving .fx-cutin-bg {
+  animation: fxCutinBgOut 250ms ease forwards;
+}
+
+@keyframes fxCutinBg {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fxCutinBgOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fxCutinIn {
+  from {
+    transform: translateX(-112vw) skewX(-4deg);
+  }
+  60% {
+    transform: translateX(2.4vw) skewX(0);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fxCutinOut {
+  to {
+    transform: translateX(112vw) skewX(4deg);
+  }
+}
+
+@keyframes fxCutinArt {
+  from {
+    transform: scale(1.16);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* ---- 勝敗演出 ---- */
+
+.fx-result {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.fx-result-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 5, 9, 0.68);
+  backdrop-filter: blur(3px);
+  animation: fxCutinBg 300ms ease both;
+}
+
+.fx-result-rays {
+  position: absolute;
+  inset: -40%;
+  opacity: 0;
+}
+
+.fx-result.is-win .fx-result-rays {
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(246, 200, 95, 0.14) 0 6deg,
+    transparent 6deg 17deg
+  );
+  mask-image: radial-gradient(circle, #000 0 18%, transparent 42%);
+  -webkit-mask-image: radial-gradient(circle, #000 0 18%, transparent 42%);
+  animation: fxResultRays 2400ms linear 280ms both;
+}
+
+.fx-result-copy {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.fx-result-text {
+  font-size: clamp(2.7rem, 11vw, 6.8rem);
+  font-weight: 950;
+  letter-spacing: 0.13em;
+  text-indent: 0.13em;
+  line-height: 1;
+}
+
+.fx-result.is-win .fx-result-text {
+  background: linear-gradient(180deg, #fff6d8 8%, var(--gold) 46%, #b07c1c 88%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 6px 0 rgba(60, 36, 4, 0.85)) drop-shadow(0 0 40px rgba(246, 200, 95, 0.4));
+  animation: fxResultSlam 520ms cubic-bezier(0.2, 1.1, 0.3, 1) 240ms both;
+}
+
+.fx-result.is-lose .fx-result-text {
+  background: linear-gradient(180deg, #d7e2f2 6%, #7c8aa4 52%, #39414f 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 6px 0 rgba(8, 10, 16, 0.9));
+  animation: fxResultSink 760ms cubic-bezier(0.2, 0.7, 0.3, 1) 240ms both;
+}
+
+.fx-result-sub {
+  color: var(--text);
+  font-size: clamp(0.86rem, 2.4vw, 1.2rem);
+  font-weight: 900;
+  letter-spacing: 0.52em;
+  text-indent: 0.52em;
+  opacity: 0.88;
+  animation: fxBannerText 420ms ease 520ms both;
+}
+
+.fx-result.is-leaving {
+  animation: fxResultLeave 330ms ease forwards;
+}
+
+@keyframes fxResultRays {
+  0% {
+    opacity: 0;
+    transform: rotate(0deg);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.85;
+    transform: rotate(26deg);
+  }
+}
+
+@keyframes fxResultSlam {
+  0% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+  52% {
+    transform: scale(0.94);
+    opacity: 1;
+  }
+  74% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fxResultSink {
+  0% {
+    transform: translateY(-46px);
+    opacity: 0;
+    filter: blur(9px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes fxResultLeave {
+  to {
+    opacity: 0;
+  }
+}
+
+/* ---- LP危機ビネット ---- */
+
+body.fx-danger::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 56%, rgba(255, 40, 40, 0.24) 100%);
+  animation: fxDangerPulse 1.7s ease-in-out infinite;
+}
+
+@keyframes fxDangerPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---- reduced motion ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  #fxCanvas,
+  #fxLayer,
+  #fxVignette {
+    display: none;
+  }
+
+  .fx-banner-band,
+  .fx-banner-inner,
+  .fx-cutin-panel,
+  .fx-cutin-bg,
+  .fx-cutin-art,
+  .fx-result-text,
+  .fx-result-sub,
+  .fx-result-rays {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+
+  .hit-up,
+  .hit-down,
+  .fx-card-death {
+    animation: none;
+  }
+
+  body.fx-danger::after {
+    animation: none;
+    opacity: 0.5;
+  }
+}

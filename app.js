@@ -2123,6 +2123,7 @@ function titleCardStyle(slot) {
 function showTitleScreen() {
   activeScreen = "title";
   renderTitleCards();
+  document.body.classList.remove("fx-danger");
   document.body.classList.add("title-active");
   qs("#titleScreen").classList.remove("is-hidden");
   audio.updateMusic();
@@ -2322,6 +2323,7 @@ function startTurn(player) {
 
   audio.sfx("phase");
   audio.speak(player.key === "player" ? "あなたのターン、ドロー" : "AIのターン");
+  window.FX?.turnBanner(player.key === "player");
   log(`<strong>${player.name}</strong> のターン。エネルギー ${player.energy}/${player.energyMax}。`, "phase");
 
   tickDelayed(player);
@@ -2389,6 +2391,7 @@ function playCharacterFromHand(player, handIndex, lane, slotIndex) {
   state.selectedField = { owner: player.key, lane, index: slotIndex };
   clearHandTapState();
   render();
+  window.FX?.summonAt(document.querySelector(`[data-iid="${card.instanceId}"]`), elementColorOf(card));
   window.setTimeout(() => {
     if (state?.summonDropId === card.instanceId) state.summonDropId = null;
     document.querySelector(`[data-iid="${card.instanceId}"]`)?.classList.remove("summon-drop");
@@ -3257,6 +3260,17 @@ function awaken(card, player, forced = false) {
   if (skillScale > 1) log(`${card.name} の覚醒効果が${skillScale}倍になった。`, "effect");
   log(`${card.name} が${forced ? "即座に" : ""}覚醒した。`, "effect");
   audio.sfx("awaken", card);
+  const fx = window.FX;
+  if (fx) {
+    const color = elementColorOf(card);
+    fx.cutInCard(card, "AWAKENING", { color });
+    const el = document.querySelector(`[data-iid="${card.instanceId}"]`);
+    if (el) {
+      const { x, y } = fx.centerOf(el);
+      fx.shockwave(x, y, { color, size: 180, duration: 560 });
+      fx.burst(x, y, { color, count: 24, power: 1.2 });
+    }
+  }
 }
 
 async function performAttack(attacker, target, options = {}) {
@@ -3277,8 +3291,22 @@ async function performAttack(attacker, target, options = {}) {
   const atomicFlareReady = attacker.id === "C46" && !attacker.atomicFlareUsed;
   audio.sfx(atomicFlareReady ? "atomic" : "attack", { ...attacker, amount: effectiveAtk(attacker) });
   audio.voice(attacker, "attack");
-  animateCard(attacker.instanceId, "attack-lift");
-  await sleep(ATTACK_IMPACT_DELAY);
+  const fx = window.FX;
+  const attackColor = elementColorOf(attacker);
+  const attackPower = damageTierPower(effectiveAtk(attacker));
+  if (atomicFlareReady && fx) await fx.cutInCard(attacker, "ATOMIC FLARE", { color: attackColor });
+  const attackerEl = document.querySelector(`[data-iid="${attacker.instanceId}"]`);
+  const targetEl =
+    target.type === "lp"
+      ? qs(foe.key === "ai" ? "#opponentLpTarget" : "#playerLpTarget")
+      : document.querySelector(`[data-iid="${target.card.instanceId}"]`);
+  let impactPoint = null;
+  if (fx && attackerEl && targetEl) {
+    impactPoint = await fx.attackRush(attackerEl, targetEl, { color: attackColor, power: attackPower });
+  } else {
+    animateCard(attacker.instanceId, "attack-lift");
+    await sleep(ATTACK_IMPACT_DELAY);
+  }
 
   let attackValue = effectiveAtk(attacker);
   if (attacker.id === "C16") {
@@ -3294,6 +3322,10 @@ async function performAttack(attacker, target, options = {}) {
     foe.counterAttack -= 1;
     attacker.attacked = true;
     audio.sfx("counter");
+    if (impactPoint && fx) {
+      fx.counterFlash(impactPoint.x, impactPoint.y);
+      await fx.hitStop(110);
+    }
     log(`${foe.name} の紫禁の策謀。攻撃を無効化し${attackValue}反射。`, "effect");
     damageCharacter(attacker, attackValue, foe, { ignoreDef: true });
     await sleep(IMPACT_SETTLE_DELAY);
@@ -3304,6 +3336,10 @@ async function performAttack(attacker, target, options = {}) {
   }
 
   log(`${attacker.name} が ${target.type === "lp" ? foe.name + " LP" : target.card.name} に攻撃。`, "attack");
+  if (impactPoint && fx) {
+    fx.impact(impactPoint.x, impactPoint.y, { color: attackColor, power: attackPower, angle: impactPoint.angle + 58 });
+    await fx.hitStop(45 + attackPower * 25);
+  }
   let killed = false;
   let hpDamage = 0;
   if (target.type === "lp") {
@@ -3425,10 +3461,26 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
   if (hpDamage > 0) {
     card.currentHp -= hpDamage;
     audio.sfx("damage", { ...card, amount: hpDamage, total: totalDamage });
-    animateCard(card.instanceId, "shake", `-${hpDamage}`, false, totalDamage);
+    animateCard(card.instanceId, card.ownerKey === "ai" ? "hit-up" : "hit-down", `-${hpDamage}`, false, totalDamage);
+    const fx = window.FX;
+    if (fx && !options.attacker) {
+      const el = document.querySelector(`[data-iid="${card.instanceId}"]`);
+      if (el) {
+        const { x, y } = fx.centerOf(el);
+        fx.burst(x, y, { count: 12, power: 0.7 });
+      }
+    }
   } else {
     audio.sfx("guard", { ...card, amount: totalDamage });
     animateCard(card.instanceId, "shake", "DEF", false, totalDamage);
+    const fx = window.FX;
+    if (fx) {
+      const el = document.querySelector(`[data-iid="${card.instanceId}"]`);
+      if (el) {
+        const { x, y } = fx.centerOf(el);
+        fx.guardFlash(x, y);
+      }
+    }
   }
 
   if (card.currentHp <= 0) {
@@ -3451,6 +3503,11 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
   const foe = opponentOf(owner);
   const loc = findCardLocation(card);
   if (!loc) return;
+  const fx = window.FX;
+  if (fx) {
+    const el = document.querySelector(`[data-iid="${card.instanceId}"]`);
+    if (el) fx.dissolveCard(el, elementColorOf(card));
+  }
   owner[loc.lane][loc.index] = null;
   owner.grave.push(card);
   if (card.id === "C48") removeSerenaBoostFromClaires(owner, card);
@@ -3512,6 +3569,7 @@ function damageLp(player, amount, source) {
     lpButton.classList.add("shake");
     addFloatingPop(lpButton, `-${amount}`, false, amount);
   }
+  window.FX?.lpHit(player.key === "player", amount);
 }
 
 function healLp(player, amount, source) {
@@ -3523,7 +3581,10 @@ function healLp(player, amount, source) {
   audio.sfx("heal", { amount: gained });
   log(`${player.name} LPを${gained}回復${source ? `（${source}）` : ""}。`, "effect");
   const lpButton = player.key === "ai" ? qs("#opponentLpTarget") : qs("#playerLpTarget");
-  if (lpButton) addFloatingPop(lpButton, `+${gained}`, true);
+  if (lpButton) {
+    addFloatingPop(lpButton, `+${gained}`, true);
+    window.FX?.healAt(lpButton);
+  }
 }
 
 function healCharacter(card, amount) {
@@ -3534,6 +3595,7 @@ function healCharacter(card, amount) {
   if (gained > 0) {
     audio.sfx("heal", { ...card, amount: gained });
     animateCard(card.instanceId, "", `+${gained}`, true);
+    window.FX?.healAt(document.querySelector(`[data-iid="${card.instanceId}"]`));
   }
 }
 
@@ -3703,7 +3765,13 @@ function checkGameOver() {
     audio.speak(playerWon ? "勝利" : "敗北");
     log(playerWon ? "<strong>勝利！</strong> 相手LPを0にした。" : "<strong>敗北。</strong> プレイヤーLPが0になった。", "system");
     render();
-    giveRewards(playerWon);
+    const fx = window.FX;
+    if (fx) {
+      const finish = () => giveRewards(playerWon);
+      fx.gameResult(playerWon).then(finish, finish);
+    } else {
+      giveRewards(playerWon);
+    }
     return true;
   }
   return false;
@@ -5238,6 +5306,7 @@ function render() {
 function renderHud() {
   qs("#opponentHud").innerHTML = renderDuelistHud(state.ai, true);
   qs("#playerHud").innerHTML = renderDuelistHud(state.player, false);
+  document.body.classList.toggle("fx-danger", !state.gameOver && state.player.lp > 0 && state.player.lp <= 5);
 }
 
 function renderEnergyPill(player) {
@@ -5676,7 +5745,7 @@ async function runAiTurn() {
   state.busy = true;
   startTurn(state.ai);
   render();
-  await sleep(650);
+  await sleep(window.FX ? 1150 : 650);
 
   let playedSomething = true;
   let safety = 0;
@@ -5692,8 +5761,9 @@ async function runAiTurn() {
   state.phase = "battle";
   audio.sfx("phase");
   audio.speak("AI、バトルフェイズ");
+  window.FX?.phaseBanner("BATTLE PHASE", "enemy");
   render();
-  await sleep(450);
+  await sleep(window.FX ? 1000 : 450);
 
   const attackers = () => state.ai.front.filter((card) => canAttack(card, state.ai));
   while (attackers().length && !state.gameOver) {
@@ -6547,6 +6617,7 @@ function bindEvents() {
     audio.sfx("phase");
     audio.speak("バトルフェイズ");
     log("バトルフェイズへ。", "phase");
+    window.FX?.phaseBanner("BATTLE PHASE", "player");
     render();
   });
   qs("#endTurnBtn").addEventListener("click", () => {
@@ -6656,6 +6727,16 @@ function damageTierClass(amount) {
   if (amount >= 7) return "impact-high";
   if (amount >= 4) return "impact-mid";
   return "impact-low";
+}
+
+function damageTierPower(amount) {
+  if (amount >= 7) return 3;
+  if (amount >= 4) return 2;
+  return 1;
+}
+
+function elementColorOf(card) {
+  return ELEMENT_COLORS[card?.element || "無"] || ELEMENT_COLORS.無;
 }
 
 function log(message) {
