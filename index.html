@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=story-mode-energy-battle-fx-1" />
+    <link rel="stylesheet" href="styles.css?v=story-mode-system-voice-battle-fx-1" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -16,10 +16,12 @@
         <p class="title-subtitle">交差する戦線、切り札は一枚。</p>
         <div class="title-actions">
           <button id="startDuelBtn" class="title-start">DUEL START</button>
+          <button id="storyModeBtn" class="title-menu-button">STORY</button>
           <button id="howToPlayBtn" class="title-menu-button">HOW TO PLAY</button>
           <button id="openingMovieBtn" class="title-menu-button">OPENING MOVIE</button>
           <button id="galleryBtn" class="title-menu-button">GALLERY</button>
           <button id="deckEditBtn" class="title-menu-button">DECK EDIT</button>
+          <button id="systemVoiceBtn" class="title-menu-button">SYSTEM VOICE</button>
           <button id="dataTransferBtn" class="title-menu-button">DATA TRANSFER</button>
         </div>
       </div>
@@ -106,6 +108,77 @@
       </div>
     </section>
 
+    <section id="storyView" class="story-view hidden" aria-label="ストーリーモード">
+      <div id="storyStage" class="story-stage">
+        <div id="storyBg" class="story-bg" aria-hidden="true"></div>
+        <div id="storySprites" class="story-sprites" aria-hidden="true"></div>
+        <div id="storyCg" class="story-cg hidden" aria-hidden="true"></div>
+        <div id="storyNovel" class="story-novel hidden" role="button" tabindex="-1" aria-label="次へ進む">
+          <div class="story-novel-inner">
+            <div id="storyNovelName" class="story-novel-name is-empty"></div>
+            <p id="storyNovelText" class="story-novel-text"></p>
+          </div>
+          <span id="storyNovelAdvance" class="story-advance story-novel-advance" aria-hidden="true">▼</span>
+        </div>
+        <div id="storyControls" class="story-controls">
+          <button id="storyAutoBtn" type="button" class="story-ctrl-btn" aria-pressed="false" title="オート再生">AUTO</button>
+          <button id="storySkipBtn" type="button" class="story-ctrl-btn" aria-pressed="false" title="スキップ">SKIP</button>
+          <button id="storyBacklogBtn" type="button" class="story-ctrl-btn" title="バックログ">LOG</button>
+        </div>
+        <button id="storyCloseBtn" class="story-close" type="button" title="タイトルへ戻る">×</button>
+      </div>
+      <div id="storyChoices" class="story-choices hidden" role="group" aria-label="選択肢"></div>
+      <div id="storyDialogue" class="story-dialogue" role="button" tabindex="0" aria-label="次へ進む">
+        <div id="storyNamePlate" class="story-name-plate"></div>
+        <p id="storyText" class="story-text"></p>
+        <span id="storyAdvance" class="story-advance" aria-hidden="true">▼</span>
+      </div>
+
+      <div id="storyResumePrompt" class="story-resume hidden" role="dialog" aria-modal="true" aria-label="再開確認">
+        <div class="story-resume-card">
+          <p class="story-resume-eyebrow">CONTINUE</p>
+          <p class="story-resume-title">前回の続きから再開しますか?</p>
+          <div class="story-resume-actions">
+            <button id="storyResumeContinueBtn" type="button" class="story-resume-primary">つづきから</button>
+            <button id="storyResumeRestartBtn" type="button">最初から</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="storyBattlePrompt" class="story-resume hidden" role="dialog" aria-modal="true" aria-label="バトル">
+        <div class="story-resume-card">
+          <p class="story-resume-eyebrow">BATTLE</p>
+          <p class="story-resume-title">デュエルの結果は?</p>
+          <p class="story-battle-note">※ 実デュエル連携は今後実装予定。今はデバッグ用に勝敗を選べます。</p>
+          <div class="story-resume-actions">
+            <button id="storyBattleWinBtn" type="button" class="story-resume-primary">勝利（デバッグ）</button>
+            <button id="storyBattleLoseBtn" type="button">敗北（デバッグ）</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="storyBacklog" class="story-backlog hidden" role="dialog" aria-modal="true" aria-label="バックログ">
+        <div class="story-backlog-head">
+          <span>バックログ</span>
+          <button id="storyBacklogCloseBtn" type="button" class="story-ctrl-btn">閉じる</button>
+        </div>
+        <div id="storyBacklogList" class="story-backlog-list"></div>
+      </div>
+    </section>
+
+    <section id="storySelectView" class="story-select hidden" aria-label="ストーリー選択">
+      <div class="story-select-panel">
+        <header class="story-select-head">
+          <div>
+            <p class="eyebrow">Story</p>
+            <h2>ストーリー選択</h2>
+          </div>
+          <button id="storySelectCloseBtn" type="button">戻る</button>
+        </header>
+        <div id="storySelectList" class="story-select-list"></div>
+      </div>
+    </section>
+
     <div class="app-shell">
       <main class="duel-layout">
         <section class="battle-zone">
@@ -137,6 +210,7 @@
               <button id="battleBgmStyleBtn" class="icon-button" title="戦闘BGM: 通常版">STD</button>
               <button id="sfxBtn" class="icon-button is-on" title="SE">SE</button>
               <button id="voiceBtn" class="icon-button is-on" title="ボイス">Voice</button>
+              <button id="voiceSettingsBtn" class="icon-button" title="システムボイス設定">Voice...</button>
             </div>
             <div class="console-header">
               <span id="turnLabel">Turn 1</span>
@@ -232,7 +306,7 @@
           </section>
           <section>
             <h3>ターンの流れ</h3>
-            <p>バトル開始時のコイントスで先攻を決定します。自分のターン開始時にエネルギーが増え、1枚ドローします。メインで配置やサポートを使い、バトルで前衛が攻撃します。</p>
+            <p>バトル開始時のコイントスで先攻を決定します。自分のターン開始時にエネルギーが増え、1枚ドローします。後攻は最初のターンのみエネルギー+1のボーナスを得ます。メインで配置やサポートを使い、バトルで前衛が攻撃します。</p>
           </section>
           <section>
             <h3>カード配置</h3>
@@ -274,6 +348,31 @@
             <input id="signedDataFileInput" type="file" accept="application/json,.json" hidden />
           </div>
           <p id="dataTransferStatus" class="data-transfer-status" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="systemVoiceModal" class="modal system-voice-modal hidden" role="dialog" aria-modal="true" aria-labelledby="systemVoiceTitle">
+      <div class="modal-card system-voice-card">
+        <div class="system-voice-header">
+          <div>
+            <p class="eyebrow">System Voice</p>
+            <h2 id="systemVoiceTitle">システムボイス</h2>
+          </div>
+          <button id="closeSystemVoiceBtn" class="icon-button">Close</button>
+        </div>
+        <div class="system-voice-body">
+          <div class="system-voice-current">
+            <span>現在の声</span>
+            <strong id="systemVoiceCurrentName">ブラウザ標準</strong>
+            <small id="systemVoiceCurrentMeta">端末の既定の読み上げ声</small>
+          </div>
+          <p id="systemVoiceStatus" class="system-voice-status" aria-live="polite"></p>
+          <div id="systemVoiceList" class="system-voice-list" role="radiogroup" aria-label="ブラウザ読み上げ声"></div>
+          <div class="system-voice-actions">
+            <button id="refreshSystemVoiceBtn" type="button">リスト更新</button>
+            <button id="testSystemVoiceBtn" type="button">テスト再生</button>
+          </div>
         </div>
       </div>
     </div>
@@ -355,7 +454,8 @@
       </div>
     </div>
 
+    <script src="story-data.js?v=story-mode-3"></script>
     <script src="fx.js?v=battle-fx-1"></script>
-    <script src="app.js?v=story-mode-energy-battle-fx-1"></script>
+    <script src="app.js?v=story-mode-system-voice-battle-fx-1"></script>
   </body>
 </html>

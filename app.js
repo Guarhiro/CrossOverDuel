@@ -30,15 +30,16 @@ const CARD_POINT_VALUES = {
 };
 
 const CARD_POINT_COSTS = {
-  C: 50,
-  R: 75,
-  SR: 150,
-  SSR: 300,
-  UR: 500,
+  C: 25,
+  R: 50,
+  SR: 100,
+  SSR: 200,
+  UR: 300,
 };
 
 const MAX_LP = 20;
 const C48_CLAIRE_BOOST = 3;
+const SKILL_MULTIPLIER_CAP = 2;
 const ARCADIA_SERIES = "アルカディアパレス";
 const ATTACK_IMPACT_DELAY = 390;
 const IMPACT_SETTLE_DELAY = 460;
@@ -96,7 +97,7 @@ const CHARACTERS = [
     def: 5,
     hp: 7,
     skill: "第一王女の守護",
-    text: "受けるダメージ-1（最低1）。LP庇い時ダメージ半減。【ガード】",
+    text: "受けるダメージ-1（最低1）。【ガード】",
     tags: ["guard"],
   },
   {
@@ -456,7 +457,7 @@ const CHARACTERS = [
     def: 3,
     hp: 5,
     skill: "領主の自己犠牲",
-    text: "味方が撃破される時、代わりにダメージを受ける。HP2以下で味方全体DEF+2。【ガード】",
+    text: "味方が撃破される時、代わりにダメージを受ける（1ターンに1回）。HP2以下で味方全体DEF+2。【ガード】",
     tags: ["guard"],
   },
   {
@@ -778,10 +779,10 @@ const CHARACTERS = [
     role: "AT",
     cost: 2,
     atk: 3,
-    def: 1,
-    hp: 3,
+    def: 2,
+    hp: 4,
     skill: "元騎士の意地",
-    text: "スキルなし",
+    text: "スキルなし。鍛え抜かれた基礎戦闘力を持つ",
   },
   {
     kind: "character",
@@ -797,7 +798,7 @@ const CHARACTERS = [
     def: 1,
     hp: 5,
     skill: "アトミックフレア",
-    text: "攻撃時DEFを無視し、撤退させた時相手後衛全体に2ダメージ。このスキルは場に出てから一度しか使えない。次の攻撃に効果。",
+    text: "攻撃時DEFを無視し、撤退させた時相手後衛全体に2ダメージ。このスキルは場に出てから一度しか使えない。次のキャラへの攻撃で発動（LP攻撃では消費しない）。",
   },
   {
     kind: "character",
@@ -912,7 +913,7 @@ const CHARACTERS = [
     def: 1,
     hp: 3,
     skill: "前線転移",
-    text: "配置時、相手前衛に空きがあれば相手後衛1体を前衛へ移動",
+    text: "配置時、相手前衛に空きがあれば相手後衛1体を前衛へ引きずり出し、2ダメージを与える",
   },
   {
     kind: "character",
@@ -1300,7 +1301,7 @@ const SUPPORTS = [
     series: "Astral Nova",
     element: "地",
     skill: "総力強化",
-    text: "味方全体ATK+2, DEF+2（1ターン）",
+    text: "味方全体ATK+2（このターン）、DEF+2（次の相手ターン終了まで）",
   },
   {
     kind: "support",
@@ -1374,7 +1375,7 @@ const SUPPORTS = [
     rarity: "C",
     name: "鉄壁の修復",
     supportType: "インスタント",
-    cost: 1,
+    cost: 2,
     series: "共通",
     element: "地",
     skill: "修復",
@@ -1387,7 +1388,7 @@ const SUPPORTS = [
     rarity: "SR",
     name: "双頭鳥の御旗",
     supportType: "設置型",
-    cost: 5,
+    cost: 4,
     series: "好き勝手傭兵王の請求書　〜世界征服は副業で〜",
     element: "無",
     skill: "双頭鳥の御旗",
@@ -1405,6 +1406,7 @@ const DECK_LIBRARY_FILTER_LABELS = {
   series: "作品別",
 };
 
+// キャラ15枚/サポート5枚。盤面の頭数を確保し、序盤AIのガード構成に対抗できる比率にする。
 const PLAYER_DECK = [
   "C01",
   "C21",
@@ -1413,19 +1415,19 @@ const PLAYER_DECK = [
   "C22",
   "C27",
   "C27",
+  "C28",
+  "C28",
+  "C30",
+  "C30",
   "C33",
   "C33",
+  "C35",
   "C35",
   "S01",
   "S01",
   "S02",
-  "S02",
-  "S07",
-  "S07",
-  "S08",
   "S10",
   "S10",
-  "S15",
 ];
 
 const PLAYER_DECK_STORAGE_KEY = "crossover-duel-player-deck";
@@ -1438,11 +1440,22 @@ const FREEPLAY_MAX_WINS = 55;
 const REWARD_CARD_COUNT = 4;
 const DEFEAT_REWARD_CARD_COUNT = 2;
 const BATTLE_BGM_STYLE_STORAGE_KEY = "crossover-duel-battle-bgm-style";
+const SYSTEM_VOICE_STORAGE_KEY = "crossover-duel-system-voice";
 const CARD_EXCHANGE_POINT_STORAGE_KEY = "crossover-duel-card-exchange-points";
 const SIGNED_EXPORT_FORMAT = "crossover-duel.signed-export";
 const SIGNED_EXPORT_VERSION = 1;
 const SIGNED_EXPORT_KDF_ITERATIONS = 150000;
 const SIGNED_EXPORT_MIN_KEY_LENGTH = 8;
+const SYSTEM_VOICE_SOURCE_DEFAULT = "browser-default";
+const SYSTEM_VOICE_SOURCE_BROWSER = "browser";
+const SYSTEM_VOICE_SOURCE_CUSTOM = "custom";
+const SYSTEM_VOICE_DEFAULT_RATE = 1.05;
+const SYSTEM_VOICE_DEFAULT_PITCH = 1.04;
+const SYSTEM_VOICE_DEFAULT_VOLUME = 0.82;
+const SYSTEM_VOICE_TEST_TEXT = "システムボイスのテストです。";
+// Future character/system voices can be registered here without changing the
+// browser voice picker. For now the selectable list is supplied by speechSynthesis.
+const CUSTOM_SYSTEM_VOICE_OPTIONS = [];
 const STARTER_DECK_COUNTS = countBy(PLAYER_DECK, (id) => id);
 const BATTLE_INTRO_LINES = [
   "Every story converges on a single battlefield.",
@@ -1490,8 +1503,8 @@ const AI_DECKS = [
     level: 2,
     wins: 5,
     name: "Guard Basics",
-    concept: "軽量ガードと修復で、前衛を切らさずに粘る構成。",
-    deck: ["C21", "C21", "C25", "C30", "C30", "C37", "C37", "C40", "C40", "C35", "C41", "C43", "C45", "S07", "S07", "S10", "S12", "S13", "S15", "S15"],
+    concept: "軽量ガードと修復で粘りつつ、攻め札も混ぜた練習用の壁構成。",
+    deck: ["C21", "C21", "C34", "C30", "C30", "C37", "C37", "C40", "C40", "C35", "C41", "C43", "C45", "C44", "S07", "S07", "S10", "S12", "S13", "S15"],
   },
   {
     level: 3,
@@ -1546,15 +1559,15 @@ const AI_DECKS = [
     level: 10,
     wins: 50,
     name: "Final Crossover",
-    concept: "URフィニッシャーを低中コストの展開札と探索で確実に着地させる。",
-    deck: ["C01", "C02", "C03", "C07", "C19", "C21", "C22", "C23", "C25", "C30", "C33", "C40", "C46", "S01", "S03", "S05", "S08", "S10", "S14", "S15"],
+    concept: "URフィニッシャーを低コストの壁と展開札で守りながら確実に着地させる。",
+    deck: ["C01", "C03", "C07", "C19", "C21", "C22", "C23", "C25", "C30", "C33", "C35", "C40", "C40", "C46", "S01", "S03", "S08", "S10", "S14", "S15"],
   },
   {
     level: 11,
     wins: 55,
     name: "Arcadia Bond Guard",
-    concept: "前衛ガーディアンで守りを作り、パレス支援と姉妹の絆で盤面全体を厚くする。",
-    deck: ["C10", "C41", "C56", "C56", "C57", "C58", "C58", "C59", "C60", "C61", "C62", "C62", "C63", "C64", "C65", "C47", "C49", "C55", "S13", "S13"],
+    concept: "初動のミムと厚いガード網で受け切り、パレス支援で押し返しつつ、催眠と妖精の輪で要所を崩す。",
+    deck: ["C47", "C47", "C49", "C49", "C30", "C30", "C55", "C56", "C56", "C57", "C58", "C58", "C59", "C61", "C62", "C63", "C64", "C65", "S03", "S14"],
   },
 ];
 
@@ -1580,8 +1593,11 @@ let deckEditorPreviewSuppressedUntil = 0;
 let deckEditorDetailVisibilityFrame = 0;
 let pendingExchangeCardId = null;
 let battleBgmStyle = "standard";
+let systemVoiceSettings = null;
 let gallerySelectedCardId = null;
 let galleryMusicTrack = "title";
+let storyMusicTrack = "title";
+let storyState = null;
 let lastHandTap = { index: null, instanceId: null, at: 0 };
 let battleIntroRunId = 0;
 
@@ -1750,6 +1766,7 @@ function desiredMusicTrack() {
   if (activeScreen === "title") return "title";
   if (activeScreen === "deckEdit") return "deckEdit";
   if (activeScreen === "gallery") return BGM_TRACKS[galleryMusicTrack] ? galleryMusicTrack : "title";
+  if (activeScreen === "story") return BGM_TRACKS[storyMusicTrack] ? storyMusicTrack : "title";
   if (!state) return battleMusicTrack("normal");
   if (state.gameOver) {
     if (state.ai.lp <= 0) return "victory";
@@ -2059,14 +2076,8 @@ const audio = {
     return true;
   },
   speak(text) {
-    if (!this.voiceOn || !text || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ja-JP";
-    utterance.rate = 1.05;
-    utterance.pitch = 1.04;
-    utterance.volume = 0.82;
-    window.speechSynthesis.speak(utterance);
+    if (!this.voiceOn || !text) return false;
+    return playSystemVoiceText(text);
   },
 };
 
@@ -2191,6 +2202,7 @@ function createInstance(base, ownerKey = null) {
     card.lowHpBuffed = false;
     card.extraAttackUsed = false;
     card.selfSacrificeBuffed = false;
+    card.interceptUsed = false;
   }
   return card;
 }
@@ -2314,11 +2326,17 @@ function startTurn(player) {
   player.turns += 1;
   player.energyMax = Math.min(10, player.energyMax + 1);
   player.energy = player.energyMax;
+  if (player.turns === 1 && player.key !== state.firstPlayerKey) {
+    player.energy += 1;
+    log(`${player.name} は後攻のため、このターンのみエネルギー+1。`, "effect");
+  }
   triggerEnergyPulse(player);
   boardCards(player).forEach((card) => {
     card.attacked = false;
     card.extraAttackUsed = false;
     card.sionReattackUsed = false;
+    card.interceptUsed = false;
+    card.tempDef = 0;
   });
 
   audio.sfx("phase");
@@ -2340,10 +2358,8 @@ function startTurn(player) {
 function endTurn(player) {
   applyEndEffects(player);
   boardCards(player).forEach((card) => {
-    if (card.tempAtk || card.tempDef) {
-      card.tempAtk = 0;
-      card.tempDef = 0;
-    }
+    // tempDefは次の相手ターン終了まで残し、自ターン開始時に消す（S09が防御として機能するように）
+    card.tempAtk = 0;
     decrementStatuses(card);
   });
   tickBannerEffect(player);
@@ -2845,7 +2861,7 @@ function triggerSophiaBoost(card, player) {
   card.sophiaBoostPending = false;
   const target = strongestAlly(player, card);
   if (!target) return;
-  const multiplier = Math.max(2, card.sophiaSkillMultiplier || 2);
+  const multiplier = Math.min(SKILL_MULTIPLIER_CAP, Math.max(2, card.sophiaSkillMultiplier || 2));
   delete card.sophiaSkillMultiplier;
   grantNextSkillMultiplier(target, multiplier);
   log(`${target.name} の次のスキルが${multiplier}倍予約された。`, "effect");
@@ -2909,7 +2925,8 @@ function moveEnemyBacklineToFront(player, foe) {
   }
   const [target] = foe.back.splice(backIndex, 1, null);
   foe.front[frontIndex] = target;
-  log(`${target.name} を後衛から前衛へ移動させた。`, "effect");
+  log(`${target.name} を後衛から前衛へ引きずり出した。`, "effect");
+  damageCharacter(target, 2, player);
 }
 
 function fireMargueriteBacklineShot(card, player, foe) {
@@ -3175,12 +3192,12 @@ function getPendingSupportCard() {
 
 function grantNextSkillMultiplier(card, multiplier) {
   if (!card || !Number.isFinite(multiplier) || multiplier <= 1) return;
-  card.nextSkillMultiplier = Math.max(card.nextSkillMultiplier || 1, multiplier);
+  card.nextSkillMultiplier = Math.min(SKILL_MULTIPLIER_CAP, Math.max(card.nextSkillMultiplier || 1, multiplier));
 }
 
 function consumeNextSkillMultiplier(card) {
   if (!card) return 1;
-  const multiplier = Math.max(1, card.nextSkillMultiplier || (card.doubleNextSkill ? 2 : 1));
+  const multiplier = Math.min(SKILL_MULTIPLIER_CAP, Math.max(1, card.nextSkillMultiplier || (card.doubleNextSkill ? 2 : 1)));
   delete card.nextSkillMultiplier;
   delete card.doubleNextSkill;
   return multiplier;
@@ -3288,7 +3305,8 @@ async function performAttack(attacker, target, options = {}) {
   const previousBusy = state.busy;
   state.busy = true;
   state.selectedAttackerId = null;
-  const atomicFlareReady = attacker.id === "C46" && !attacker.atomicFlareUsed;
+  // アトミックフレアはキャラへの攻撃でのみ発動・消費する（LP攻撃では温存）
+  const atomicFlareReady = attacker.id === "C46" && !attacker.atomicFlareUsed && target.type === "card";
   audio.sfx(atomicFlareReady ? "atomic" : "attack", { ...attacker, amount: effectiveAtk(attacker) });
   audio.voice(attacker, "attack");
   const fx = window.FX;
@@ -3484,6 +3502,16 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
   }
 
   if (card.currentHp <= 0) {
+    const interceptor = findInterceptGuardian(owner, card);
+    if (interceptor && hpDamage > 0) {
+      interceptor.interceptUsed = true;
+      card.currentHp += hpDamage;
+      audio.sfx("guard", { ...card, amount: hpDamage });
+      animateCard(card.instanceId, "", `+${hpDamage}`, true);
+      log(`${interceptor.name} が ${card.name} を庇い、代わりに${hpDamage}ダメージを受けた。`, "effect");
+      damageCharacter(interceptor, hpDamage, sourcePlayer, { ignoreDef: true });
+      return { killed: false, hpDamage, totalDamage };
+    }
     if (card.id === "C49" && !card.lastStandUsed) {
       card.lastStandUsed = true;
       card.currentHp = 1;
@@ -3496,6 +3524,21 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
     return { killed: true, hpDamage, totalDamage };
   }
   return { killed: false, hpDamage, totalDamage };
+}
+
+function findInterceptGuardian(owner, dying) {
+  if (!owner || !dying || dying.id === "C25") return null;
+  return (
+    boardCards(owner).find(
+      (ally) =>
+        ally.id === "C25" &&
+        ally !== dying &&
+        !ally.interceptUsed &&
+        ally.currentHp > 0 &&
+        ally.status.silenced <= 0 &&
+        ally.status.stun <= 0,
+    ) || null
+  );
 }
 
 function destroyCharacter(card, sourcePlayer, options = {}) {
@@ -3675,7 +3718,10 @@ function effectiveCost(card, player) {
   let cost = card.cost || 0;
   if (card.costReduction) cost -= card.costReduction;
   if (card.kind === "character" && player?.bannerTurns > 0) cost -= 1;
-  if (card.kind === "support" && foe && (hasBoardCard(foe, "C23") || hasBoardCard(foe, "C63"))) cost += 1;
+  if (card.kind === "support" && foe) {
+    if (hasBoardCard(foe, "C23")) cost += 1;
+    if (hasBoardCard(foe, "C63")) cost += 1;
+  }
   return Math.max(0, cost);
 }
 
@@ -4063,6 +4109,357 @@ function toggleBattleBgmStyle() {
   saveBattleBgmStyle(battleBgmStyle === "jazz" ? "standard" : "jazz");
 }
 
+function normalizeSystemVoiceNumber(value, fallback, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, number));
+}
+
+function normalizeSystemVoiceSettings(settings = {}) {
+  const rawSource = typeof settings.source === "string" ? settings.source : "";
+  const source =
+    rawSource === SYSTEM_VOICE_SOURCE_BROWSER || rawSource === SYSTEM_VOICE_SOURCE_CUSTOM || rawSource === SYSTEM_VOICE_SOURCE_DEFAULT
+      ? rawSource
+      : settings.voiceURI
+        ? SYSTEM_VOICE_SOURCE_BROWSER
+        : SYSTEM_VOICE_SOURCE_DEFAULT;
+  return {
+    source,
+    voiceURI: typeof settings.voiceURI === "string" ? settings.voiceURI : "",
+    customId: typeof settings.customId === "string" ? settings.customId : "",
+    name: typeof settings.name === "string" ? settings.name : "",
+    lang: typeof settings.lang === "string" ? settings.lang : "ja-JP",
+    rate: normalizeSystemVoiceNumber(settings.rate, SYSTEM_VOICE_DEFAULT_RATE, 0.5, 2),
+    pitch: normalizeSystemVoiceNumber(settings.pitch, SYSTEM_VOICE_DEFAULT_PITCH, 0, 2),
+    volume: normalizeSystemVoiceNumber(settings.volume, SYSTEM_VOICE_DEFAULT_VOLUME, 0, 1),
+  };
+}
+
+function loadSystemVoiceSettings() {
+  try {
+    return normalizeSystemVoiceSettings(JSON.parse(localStorage.getItem(SYSTEM_VOICE_STORAGE_KEY) || "null") || {});
+  } catch {
+    return normalizeSystemVoiceSettings();
+  }
+}
+
+function currentSystemVoiceSettings() {
+  if (!systemVoiceSettings) systemVoiceSettings = loadSystemVoiceSettings();
+  return systemVoiceSettings;
+}
+
+function saveSystemVoiceSettings(settings) {
+  systemVoiceSettings = normalizeSystemVoiceSettings(settings);
+  try {
+    localStorage.setItem(SYSTEM_VOICE_STORAGE_KEY, JSON.stringify(systemVoiceSettings));
+  } catch {
+    // The selected voice still works for the current session if storage is unavailable.
+  }
+  updateVoiceButtons();
+  return systemVoiceSettings;
+}
+
+function systemVoiceSupported() {
+  return "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
+}
+
+function browserSpeechVoices() {
+  if (!systemVoiceSupported()) return [];
+  try {
+    return window.speechSynthesis.getVoices();
+  } catch {
+    return [];
+  }
+}
+
+function browserVoiceKey(voice) {
+  return voice?.voiceURI || `${voice?.name || ""}:${voice?.lang || ""}`;
+}
+
+function systemVoiceLanguagePriority(lang) {
+  const normalized = String(lang || "").toLowerCase();
+  if (normalized.startsWith("ja")) return 0;
+  if (normalized.startsWith("en")) return 1;
+  return normalized ? 2 : 3;
+}
+
+function compareBrowserVoices(a, b) {
+  const langDiff = systemVoiceLanguagePriority(a.lang) - systemVoiceLanguagePriority(b.lang);
+  if (langDiff) return langDiff;
+  if (a.default !== b.default) return a.default ? -1 : 1;
+  if (a.localService !== b.localService) return a.localService ? -1 : 1;
+  return a.name.localeCompare(b.name, "ja");
+}
+
+function browserVoiceMeta(voice) {
+  return [
+    voice.lang || "言語未指定",
+    voice.default ? "既定" : "",
+    voice.localService ? "端末内" : "ブラウザ提供",
+  ]
+    .filter(Boolean)
+    .join(" / ");
+}
+
+function systemVoiceOptionId(option) {
+  if (option.source === SYSTEM_VOICE_SOURCE_DEFAULT) return SYSTEM_VOICE_SOURCE_DEFAULT;
+  if (option.source === SYSTEM_VOICE_SOURCE_CUSTOM) return `${SYSTEM_VOICE_SOURCE_CUSTOM}:${option.customId}`;
+  return `${SYSTEM_VOICE_SOURCE_BROWSER}:${option.voiceURI}`;
+}
+
+function buildSystemVoiceOptions() {
+  const settings = currentSystemVoiceSettings();
+  const browserOptions = browserSpeechVoices()
+    .slice()
+    .sort(compareBrowserVoices)
+    .map((voice) => ({
+      source: SYSTEM_VOICE_SOURCE_BROWSER,
+      voiceURI: browserVoiceKey(voice),
+      name: voice.name,
+      lang: voice.lang || "ja-JP",
+      label: voice.name,
+      meta: browserVoiceMeta(voice),
+      voice,
+    }));
+  const customOptions = CUSTOM_SYSTEM_VOICE_OPTIONS.map((voice) => ({
+    source: SYSTEM_VOICE_SOURCE_CUSTOM,
+    customId: voice.id,
+    name: voice.label || voice.id,
+    lang: voice.lang || "ja-JP",
+    label: voice.label || voice.id,
+    meta: voice.meta || "追加実装ボイス",
+    custom: voice,
+  }));
+  const options = [
+    {
+      source: SYSTEM_VOICE_SOURCE_DEFAULT,
+      label: "ブラウザ標準",
+      meta: "端末の既定の読み上げ声",
+    },
+    ...browserOptions,
+    ...customOptions,
+  ];
+  if (settings.source === SYSTEM_VOICE_SOURCE_BROWSER && settings.voiceURI && !options.some((option) => isSystemVoiceOptionSelected(option, settings))) {
+    options.splice(1, 0, {
+      source: SYSTEM_VOICE_SOURCE_BROWSER,
+      voiceURI: settings.voiceURI,
+      name: settings.name || settings.voiceURI,
+      lang: settings.lang || "ja-JP",
+      label: settings.name || settings.voiceURI,
+      meta: "このブラウザでは現在利用できません",
+      unavailable: true,
+    });
+  }
+  if (settings.source === SYSTEM_VOICE_SOURCE_CUSTOM && settings.customId && !options.some((option) => isSystemVoiceOptionSelected(option, settings))) {
+    options.push({
+      source: SYSTEM_VOICE_SOURCE_CUSTOM,
+      customId: settings.customId,
+      name: settings.name || settings.customId,
+      lang: settings.lang || "ja-JP",
+      label: settings.name || settings.customId,
+      meta: "追加実装待ちのボイスです",
+      unavailable: true,
+    });
+  }
+  return options.map((option) => ({ ...option, id: systemVoiceOptionId(option) }));
+}
+
+function isSystemVoiceOptionSelected(option, settings = currentSystemVoiceSettings()) {
+  if (option.source === SYSTEM_VOICE_SOURCE_DEFAULT) return settings.source === SYSTEM_VOICE_SOURCE_DEFAULT;
+  if (option.source === SYSTEM_VOICE_SOURCE_BROWSER) return settings.source === SYSTEM_VOICE_SOURCE_BROWSER && settings.voiceURI === option.voiceURI;
+  return settings.source === SYSTEM_VOICE_SOURCE_CUSTOM && settings.customId === option.customId;
+}
+
+function resolveBrowserSystemVoice(settings = currentSystemVoiceSettings()) {
+  if (settings.source !== SYSTEM_VOICE_SOURCE_BROWSER) return null;
+  const voices = browserSpeechVoices();
+  return (
+    voices.find((voice) => browserVoiceKey(voice) === settings.voiceURI) ||
+    voices.find((voice) => voice.name === settings.name && (!settings.lang || voice.lang === settings.lang)) ||
+    null
+  );
+}
+
+function systemVoiceDisplayName(settings = currentSystemVoiceSettings()) {
+  if (settings.source === SYSTEM_VOICE_SOURCE_DEFAULT) return "ブラウザ標準";
+  if (settings.source === SYSTEM_VOICE_SOURCE_CUSTOM) {
+    const custom = CUSTOM_SYSTEM_VOICE_OPTIONS.find((voice) => voice.id === settings.customId);
+    return custom?.label || settings.name || settings.customId || "追加実装ボイス";
+  }
+  const voice = resolveBrowserSystemVoice(settings);
+  return voice?.name || settings.name || settings.voiceURI || "ブラウザ読み上げ声";
+}
+
+function systemVoiceDisplayMeta(settings = currentSystemVoiceSettings()) {
+  if (settings.source === SYSTEM_VOICE_SOURCE_DEFAULT) return "端末の既定の読み上げ声";
+  if (settings.source === SYSTEM_VOICE_SOURCE_CUSTOM) {
+    const custom = CUSTOM_SYSTEM_VOICE_OPTIONS.find((voice) => voice.id === settings.customId);
+    return custom?.meta || "追加実装待ちのボイスです";
+  }
+  const voice = resolveBrowserSystemVoice(settings);
+  return voice ? browserVoiceMeta(voice) : `${settings.lang || "言語未指定"} / このブラウザでは未検出`;
+}
+
+function renderSystemVoiceCurrent() {
+  const name = qs("#systemVoiceCurrentName");
+  const meta = qs("#systemVoiceCurrentMeta");
+  if (name) name.textContent = systemVoiceDisplayName();
+  if (meta) meta.textContent = systemVoiceDisplayMeta();
+}
+
+function renderSystemVoiceList() {
+  const list = qs("#systemVoiceList");
+  if (!list) return;
+  if (!systemVoiceSupported()) {
+    list.innerHTML = '<p class="system-voice-empty">このブラウザでは読み上げ機能を利用できません。</p>';
+    return;
+  }
+  const options = buildSystemVoiceOptions();
+  list.innerHTML = options
+    .map((option) => {
+      const selected = isSystemVoiceOptionSelected(option);
+      const disabled = option.unavailable ? "disabled" : "";
+      return `
+        <button type="button" class="system-voice-option ${selected ? "is-selected" : ""} ${option.unavailable ? "is-unavailable" : ""}" data-voice-id="${escapeHtml(option.id)}" role="radio" aria-checked="${selected}" ${disabled}>
+          <span class="system-voice-mark" aria-hidden="true"></span>
+          <span class="system-voice-option-copy">
+            <strong>${escapeHtml(option.label)}</strong>
+            <small>${escapeHtml(option.meta)}</small>
+          </span>
+        </button>
+      `;
+    })
+    .join("");
+  if (options.length <= 1 && !browserSpeechVoices().length) {
+    list.innerHTML += '<p class="system-voice-empty">ブラウザから読み上げ声リストを取得中です。</p>';
+  }
+}
+
+function setSystemVoiceStatus(message = "", kind = "") {
+  const status = qs("#systemVoiceStatus");
+  if (!status) return;
+  status.textContent = message;
+  status.classList.toggle("is-error", kind === "error");
+  status.classList.toggle("is-ready", kind === "ready");
+}
+
+function renderSystemVoiceModal(message = null, kind = "") {
+  renderSystemVoiceCurrent();
+  renderSystemVoiceList();
+  if (message !== null) setSystemVoiceStatus(message, kind);
+}
+
+function openSystemVoiceSettings() {
+  if (systemVoiceSupported()) window.speechSynthesis.getVoices();
+  qs("#systemVoiceModal")?.classList.remove("hidden");
+  if (!systemVoiceSupported()) {
+    renderSystemVoiceModal("このブラウザでは読み上げ機能を利用できません。", "error");
+    return;
+  }
+  const message = browserSpeechVoices().length ? "" : "ブラウザから読み上げ声リストを取得中です。";
+  renderSystemVoiceModal(message);
+}
+
+function closeSystemVoiceSettings() {
+  qs("#systemVoiceModal")?.classList.add("hidden");
+  audio.stopVoice();
+}
+
+function selectSystemVoiceOption(optionId) {
+  const option = buildSystemVoiceOptions().find((candidate) => candidate.id === optionId);
+  if (!option || option.unavailable) return;
+  if (option.source === SYSTEM_VOICE_SOURCE_DEFAULT) {
+    saveSystemVoiceSettings({ source: SYSTEM_VOICE_SOURCE_DEFAULT });
+  } else if (option.source === SYSTEM_VOICE_SOURCE_CUSTOM) {
+    saveSystemVoiceSettings({
+      source: SYSTEM_VOICE_SOURCE_CUSTOM,
+      customId: option.customId,
+      name: option.label,
+      lang: option.lang,
+    });
+  } else {
+    saveSystemVoiceSettings({
+      source: SYSTEM_VOICE_SOURCE_BROWSER,
+      voiceURI: option.voiceURI,
+      name: option.name,
+      lang: option.lang,
+    });
+  }
+  renderSystemVoiceModal("システムボイスを保存しました。", "ready");
+}
+
+function refreshSystemVoiceList() {
+  if (!systemVoiceSupported()) {
+    renderSystemVoiceModal("このブラウザでは読み上げ機能を利用できません。", "error");
+    return;
+  }
+  window.speechSynthesis.getVoices();
+  const count = browserSpeechVoices().length;
+  renderSystemVoiceModal(count ? `${count}件の読み上げ声を表示しています。` : "ブラウザから読み上げ声リストを取得中です。", count ? "ready" : "");
+}
+
+function testSystemVoice() {
+  if (!audio.voiceOn) {
+    audio.voiceOn = true;
+    updateVoiceButtons();
+  }
+  audio.unlock();
+  if (audio.speak(SYSTEM_VOICE_TEST_TEXT)) setSystemVoiceStatus("テスト再生しました。", "ready");
+  else setSystemVoiceStatus("このブラウザではテスト再生できません。", "error");
+}
+
+function initSystemVoiceList() {
+  systemVoiceSettings = loadSystemVoiceSettings();
+  if (!systemVoiceSupported()) return;
+  window.speechSynthesis.getVoices();
+  const handleVoicesChanged = () => {
+    updateVoiceButtons();
+    if (!qs("#systemVoiceModal")?.classList.contains("hidden")) {
+      renderSystemVoiceModal("ブラウザの読み上げ声リストを更新しました。", "ready");
+    }
+  };
+  if (window.speechSynthesis.addEventListener) {
+    window.speechSynthesis.addEventListener("voiceschanged", handleVoicesChanged);
+  } else {
+    window.speechSynthesis.onvoiceschanged = handleVoicesChanged;
+  }
+}
+
+function updateVoiceButtons() {
+  const voiceButton = qs("#voiceBtn");
+  if (voiceButton) {
+    voiceButton.classList.toggle("is-on", audio.voiceOn);
+    voiceButton.title = `ボイス: ${audio.voiceOn ? "ON" : "OFF"} / システムボイス: ${systemVoiceDisplayName()}`;
+  }
+  const settingsButton = qs("#voiceSettingsBtn");
+  if (settingsButton) settingsButton.title = `システムボイス設定: ${systemVoiceDisplayName()}`;
+}
+
+function playCustomSystemVoice(settings, text) {
+  const custom = CUSTOM_SYSTEM_VOICE_OPTIONS.find((voice) => voice.id === settings.customId);
+  if (typeof custom?.speak !== "function") return false;
+  try {
+    return custom.speak({ text, settings, audio }) === true;
+  } catch {
+    return false;
+  }
+}
+
+function playSystemVoiceText(text, settings = currentSystemVoiceSettings()) {
+  if (settings.source === SYSTEM_VOICE_SOURCE_CUSTOM && playCustomSystemVoice(settings, text)) return true;
+  if (!systemVoiceSupported()) return false;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  const selectedVoice = resolveBrowserSystemVoice(settings);
+  if (selectedVoice) utterance.voice = selectedVoice;
+  utterance.lang = selectedVoice?.lang || settings.lang || "ja-JP";
+  utterance.rate = normalizeSystemVoiceNumber(settings.rate, SYSTEM_VOICE_DEFAULT_RATE, 0.5, 2);
+  utterance.pitch = normalizeSystemVoiceNumber(settings.pitch, SYSTEM_VOICE_DEFAULT_PITCH, 0, 2);
+  utterance.volume = normalizeSystemVoiceNumber(settings.volume, SYSTEM_VOICE_DEFAULT_VOLUME, 0, 1);
+  window.speechSynthesis.speak(utterance);
+  return true;
+}
+
 function normalizeTransferCount(value, max = 999999) {
   const number = Number.parseInt(value, 10);
   if (!Number.isFinite(number)) return 0;
@@ -4134,6 +4531,7 @@ function normalizeTransferPayload(payload) {
     deckSlots,
     activeDeckSlot: activeSlot,
     battleBgmStyle: payload.battleBgmStyle === "jazz" ? "jazz" : "standard",
+    systemVoiceSettings: normalizeSystemVoiceSettings(payload.systemVoiceSettings || payload.systemVoice || {}),
   };
 }
 
@@ -4147,6 +4545,7 @@ function buildTransferPayload() {
     deckSlots: loadPlayerDeckSlots(),
     activeDeckSlot: loadActiveDeckSlot(),
     battleBgmStyle: loadBattleBgmStyle(),
+    systemVoiceSettings: currentSystemVoiceSettings(),
   });
 }
 
@@ -4279,13 +4678,16 @@ function applyTransferPayload(payload) {
     throw new Error("デッキを保存できませんでした。");
   }
   saveBattleBgmStyle(normalized.battleBgmStyle);
+  saveSystemVoiceSettings(normalized.systemVoiceSettings);
   return normalized;
 }
 
 function refreshAfterTransferImport() {
   activeDeckSlot = loadActiveDeckSlot();
   battleBgmStyle = loadBattleBgmStyle();
+  systemVoiceSettings = loadSystemVoiceSettings();
   updateBattleBgmStyleButton();
+  updateVoiceButtons();
   if (!qs("#deckEditor")?.classList.contains("hidden")) {
     deckEditorIds = loadPlayerDeckIds();
     renderDeckEditor("署名を検証してインポートしました。", true);
@@ -4484,6 +4886,516 @@ function closeGallery() {
   qs("#galleryView").classList.add("hidden");
   hideSkillPopup();
   audio.updateMusic();
+}
+
+// ============================================================
+// STORY MODE (ADV / visual-novel player)
+// Scenario registries (STORY_BACKGROUNDS / STORY_CHARACTERS / STORY_CG /
+// STORY_SCENARIOS) live in story-data.js, which is loaded before this file and
+// shared with the authoring editor (editor.html). See that file for the data
+// shape. The functions below render and drive playback of that data.
+// ============================================================
+const STORY_SAVE_STORAGE_KEY = "crossover-duel-story-save";
+const STORY_AUTO_DELAY_MS = 1500;
+const STORY_SKIP_DELAY_MS = 110;
+const STORY_BACKLOG_MAX = 200;
+
+function saveStoryProgress() {
+  if (!storyState) return;
+  try {
+    localStorage.setItem(
+      STORY_SAVE_STORAGE_KEY,
+      JSON.stringify({
+        scenarioId: storyState.scenario.id,
+        index: storyState.index,
+        flags: storyState.flags || {},
+        at: Date.now(),
+      })
+    );
+  } catch {}
+}
+
+function loadStorySave() {
+  try {
+    const raw = localStorage.getItem(STORY_SAVE_STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || typeof data.index !== "number") return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function clearStorySave() {
+  try {
+    localStorage.removeItem(STORY_SAVE_STORAGE_KEY);
+  } catch {}
+}
+
+function openStory(scenarioId = "prologue") {
+  const scenario = STORY_SCENARIOS[scenarioId];
+  if (!scenario) return;
+  activeScreen = "story";
+  storyState = {
+    scenario,
+    index: -1,
+    bg: scenario.bg || "black",
+    sprites: [],
+    cg: null,
+    typing: false,
+    fullText: "",
+    typeTimer: 0,
+    autoTimer: 0,
+    auto: false,
+    skip: false,
+    backlog: [],
+    flags: {},
+    visibleChoices: [],
+    pendingResume: null,
+    pendingFlags: null,
+  };
+  storyMusicTrack = scenario.bgm || "title";
+  document.body.classList.add("story-active");
+  qs("#storyView").classList.remove("hidden");
+  hideStoryChoices();
+  hideStoryBattle();
+  closeStoryBacklog();
+  updateStoryControlButtons();
+  audio.updateMusic();
+
+  const save = loadStorySave();
+  if (save && save.scenarioId === scenario.id && save.index > 0 && save.index < scenario.steps.length) {
+    storyState.pendingFlags = save.flags || {};
+    showStoryResumePrompt(save.index);
+  } else {
+    qs("#storyResumePrompt").classList.add("hidden");
+    goToStoryStep(0);
+    qs("#storyDialogue")?.focus();
+  }
+}
+
+function showStoryResumePrompt(savedIndex) {
+  storyState.pendingResume = savedIndex;
+  qs("#storyResumePrompt").classList.remove("hidden");
+}
+
+function resolveStoryResume(resume) {
+  if (!storyState) return;
+  const target = resume ? storyState.pendingResume || 0 : 0;
+  storyState.flags = resume ? storyState.pendingFlags || {} : {};
+  if (!resume) clearStorySave();
+  storyState.pendingResume = null;
+  storyState.pendingFlags = null;
+  qs("#storyResumePrompt").classList.add("hidden");
+  goToStoryStep(target);
+  qs("#storyDialogue")?.focus();
+}
+
+function closeStory() {
+  if (storyState) {
+    clearInterval(storyState.typeTimer);
+    clearTimeout(storyState.autoTimer);
+  }
+  storyState = null;
+  if (activeScreen === "story") activeScreen = "title";
+  document.body.classList.remove("story-active");
+  qs("#storyView").classList.add("hidden");
+  qs("#storyView").classList.remove("is-novel");
+  qs("#storyNovel").classList.add("hidden");
+  qs("#storyDialogue").classList.remove("hidden");
+  qs("#storyResumePrompt").classList.add("hidden");
+  closeStoryBacklog();
+  hideStoryChoices();
+  hideStoryBattle();
+  audio.updateMusic();
+}
+
+function goToStoryStep(index) {
+  if (!storyState) return;
+  const { scenario } = storyState;
+  clearTimeout(storyState.autoTimer);
+  if (index < 0 || index >= scenario.steps.length) {
+    clearStorySave();
+    closeStory();
+    return;
+  }
+  const step = scenario.steps[index];
+  storyState.index = index;
+  if (step.bg !== undefined) storyState.bg = step.bg;
+  if (step.sprites !== undefined) storyState.sprites = step.sprites;
+  if (step.cg !== undefined) storyState.cg = step.cg;
+  if (step.bgm !== undefined) {
+    storyMusicTrack = step.bgm;
+    audio.updateMusic();
+  }
+  if (step.set) applyStoryFlags(step.set);
+  if (step.text) pushStoryBacklog(step.speaker || "", step.text);
+  saveStoryProgress();
+  hideStoryChoices();
+  hideStoryBattle();
+  renderStoryStage(step);
+  applyStoryMode(step);
+  typeStoryText(step.speaker || "", step.text || "");
+}
+
+// ----- flags & branching -----
+function applyStoryFlags(set) {
+  if (set && storyState) Object.assign(storyState.flags, set);
+}
+
+// A flag condition `{ flag, equals? }` matches when the stored flag strictly
+// equals the expected value (`equals` defaults to true).
+function storyFlagMatches(cond) {
+  if (!cond || !storyState) return false;
+  const expected = cond.equals === undefined ? true : cond.equals;
+  return storyState.flags[cond.flag] === expected;
+}
+
+// Where a step leads when advancing: a matching `branch` entry wins, else the
+// step's explicit `goto`, else the next step.
+function resolveStoryNext(step) {
+  if (step?.branch?.length) {
+    for (const cond of step.branch) {
+      if (Number.isFinite(cond.goto) && storyFlagMatches(cond)) return cond.goto;
+    }
+  }
+  return step?.goto !== undefined ? step.goto : storyState.index + 1;
+}
+
+function visibleStoryChoices(step) {
+  if (!step?.choices?.length) return [];
+  return step.choices.filter((c) => !c.show || storyFlagMatches(c.show));
+}
+
+// Novel mode = full-screen text presentation: hide the bottom dialogue box,
+// darken the scene, and show long text using the whole stage. Toggled per step
+// via `step.novel === true` in the scenario data (story-data.js).
+function isNovelStep(step) {
+  return !!(step && step.novel);
+}
+
+function applyStoryMode(step) {
+  const novel = isNovelStep(step);
+  storyState.novel = novel;
+  qs("#storyView").classList.toggle("is-novel", novel);
+  qs("#storyNovel").classList.toggle("hidden", !novel);
+  qs("#storyDialogue").classList.toggle("hidden", novel);
+}
+
+// The active text / name / advance elements depend on the current display mode.
+function storyNameEl() {
+  return storyState?.novel ? qs("#storyNovelName") : qs("#storyNamePlate");
+}
+function storyTextEl() {
+  return storyState?.novel ? qs("#storyNovelText") : qs("#storyText");
+}
+function storyAdvanceEl() {
+  return storyState?.novel ? qs("#storyNovelAdvance") : qs("#storyAdvance");
+}
+
+function pushStoryBacklog(speaker, text) {
+  storyState.backlog.push({ speaker, text });
+  if (storyState.backlog.length > STORY_BACKLOG_MAX) storyState.backlog.shift();
+}
+
+function toggleStoryAuto() {
+  if (!storyState) return;
+  storyState.auto = !storyState.auto;
+  if (storyState.auto) {
+    storyState.skip = false;
+    if (!storyState.typing) afterStoryLineShown();
+  } else {
+    clearTimeout(storyState.autoTimer);
+  }
+  updateStoryControlButtons();
+}
+
+function toggleStorySkip() {
+  if (!storyState) return;
+  storyState.skip = !storyState.skip;
+  if (storyState.skip) {
+    storyState.auto = false;
+    if (storyState.typing) finishStoryTyping();
+    else afterStoryLineShown();
+  } else {
+    clearTimeout(storyState.autoTimer);
+  }
+  updateStoryControlButtons();
+}
+
+function updateStoryControlButtons() {
+  const autoBtn = qs("#storyAutoBtn");
+  const skipBtn = qs("#storySkipBtn");
+  const auto = !!storyState?.auto;
+  const skip = !!storyState?.skip;
+  autoBtn?.classList.toggle("is-on", auto);
+  autoBtn?.setAttribute("aria-pressed", String(auto));
+  skipBtn?.classList.toggle("is-on", skip);
+  skipBtn?.setAttribute("aria-pressed", String(skip));
+}
+
+function scheduleStoryNext(delay) {
+  if (!storyState) return;
+  clearTimeout(storyState.autoTimer);
+  storyState.autoTimer = setTimeout(() => advanceStory(), delay);
+}
+
+function openStoryBacklog() {
+  if (!storyState) return;
+  clearTimeout(storyState.autoTimer);
+  renderStoryBacklog();
+  qs("#storyBacklog").classList.remove("hidden");
+}
+
+function closeStoryBacklog() {
+  qs("#storyBacklog")?.classList.add("hidden");
+  if (storyState && storyState.auto && !storyState.typing) afterStoryLineShown();
+}
+
+function renderStoryBacklog() {
+  const list = qs("#storyBacklogList");
+  if (!list || !storyState) return;
+  list.innerHTML = "";
+  storyState.backlog.forEach((entry) => {
+    const row = document.createElement("div");
+    row.className = "story-backlog-row";
+    if (entry.speaker) {
+      const name = document.createElement("span");
+      name.className = "story-backlog-name";
+      name.textContent = entry.speaker;
+      row.appendChild(name);
+    }
+    const text = document.createElement("p");
+    text.className = "story-backlog-text";
+    text.textContent = entry.text;
+    row.appendChild(text);
+    list.appendChild(row);
+  });
+  list.scrollTop = list.scrollHeight;
+}
+
+function renderStoryStage(step) {
+  const bg = STORY_BACKGROUNDS[storyState.bg] || STORY_BACKGROUNDS.black;
+  const bgEl = qs("#storyBg");
+  bgEl.style.background = bg.img ? `#04050b center/cover no-repeat url("${bg.img}")` : bg.css;
+
+  const wrap = qs("#storySprites");
+  wrap.innerHTML = "";
+  const activeName = step.speaker || "";
+  storyState.sprites.forEach((entry) => wrap.appendChild(buildStorySprite(entry, activeName)));
+
+  const cgEl = qs("#storyCg");
+  if (storyState.cg) {
+    const cg = STORY_CG[storyState.cg] || { label: storyState.cg, css: "#04050b" };
+    cgEl.style.background = cg.img ? `#04050b center/cover no-repeat url("${cg.img}")` : cg.css;
+    cgEl.innerHTML = cg.img ? "" : `<span class="story-cg-label">${cg.label || ""}</span>`;
+    cgEl.classList.remove("hidden");
+  } else {
+    cgEl.classList.add("hidden");
+  }
+}
+
+function buildStorySprite(entry, activeName) {
+  const [id, pos = "center"] = String(entry).split("@");
+  const char = STORY_CHARACTERS[id] || { name: id, color: "#8893b5" };
+  const el = document.createElement("div");
+  el.className = `story-sprite pos-${pos}`;
+  if (activeName && char.name !== activeName) el.classList.add("is-dim");
+  if (char.img) {
+    const img = new Image();
+    img.src = char.img;
+    img.alt = char.name;
+    img.className = "story-sprite-img";
+    img.addEventListener("error", () => {
+      img.remove();
+      el.appendChild(buildStorySpritePlaceholder(char));
+    });
+    el.appendChild(img);
+  } else {
+    el.appendChild(buildStorySpritePlaceholder(char));
+  }
+  return el;
+}
+
+function buildStorySpritePlaceholder(char) {
+  const ph = document.createElement("div");
+  ph.className = "story-sprite-placeholder";
+  ph.style.background = `linear-gradient(180deg, ${char.color}cc, #0c1020 90%)`;
+  ph.textContent = char.name;
+  return ph;
+}
+
+function typeStoryText(speaker, text) {
+  const nameEl = storyNameEl();
+  const textEl = storyTextEl();
+  const advanceEl = storyAdvanceEl();
+  clearInterval(storyState.typeTimer);
+  nameEl.textContent = speaker;
+  nameEl.classList.toggle("is-empty", !speaker);
+  storyState.fullText = text;
+  textEl.textContent = "";
+  advanceEl.classList.remove("is-ready");
+  if (storyState.novel) qs(".story-novel-inner").scrollTop = 0;
+  if (storyState.skip) {
+    storyState.typing = false;
+    textEl.textContent = text;
+    afterStoryLineShown();
+    return;
+  }
+  storyState.typing = true;
+  let cursor = 0;
+  storyState.typeTimer = setInterval(() => {
+    cursor += 1;
+    textEl.textContent = text.slice(0, cursor);
+    if (cursor >= text.length) finishStoryTyping();
+  }, 24);
+}
+
+function finishStoryTyping() {
+  if (!storyState) return;
+  clearInterval(storyState.typeTimer);
+  storyState.typing = false;
+  storyTextEl().textContent = storyState.fullText;
+  afterStoryLineShown();
+}
+
+function afterStoryLineShown() {
+  if (!storyState) return;
+  const step = storyState.scenario.steps[storyState.index];
+  const advanceEl = storyAdvanceEl();
+  const backlogOpen = !qs("#storyBacklog")?.classList.contains("hidden");
+  const visible = visibleStoryChoices(step);
+  if (visible.length) {
+    showStoryChoices(visible);
+    advanceEl.classList.remove("is-ready");
+    if (storyState.skip) {
+      storyState.skip = false;
+      updateStoryControlButtons();
+    }
+    clearTimeout(storyState.autoTimer);
+    return;
+  }
+  if (step?.battle) {
+    showStoryBattle(step.battle);
+    advanceEl.classList.remove("is-ready");
+    if (storyState.skip) {
+      storyState.skip = false;
+      updateStoryControlButtons();
+    }
+    clearTimeout(storyState.autoTimer);
+    return;
+  }
+  advanceEl.classList.add("is-ready");
+  if (backlogOpen) return;
+  if (storyState.skip) scheduleStoryNext(STORY_SKIP_DELAY_MS);
+  else if (storyState.auto) scheduleStoryNext(STORY_AUTO_DELAY_MS);
+}
+
+// ----- battle prompt (debug win/lose; real duel launch deferred) -----
+function showStoryBattle() {
+  qs("#storyBattlePrompt")?.classList.remove("hidden");
+}
+
+function hideStoryBattle() {
+  qs("#storyBattlePrompt")?.classList.add("hidden");
+}
+
+function resolveStoryBattle(win) {
+  if (!storyState) return;
+  const step = storyState.scenario.steps[storyState.index];
+  const battle = (step && step.battle) || {};
+  if (battle.winFlag) applyStoryFlags({ [battle.winFlag]: !!win });
+  hideStoryBattle();
+  const fallback = storyState.index + 1;
+  const goto = win
+    ? Number.isFinite(battle.onWin) ? battle.onWin : fallback
+    : Number.isFinite(battle.onLose) ? battle.onLose : fallback;
+  goToStoryStep(goto);
+}
+
+function showStoryChoices(choices) {
+  storyState.visibleChoices = choices;
+  const wrap = qs("#storyChoices");
+  wrap.innerHTML = "";
+  choices.forEach((choice, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "story-choice-button";
+    btn.dataset.idx = String(i);
+    btn.textContent = choice.label;
+    wrap.appendChild(btn);
+  });
+  wrap.classList.remove("hidden");
+}
+
+function hideStoryChoices() {
+  const wrap = qs("#storyChoices");
+  if (!wrap) return;
+  wrap.classList.add("hidden");
+  wrap.innerHTML = "";
+}
+
+function selectStoryChoice(idx) {
+  if (!storyState) return;
+  const choice = storyState.visibleChoices?.[idx];
+  hideStoryChoices();
+  if (!choice) return;
+  if (choice.set) applyStoryFlags(choice.set);
+  const goto = Number.isFinite(choice.goto) ? choice.goto : storyState.index + 1;
+  goToStoryStep(goto);
+}
+
+function advanceStory() {
+  if (!storyState) return;
+  const step = storyState.scenario.steps[storyState.index];
+  if (storyState.typing) {
+    finishStoryTyping();
+    return;
+  }
+  if (visibleStoryChoices(step).length) return;
+  if (step?.battle) return; // battle prompt drives navigation
+  goToStoryStep(resolveStoryNext(step));
+}
+
+// ----- in-game story select menu -----
+function openStorySelect() {
+  renderStorySelectList();
+  qs("#storySelectView").classList.remove("hidden");
+}
+
+function closeStorySelect() {
+  qs("#storySelectView").classList.add("hidden");
+}
+
+function renderStorySelectList() {
+  const list = qs("#storySelectList");
+  if (!list) return;
+  list.innerHTML = "";
+  const save = loadStorySave();
+  Object.values(STORY_SCENARIOS).forEach((sc) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "story-select-item";
+    btn.dataset.id = sc.id;
+    const resumable = save && save.scenarioId === sc.id && save.index > 0;
+    btn.innerHTML =
+      `<span class="story-select-item-title">${sc.title || sc.id}</span>` +
+      (resumable ? `<span class="story-select-item-badge">つづきあり</span>` : "");
+    list.appendChild(btn);
+  });
+  if (!list.children.length) {
+    const empty = document.createElement("p");
+    empty.className = "story-select-empty";
+    empty.textContent = "シナリオがありません。";
+    list.appendChild(empty);
+  }
+}
+
+function playStoryFromSelect(id) {
+  if (!STORY_SCENARIOS[id]) return;
+  closeStorySelect();
+  openStory(id);
 }
 
 function openOpeningMovie() {
@@ -6007,6 +6919,14 @@ function scoreCardForAi(card, slot = null, player = state.ai) {
     } else if (frontCount < 2 && player.turns <= 3) {
       score += lanePlan === AI_LANE_FRONT ? 10 : 3;
     }
+    // 敵の攻撃頭数に前衛が押されている時は、レアリティよりガード補充を優先する
+    if (card.tags?.includes("guard")) {
+      const enemyPressure = opponentOf(player)
+        .front.filter(Boolean)
+        .filter((enemy) => effectiveAtk(enemy) > 0).length;
+      const deficit = enemyPressure - frontCount;
+      if (deficit > 0) score += 18 * Math.min(3, deficit);
+    }
   } else if (slot.lane === AI_LANE_BACK) {
     score += lanePlan === AI_LANE_BACK ? 8 : -20;
     if (player.nextBackSkillDouble && isBackSkillCandidate(card)) score += 6;
@@ -6223,6 +7143,13 @@ function chooseAiAttackTarget(attacker) {
   const targets = getLegalTargets(attacker, state.ai);
   const lpTarget = targets.find((target) => target.type === "lp");
   if (lpTarget && state.player.lp <= effectiveAtk(attacker)) return lpTarget;
+  if (lpTarget) {
+    // 攻撃可能な前衛の合計ATKでリーサルが見えるなら全員で顔を狙う
+    const readyAttack = state.ai.front
+      .filter((candidate) => canAttack(candidate, state.ai))
+      .reduce((sum, candidate) => sum + effectiveAtk(candidate), 0);
+    if (readyAttack >= state.player.lp) return lpTarget;
+  }
   const cardTargets = targets.filter((target) => target.type === "card");
   if (!cardTargets.length) return lpTarget;
   const focusFrontline = aiShouldFocusFrontline(cardTargets);
@@ -6450,6 +7377,24 @@ function bindEvents() {
   qs("#exportSignedDataBtn").addEventListener("click", handleSignedDataExport);
   qs("#importSignedDataBtn").addEventListener("click", handleSignedDataImportRequest);
   qs("#signedDataFileInput").addEventListener("change", handleSignedDataImportFile);
+  qs("#systemVoiceBtn").addEventListener("click", () => {
+    audio.unlock();
+    openSystemVoiceSettings();
+  });
+  qs("#voiceSettingsBtn").addEventListener("click", () => {
+    audio.unlock();
+    openSystemVoiceSettings();
+  });
+  qs("#closeSystemVoiceBtn").addEventListener("click", closeSystemVoiceSettings);
+  qs("#systemVoiceModal").addEventListener("click", (event) => {
+    if (event.target.id === "systemVoiceModal") closeSystemVoiceSettings();
+  });
+  qs("#systemVoiceList").addEventListener("click", (event) => {
+    const button = event.target.closest(".system-voice-option[data-voice-id]");
+    if (button) selectSystemVoiceOption(button.dataset.voiceId);
+  });
+  qs("#refreshSystemVoiceBtn").addEventListener("click", refreshSystemVoiceList);
+  qs("#testSystemVoiceBtn").addEventListener("click", testSystemVoice);
   qs("#deckEditBtn").addEventListener("click", () => {
     audio.unlock();
     openDeckEditor();
@@ -6460,6 +7405,93 @@ function bindEvents() {
     openGallery();
   });
   qs("#closeGalleryBtn").addEventListener("click", closeGallery);
+  qs("#storyModeBtn").addEventListener("click", () => {
+    audio.unlock();
+    openStorySelect();
+  });
+  qs("#storySelectCloseBtn").addEventListener("click", closeStorySelect);
+  qs("#storySelectList").addEventListener("click", (event) => {
+    const button = event.target.closest(".story-select-item[data-id]");
+    if (button) playStoryFromSelect(button.dataset.id);
+  });
+  qs("#storyBattleWinBtn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    resolveStoryBattle(true);
+  });
+  qs("#storyBattleLoseBtn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    resolveStoryBattle(false);
+  });
+  qs("#storyCloseBtn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    closeStory();
+  });
+  qs("#storyAutoBtn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleStoryAuto();
+  });
+  qs("#storySkipBtn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleStorySkip();
+  });
+  qs("#storyBacklogBtn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    openStoryBacklog();
+  });
+  qs("#storyBacklogCloseBtn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    closeStoryBacklog();
+  });
+  qs("#storyResumeContinueBtn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    resolveStoryResume(true);
+  });
+  qs("#storyResumeRestartBtn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    resolveStoryResume(false);
+  });
+  qs("#storyView").addEventListener("click", (event) => {
+    if (
+      event.target.closest("#storyCloseBtn") ||
+      event.target.closest("#storyChoices") ||
+      event.target.closest("#storyControls") ||
+      event.target.closest("#storyBacklog") ||
+      event.target.closest("#storyResumePrompt") ||
+      event.target.closest("#storyBattlePrompt")
+    ) {
+      return;
+    }
+    if (!qs("#storyBacklog").classList.contains("hidden")) return;
+    if (!qs("#storyResumePrompt").classList.contains("hidden")) return;
+    if (!qs("#storyBattlePrompt").classList.contains("hidden")) return;
+    advanceStory();
+  });
+  qs("#storyChoices").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-idx]");
+    if (button) selectStoryChoice(Number(button.dataset.idx));
+  });
+  qs("#storyView").addEventListener("keydown", (event) => {
+    if (event.target.closest("#storyChoices")) return;
+    if (event.key === "Escape") {
+      if (!qs("#storyBacklog").classList.contains("hidden")) {
+        closeStoryBacklog();
+      } else {
+        closeStory();
+      }
+      return;
+    }
+    if (!qs("#storyBacklog").classList.contains("hidden")) return;
+    if (!qs("#storyResumePrompt").classList.contains("hidden")) return;
+    if (!qs("#storyBattlePrompt").classList.contains("hidden")) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      advanceStory();
+    } else if (event.key.toLowerCase() === "a") {
+      toggleStoryAuto();
+    } else if (event.key.toLowerCase() === "s") {
+      toggleStorySkip();
+    }
+  });
   qs("#galleryCardGrid").addEventListener("click", (event) => {
     const button = event.target.closest(".gallery-card-button[data-card-id]");
     if (!button) return;
@@ -6651,6 +7683,7 @@ function bindEvents() {
     if (!qs("#openingMovieModal").classList.contains("hidden")) closeOpeningMovie();
     if (!qs("#howToPlayModal").classList.contains("hidden")) closeHowToPlay();
     if (!qs("#dataTransferModal").classList.contains("hidden")) closeDataTransfer();
+    if (!qs("#systemVoiceModal").classList.contains("hidden")) closeSystemVoiceSettings();
     if (!qs("#newGameConfirmModal").classList.contains("hidden")) closeNewGameConfirm();
     if (!qs("#deckSlotConfirmModal").classList.contains("hidden")) closeDeckSlotSwitchConfirm();
     if (!qs("#galleryView").classList.contains("hidden")) closeGallery();
@@ -6696,7 +7729,7 @@ function bindEvents() {
   });
   qs("#voiceBtn").addEventListener("click", () => {
     audio.voiceOn = !audio.voiceOn;
-    qs("#voiceBtn").classList.toggle("is-on", audio.voiceOn);
+    updateVoiceButtons();
     if (!audio.voiceOn) audio.stopVoice();
   });
 }
@@ -6776,6 +7809,8 @@ function escapeHtml(value) {
 }
 
 bindEvents();
+initSystemVoiceList();
 battleBgmStyle = loadBattleBgmStyle();
 updateBattleBgmStyleButton();
+updateVoiceButtons();
 showTitleScreen();
