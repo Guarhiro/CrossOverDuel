@@ -2553,7 +2553,7 @@ function applySummonEffects(card, player, lane) {
       applySerenaBoostToClaires(card, player);
       break;
     case "C50":
-      clearAllyStatusesAndBolsterGuards(player);
+      clearAllyStatusesAndBolsterGuards(player, scale);
       break;
     case "C52":
       player.effectNullify += 1;
@@ -2902,7 +2902,7 @@ function removeSerenaBoostFromClaires(player, serena) {
     });
 }
 
-function clearAllyStatusesAndBolsterGuards(player) {
+function clearAllyStatusesAndBolsterGuards(player, scale = 1) {
   let cleared = 0;
   boardCards(player).forEach((ally) => {
     const hadStatus = Object.values(ally.status || {}).some((value) => value > 0);
@@ -2911,7 +2911,7 @@ function clearAllyStatusesAndBolsterGuards(player) {
     ally.status.guardOff = 0;
     ally.status.bind = 0;
     ally.status.silenced = 0;
-    if (ally.role === "GD") buffMaxHp(ally, 2);
+    if (ally.role === "GD") buffMaxHp(ally, 2 * scale);
   });
   log(`フィーネが状態異常を解除し、ガーディアンを補強した${cleared ? `（解除${cleared}体）` : ""}。`, "effect");
 }
