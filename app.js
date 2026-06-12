@@ -897,7 +897,7 @@ const CHARACTERS = [
     def: 1,
     hp: 4,
     skill: "封印審判",
-    text: "相手のサポーターのスキル、またはサポートカード効果を1回無効化する",
+    text: "配置時、相手後衛全員のスキルを2ターン封印する",
   },
   {
     kind: "character",
@@ -2425,9 +2425,9 @@ function applySummonEffects(card, player, lane) {
     log(`${card.name} の後衛スキル効果が2倍になった。`, "effect");
   }
 
-  if (hasBoardCard(player, "C11") && card.role === "AT" && card.id !== "C11") buffAtk(card, 2 * scale);
-  if (hasBoardCard(player, "C32") && card.element === "炎" && card.id !== "C32") buffAtk(card, 1 * scale);
-  if (card.id === "C14" && hasBoardCard(player, "C05")) buffAtk(card, 3 * scale);
+  if (hasActiveBoardCard(player, "C11") && card.role === "AT" && card.id !== "C11") buffAtk(card, 2 * scale);
+  if (hasActiveBoardCard(player, "C32") && card.element === "炎" && card.id !== "C32") buffAtk(card, 1 * scale);
+  if (card.id === "C14" && hasActiveBoardCard(player, "C05")) buffAtk(card, 3 * scale);
 
   if (card.id === "C47") applySerenaBoostsToClaire(card, player);
   if (card.role === "ST" && consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) return;
@@ -2483,7 +2483,7 @@ function applySummonEffects(card, player, lane) {
       });
       break;
     case "C20":
-      if (hasBoardCard(player, "C08")) buffDef(card, 2 * scale);
+      if (hasActiveBoardCard(player, "C08")) buffDef(card, 2 * scale);
       player.hand.forEach((handCard) => {
         if (handCard.id === "C08") handCard.costReduction = Math.max(handCard.costReduction || 0, 1);
       });
@@ -2516,7 +2516,7 @@ function applySummonEffects(card, player, lane) {
       log("相手ガーディアンのDEFを削った。", "effect");
       break;
     case "C38":
-      if (hasBoardCard(player, "C03")) {
+      if (hasActiveBoardCard(player, "C03")) {
         buffDef(card, 2 * scale);
         buffMaxHp(card, 2 * scale);
       }
@@ -2555,10 +2555,19 @@ function applySummonEffects(card, player, lane) {
     case "C50":
       clearAllyStatusesAndBolsterGuards(player, scale);
       break;
-    case "C52":
-      player.effectNullify += 1;
-      log(`${player.name} は次のサポーター/サポート効果を1回無効化する構え。`, "effect");
+    case "C52": {
+      const targets = foe.back.filter(Boolean);
+      if (!targets.length) {
+        log("封印審判は相手後衛が空で不発。", "warn");
+        break;
+      }
+      targets.forEach((target) => {
+        if (setStatus(target, "silenced", Math.max(target.status.silenced, 2))) {
+          log(`${target.name} のスキルを2ターン封印。`, "effect");
+        }
+      });
       break;
+    }
     case "C53":
       moveEnemyBacklineToFront(player, foe);
       break;
@@ -2722,7 +2731,7 @@ function applyEndEffects(player) {
       case "C62": {
         if (consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) break;
         const target = mostDamagedAlly(player);
-        const amount = hasBoardCard(player, "C10") ? 2 : 1;
+        const amount = hasActiveBoardCard(player, "C10") ? 2 : 1;
         if (target) healCharacter(target, amount);
         break;
       }
@@ -2791,7 +2800,7 @@ function consumeEffectNullify(card, player, label) {
   if (!foe?.effectNullify || card.role !== "ST") return false;
   foe.effectNullify -= 1;
   audio.sfx("counter");
-  log(`${foe.name} のイレーネが${label}を無効化。`, "effect");
+  log(`${foe.name} のエレーナが${label}を無効化。`, "effect");
   return true;
 }
 
@@ -2851,7 +2860,7 @@ function serenaBoostAmount(serena) {
 }
 
 function applySerenaBoostsToClaire(card, player) {
-  const sources = boardCards(player).filter((ally) => ally.id === "C48");
+  const sources = boardCards(player).filter((ally) => ally.id === "C48" && ally.status.silenced <= 0);
   sources.forEach((serena) => applySerenaBoost(card, serena));
   if (sources.length) log(`${card.name} はセレナの号令で強化された。`, "effect");
 }
@@ -2868,6 +2877,7 @@ function triggerSophiaBoost(card, player) {
 }
 
 function applySerenaBoostToClaires(serena, player) {
+  if (serena.status.silenced > 0) return;
   const claires = boardCards(player).filter((ally) => ally.id === "C47");
   claires.forEach((claire) => applySerenaBoost(claire, serena));
   if (claires.length) log("セレナの号令でクレアが強化された。", "effect");
@@ -3028,7 +3038,7 @@ function resolveSupport(player, foe, card, target) {
   if (foe.effectNullify > 0) {
     foe.effectNullify -= 1;
     audio.sfx("counter");
-    log(`${foe.name} のイレーネがサポート効果を無効化。`, "effect");
+    log(`${foe.name} のエレーナがサポート効果を無効化。`, "effect");
     return;
   }
 
@@ -3443,7 +3453,7 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
       log("シオンは排除に成功し、追加攻撃可能。", "effect");
     }
     boardCards(owner)
-      .filter((ally) => ally.id === "C10")
+      .filter((ally) => ally.id === "C10" && ally.status.silenced <= 0)
       .forEach(() => drawCard(owner));
   }
 
@@ -3458,7 +3468,7 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
   if (!card || amount <= 0 || state.gameOver) return { killed: false, hpDamage: 0, totalDamage: 0 };
   const owner = state[card.ownerKey];
   let damage = Math.max(0, amount);
-  if (card.id === "C03") damage = Math.max(1, damage - 1);
+  if (card.id === "C03" && card.status.silenced <= 0) damage = Math.max(1, damage - 1);
 
   let hpDamage = 0;
   let totalDamage = 0;
@@ -3649,13 +3659,15 @@ function healDef(card, amount) {
 
 function buffAtk(card, amount) {
   if (!card || !Number.isFinite(amount)) return;
-  const multiplier = card.id === "C24" && hasBoardCard(state[card.ownerKey], "C23") && amount > 0 ? 2 : 1;
+  const multiplier =
+    card.id === "C24" && (card.status?.silenced || 0) <= 0 && hasActiveBoardCard(state[card.ownerKey], "C23") && amount > 0 ? 2 : 1;
   card.currentAtk = Math.max(0, card.currentAtk + amount * multiplier);
 }
 
 function buffDef(card, amount) {
   if (!card || !Number.isFinite(amount)) return;
-  const multiplier = card.id === "C24" && hasBoardCard(state[card.ownerKey], "C23") && amount > 0 ? 2 : 1;
+  const multiplier =
+    card.id === "C24" && (card.status?.silenced || 0) <= 0 && hasActiveBoardCard(state[card.ownerKey], "C23") && amount > 0 ? 2 : 1;
   const actual = amount * multiplier;
   if (actual > 0) card.maxDef += actual;
   card.currentDef = Math.max(0, card.currentDef + actual);
@@ -3663,7 +3675,7 @@ function buffDef(card, amount) {
 
 function buffMaxHp(card, amount) {
   if (!card || amount <= 0) return;
-  const multiplier = card.id === "C24" && hasBoardCard(state[card.ownerKey], "C23") ? 2 : 1;
+  const multiplier = card.id === "C24" && (card.status?.silenced || 0) <= 0 && hasActiveBoardCard(state[card.ownerKey], "C23") ? 2 : 1;
   card.maxHp += amount * multiplier;
   card.currentHp += amount * multiplier;
 }
@@ -3719,8 +3731,8 @@ function effectiveCost(card, player) {
   if (card.costReduction) cost -= card.costReduction;
   if (card.kind === "character" && player?.bannerTurns > 0) cost -= 1;
   if (card.kind === "support" && foe) {
-    if (hasBoardCard(foe, "C23")) cost += 1;
-    if (hasBoardCard(foe, "C63")) cost += 1;
+    if (hasActiveBoardCard(foe, "C23")) cost += 1;
+    if (hasActiveBoardCard(foe, "C63")) cost += 1;
   }
   return Math.max(0, cost);
 }
@@ -3733,7 +3745,7 @@ function alyusTirisNiallBonus(card) {
   if (card?.id !== "C26" || card.status?.silenced > 0) return 0;
   const owner = state?.[card.ownerKey];
   if (!owner) return 0;
-  return hasBoardCard(owner, "C07") ? 2 : 0;
+  return hasActiveBoardCard(owner, "C07") ? 2 : 0;
 }
 
 function effectiveDef(card) {
@@ -3755,6 +3767,10 @@ function boardCards(player) {
 
 function hasBoardCard(player, id) {
   return boardCards(player).some((card) => card.id === id);
+}
+
+function hasActiveBoardCard(player, id) {
+  return boardCards(player).some((card) => card.id === id && (card.status?.silenced || 0) <= 0);
 }
 
 function opponentOf(player) {
@@ -6930,6 +6946,10 @@ function scoreCardForAi(card, slot = null, player = state.ai) {
   } else if (slot.lane === AI_LANE_BACK) {
     score += lanePlan === AI_LANE_BACK ? 8 : -20;
     if (player.nextBackSkillDouble && isBackSkillCandidate(card)) score += 6;
+    if (card.id === "C52") {
+      const foeBackCount = opponentOf(player).back.filter(Boolean).length;
+      score += foeBackCount ? 14 + foeBackCount * 6 : -4;
+    }
   }
 
   return score;
@@ -7005,7 +7025,7 @@ function aiFocusedDamageProfile(targetCard, attackers) {
 
 function isHighValueBacklineTarget(card) {
   if (!card) return false;
-  return ["ST", "SP"].includes(card.role) || effectiveAtk(card) >= 4 || card.awaken || card.effectNullify > 0;
+  return ["ST", "SP"].includes(card.role) || effectiveAtk(card) >= 4 || card.awaken || card.id === "C61";
 }
 
 function aiShouldFocusFrontline(cardTargets) {
