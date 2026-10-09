@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CROSSOVER DUEL</title>
-    <link rel="stylesheet" href="styles.css?v=story-mode-system-voice-battle-fx-1" />
+    <link rel="stylesheet" href="styles.css?v=character-art-v2" />
   </head>
   <body>
     <section id="titleScreen" class="title-screen" aria-label="タイトル画面">
@@ -377,6 +377,18 @@
       </div>
     </div>
 
+    <div id="newCardChoiceModal" class="modal new-card-choice-modal hidden" role="dialog" aria-modal="true" aria-labelledby="newCardChoiceTitle" aria-describedby="newCardChoiceDescription">
+      <div class="modal-card new-card-choice-card">
+        <p class="eyebrow">Character Skill</p>
+        <h2 id="newCardChoiceTitle">対象を選択</h2>
+        <p id="newCardChoiceDescription" class="new-card-choice-description"></p>
+        <div id="newCardChoiceOptions" class="new-card-choice-options"></div>
+        <div class="new-card-choice-footer">
+          <button id="skipNewCardChoiceBtn" type="button">見送る</button>
+        </div>
+      </div>
+    </div>
+
     <div id="choiceModal" class="modal hidden">
       <div class="modal-card">
         <p class="eyebrow">Support Effect</p>
@@ -456,6 +468,8 @@
 
     <script src="story-data.js?v=story-mode-3"></script>
     <script src="fx.js?v=battle-fx-1"></script>
-    <script src="app.js?v=story-mode-system-voice-battle-fx-1"></script>
+    <script src="new-cards.js?v=character-art-v2"></script>
+    <script src="app.js?v=new-characters-1"></script>
+    <script src="new-card-ui.js?v=character-art-v2"></script>
   </body>
 </html>

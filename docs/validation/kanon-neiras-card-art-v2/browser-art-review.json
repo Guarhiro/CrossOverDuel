@@ -1,0 +1,142 @@
+{
+  "context": "Disposable Playwright context with private fixture; no user profile or saves",
+  "scope": "C71/C72 v2 artwork integration",
+  "screenshots": [
+    "docs/validation/kanon-neiras-card-art-v2/field-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/hand-C71-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/hand-C72-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/library-C71-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/library-C72-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/deck-rows-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/deck-row-C71-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/deck-row-C72-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/exchange-C71-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/exchange-C72-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/gallery-C71-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/gallery-C72-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/choice-1440.png",
+    "docs/validation/kanon-neiras-card-art-v2/field-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/hand-C71-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/hand-C72-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/library-C71-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/library-C72-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/deck-rows-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/deck-row-C71-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/deck-row-C72-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/exchange-C71-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/exchange-C72-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/gallery-C71-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/gallery-C72-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/choice-390.png",
+    "docs/validation/kanon-neiras-card-art-v2/two-card-overview.png"
+  ],
+  "images": [
+    {
+      "id": "C71",
+      "asset": "assets/characters/C71-card-v2.png",
+      "uiAsset": "assets/characters/C71-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "id": "C72",
+      "asset": "assets/characters/C72-card-v2.png",
+      "uiAsset": "assets/characters/C72-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    }
+  ],
+  "styles": [
+    {
+      "width": 1440,
+      "surface": "field",
+      "id": "C71",
+      "src": "assets/characters/C71-card-v2.png",
+      "objectFit": "cover",
+      "objectPosition": "50% 35%",
+      "height": "194.422px",
+      "parentHeight": "194.422px"
+    },
+    {
+      "width": 1440,
+      "surface": "field",
+      "id": "C72",
+      "src": "assets/characters/C72-card-v2.png",
+      "objectFit": "cover",
+      "objectPosition": "50% 63%",
+      "height": "194.422px",
+      "parentHeight": "194.422px"
+    },
+    {
+      "width": 1440,
+      "surface": "deck",
+      "id": "C71",
+      "backgroundPosition": "50% 50%, 50% 36%, 50% 50%",
+      "backgroundImage": "linear-gradient(rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0) 40%), url(\"http://127.0.0.1:59652/assets/characters/C71-card-v2.png\"), linear-gradient(135deg, color(srgb 0.382745 0.345098 0.246275), rgb(22, 26, 33) 62%)"
+    },
+    {
+      "width": 1440,
+      "surface": "deck",
+      "id": "C72",
+      "backgroundPosition": "50% 50%, 50% 64%, 50% 50%",
+      "backgroundImage": "linear-gradient(rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0) 40%), url(\"http://127.0.0.1:59652/assets/characters/C72-card-v2.png\"), linear-gradient(135deg, color(srgb 0.308627 0.392157 0.259216), rgb(22, 26, 33) 62%)"
+    },
+    {
+      "width": 390,
+      "surface": "field",
+      "id": "C71",
+      "src": "assets/characters/C71-card-v2.png",
+      "objectFit": "cover",
+      "objectPosition": "50% 35%",
+      "height": "114.266px",
+      "parentHeight": "114.266px"
+    },
+    {
+      "width": 390,
+      "surface": "field",
+      "id": "C72",
+      "src": "assets/characters/C72-card-v2.png",
+      "objectFit": "cover",
+      "objectPosition": "50% 63%",
+      "height": "114.266px",
+      "parentHeight": "114.266px"
+    },
+    {
+      "width": 390,
+      "surface": "deck",
+      "id": "C71",
+      "backgroundPosition": "50% 50%, 50% 36%, 50% 50%",
+      "backgroundImage": "linear-gradient(rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0) 40%), url(\"http://127.0.0.1:59652/assets/characters/C71-card-v2.png\"), linear-gradient(135deg, color(srgb 0.382745 0.345098 0.246275), rgb(22, 26, 33) 62%)"
+    },
+    {
+      "width": 390,
+      "surface": "deck",
+      "id": "C72",
+      "backgroundPosition": "50% 50%, 50% 64%, 50% 50%",
+      "backgroundImage": "linear-gradient(rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0) 40%), url(\"http://127.0.0.1:59652/assets/characters/C72-card-v2.png\"), linear-gradient(135deg, color(srgb 0.308627 0.392157 0.259216), rgb(22, 26, 33) 62%)"
+    }
+  ],
+  "headers": [
+    {
+      "width": 390,
+      "id": "C71",
+      "backgroundPosition": "50% 0%",
+      "nameTop": 0.047549019607843135,
+      "nameBottom": 0.12886029411764705,
+      "roleBottom": 0.18737745098039216
+    },
+    {
+      "width": 390,
+      "id": "C72",
+      "backgroundPosition": "50% 0%",
+      "nameTop": 0.047549019607843135,
+      "nameBottom": 0.12886029411764705,
+      "roleBottom": 0.18737745098039216
+    }
+  ],
+  "pageErrors": [],
+  "failedResponses": [],
+  "unrelatedFailedResponses": [],
+  "completedAt": "2026-10-09T16:15:14.037Z",
+  "passed": true
+}

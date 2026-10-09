@@ -1,0 +1,348 @@
+{
+  "context": "Disposable Playwright contexts; user browser and saves untouched",
+  "scope": "Artwork/title clearance and scoped crops only; unsaved three-card fixture",
+  "screenshots": [
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/field-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/deck-rows-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/three-card-overview-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/field-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/deck-rows-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/library-C68-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/library-C69-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/library-C70-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/library-C68-600.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/library-C69-600.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/library-C70-600.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/three-mobile-cards-600.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/deck-row-C68-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/deck-row-C69-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/deck-row-C70-390.png"
+  ],
+  "decodedArt": [
+    {
+      "viewportWidth": 1440,
+      "id": "C68",
+      "path": "assets/characters/C68-card-v2.png",
+      "choicePath": "assets/characters/C68-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "viewportWidth": 1440,
+      "id": "C69",
+      "path": "assets/characters/C69-card-v2.png",
+      "choicePath": "assets/characters/C69-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "viewportWidth": 1440,
+      "id": "C70",
+      "path": "assets/characters/C70-card-v2.png",
+      "choicePath": "assets/characters/C70-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "viewportWidth": 390,
+      "id": "C68",
+      "path": "assets/characters/C68-card-v2.png",
+      "choicePath": "assets/characters/C68-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "viewportWidth": 390,
+      "id": "C69",
+      "path": "assets/characters/C69-card-v2.png",
+      "choicePath": "assets/characters/C69-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "viewportWidth": 390,
+      "id": "C70",
+      "path": "assets/characters/C70-card-v2.png",
+      "choicePath": "assets/characters/C70-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "viewportWidth": 600,
+      "id": "C68",
+      "path": "assets/characters/C68-card-v2.png",
+      "choicePath": "assets/characters/C68-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "viewportWidth": 600,
+      "id": "C69",
+      "path": "assets/characters/C69-card-v2.png",
+      "choicePath": "assets/characters/C69-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "viewportWidth": 600,
+      "id": "C70",
+      "path": "assets/characters/C70-card-v2.png",
+      "choicePath": "assets/characters/C70-card-v2.png",
+      "width": 1024,
+      "height": 1536
+    }
+  ],
+  "titleBands": [
+    {
+      "viewportWidth": 390,
+      "id": "C68",
+      "size": {
+        "width": 165,
+        "height": 255
+      },
+      "artBackgroundPosition": "50% 0%",
+      "name": {
+        "topRatio": 0.047549019607843135,
+        "bottomRatio": 0.15110294117647058,
+        "text": "ステラリア・フォン・エテルニア"
+      },
+      "role": {
+        "topRatio": 0.13486519607843137,
+        "bottomRatio": 0.18737745098039216,
+        "text": "サポーター"
+      }
+    },
+    {
+      "viewportWidth": 390,
+      "id": "C69",
+      "size": {
+        "width": 165,
+        "height": 255
+      },
+      "artBackgroundPosition": "50% 0%",
+      "name": {
+        "topRatio": 0.047549019607843135,
+        "bottomRatio": 0.15110294117647058,
+        "text": "セラフィナ・オルブライト"
+      },
+      "role": {
+        "topRatio": 0.13486519607843137,
+        "bottomRatio": 0.18737745098039216,
+        "text": "サポーター"
+      }
+    },
+    {
+      "viewportWidth": 390,
+      "id": "C70",
+      "size": {
+        "width": 165,
+        "height": 255
+      },
+      "artBackgroundPosition": "50% 0%",
+      "name": {
+        "topRatio": 0.047549019607843135,
+        "bottomRatio": 0.12886029411764705,
+        "text": "ガルディオ・ヴェルム"
+      },
+      "role": {
+        "topRatio": 0.13486519607843137,
+        "bottomRatio": 0.18737745098039216,
+        "text": "ガーディアン"
+      }
+    },
+    {
+      "viewportWidth": 600,
+      "id": "C68",
+      "size": {
+        "width": 270,
+        "height": 412.5
+      },
+      "artBackgroundPosition": "50% 0%",
+      "name": {
+        "topRatio": 0.04617424242424242,
+        "bottomRatio": 0.12776515151515153,
+        "text": "ステラリア・フォン・エテルニア"
+      },
+      "role": {
+        "topRatio": 0.13375,
+        "bottomRatio": 0.17852272727272728,
+        "text": "サポーター"
+      }
+    },
+    {
+      "viewportWidth": 600,
+      "id": "C69",
+      "size": {
+        "width": 270,
+        "height": 412.5
+      },
+      "artBackgroundPosition": "50% 0%",
+      "name": {
+        "topRatio": 0.04617424242424242,
+        "bottomRatio": 0.12776515151515153,
+        "text": "セラフィナ・オルブライト"
+      },
+      "role": {
+        "topRatio": 0.13375,
+        "bottomRatio": 0.17852272727272728,
+        "text": "サポーター"
+      }
+    },
+    {
+      "viewportWidth": 600,
+      "id": "C70",
+      "size": {
+        "width": 270,
+        "height": 412.5
+      },
+      "artBackgroundPosition": "50% 0%",
+      "name": {
+        "topRatio": 0.04617424242424242,
+        "bottomRatio": 0.12776515151515153,
+        "text": "ガルディオ・ヴェルム"
+      },
+      "role": {
+        "topRatio": 0.13375,
+        "bottomRatio": 0.17852272727272728,
+        "text": "ガーディアン"
+      }
+    }
+  ],
+  "cropStyles": [
+    {
+      "viewportWidth": 1440,
+      "surface": "field",
+      "id": "C68",
+      "objectPosition": "50% 30%"
+    },
+    {
+      "viewportWidth": 1440,
+      "surface": "field",
+      "id": "C69",
+      "objectPosition": "50% 30%"
+    },
+    {
+      "viewportWidth": 1440,
+      "surface": "field",
+      "id": "C70",
+      "objectPosition": "50% 18%"
+    },
+    {
+      "viewportWidth": 1440,
+      "surface": "deck",
+      "id": "C68",
+      "backgroundPosition": "50% 50%, 50% 32%, 50% 50%"
+    },
+    {
+      "viewportWidth": 1440,
+      "surface": "deck",
+      "id": "C69",
+      "backgroundPosition": "50% 50%, 50% 32%, 50% 50%"
+    },
+    {
+      "viewportWidth": 1440,
+      "surface": "deck",
+      "id": "C70",
+      "backgroundPosition": "50% 50%, 50% 23%, 50% 50%"
+    },
+    {
+      "viewportWidth": 390,
+      "surface": "field",
+      "id": "C68",
+      "objectPosition": "50% 30%"
+    },
+    {
+      "viewportWidth": 390,
+      "surface": "field",
+      "id": "C69",
+      "objectPosition": "50% 30%"
+    },
+    {
+      "viewportWidth": 390,
+      "surface": "field",
+      "id": "C70",
+      "objectPosition": "50% 18%"
+    },
+    {
+      "viewportWidth": 390,
+      "surface": "deck",
+      "id": "C68",
+      "backgroundPosition": "50% 50%, 50% 32%, 50% 50%"
+    },
+    {
+      "viewportWidth": 390,
+      "surface": "deck",
+      "id": "C69",
+      "backgroundPosition": "50% 50%, 50% 32%, 50% 50%"
+    },
+    {
+      "viewportWidth": 390,
+      "surface": "deck",
+      "id": "C70",
+      "backgroundPosition": "50% 50%, 50% 23%, 50% 50%"
+    }
+  ],
+  "pageErrors": [],
+  "failedResponses": [],
+  "completedAt": "2026-10-09T15:51:40.634Z",
+  "deckRowReview": {
+    "context": "Disposable Playwright contexts; user browser and saves untouched",
+    "scope": "Artwork/title clearance and scoped crops only; unsaved three-card fixture",
+    "screenshots": [
+      "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/deck-rows-390.png",
+      "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/deck-row-C68-390.png",
+      "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/deck-row-C69-390.png",
+      "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/eternia-card-art-v2/deck-row-C70-390.png"
+    ],
+    "decodedArt": [
+      {
+        "viewportWidth": 390,
+        "id": "C68",
+        "path": "assets/characters/C68-card-v2.png",
+        "choicePath": "assets/characters/C68-card-v2.png",
+        "width": 1024,
+        "height": 1536
+      },
+      {
+        "viewportWidth": 390,
+        "id": "C69",
+        "path": "assets/characters/C69-card-v2.png",
+        "choicePath": "assets/characters/C69-card-v2.png",
+        "width": 1024,
+        "height": 1536
+      },
+      {
+        "viewportWidth": 390,
+        "id": "C70",
+        "path": "assets/characters/C70-card-v2.png",
+        "choicePath": "assets/characters/C70-card-v2.png",
+        "width": 1024,
+        "height": 1536
+      }
+    ],
+    "titleBands": [],
+    "cropStyles": [
+      {
+        "viewportWidth": 390,
+        "surface": "deck",
+        "id": "C68",
+        "backgroundPosition": "50% 50%, 50% 32%, 50% 50%"
+      },
+      {
+        "viewportWidth": 390,
+        "surface": "deck",
+        "id": "C69",
+        "backgroundPosition": "50% 50%, 50% 32%, 50% 50%"
+      },
+      {
+        "viewportWidth": 390,
+        "surface": "deck",
+        "id": "C70",
+        "backgroundPosition": "50% 50%, 50% 23%, 50% 50%"
+      }
+    ],
+    "pageErrors": [],
+    "failedResponses": [],
+    "completedAt": "2026-10-09T15:53:39.631Z"
+  }
+}

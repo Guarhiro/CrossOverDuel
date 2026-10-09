@@ -1,0 +1,80 @@
+{
+  "success": true,
+  "cases": 12,
+  "results": [
+    {
+      "case": "nox_one_of_two_marguerites",
+      "selectedStop": 1,
+      "otherStop": 0,
+      "damageToNox": 2,
+      "noxDef": 0,
+      "noxHp": 4,
+      "guardStillActive": true
+    },
+    {
+      "case": "nox_expiry",
+      "stop": 0,
+      "nextStartDamage": 4
+    },
+    {
+      "case": "nox_end_ability",
+      "blockedHp": 3,
+      "resumedHp": 4
+    },
+    {
+      "case": "c50_cleanses_periodic_stop",
+      "stop": 0,
+      "noxDef": 0,
+      "noxHp": 4
+    },
+    {
+      "case": "neiras_preserves_summon_sickness",
+      "canAttack": false,
+      "backHp": 3
+    },
+    {
+      "case": "neiras_guard_bypass",
+      "lpBlocked": true,
+      "guardHp": 7,
+      "backDef": 0,
+      "backHp": 2,
+      "consumed": true,
+      "extraAttackBacklineAllowed": false
+    },
+    {
+      "case": "neiras_consumes_on_regular_first_attack",
+      "consumed": true
+    },
+    {
+      "case": "neiras_unused_window_expires",
+      "backlineAllowedNextTurn": false
+    },
+    {
+      "case": "neiras_preserves_existing_lp_rule_without_guard",
+      "lpAllowed": true
+    },
+    {
+      "case": "neiras_native_c01_extra_attack",
+      "canAttackAgain": true,
+      "backlineAllowedAgain": false,
+      "backDef": 0,
+      "backHp": 3
+    },
+    {
+      "case": "nox_respects_status_immunity",
+      "stop": 0
+    },
+    {
+      "case": "nox_blocks_periodic_auto_awakening",
+      "blocked": true,
+      "resumesAfterExpiry": true
+    }
+  ],
+  "limitations": [
+    "Prototype comparison only; no visual targeting UI or AI learning",
+    "Prototype roles/elements are temporary SP/無 placeholders, not card-design decisions",
+    "Only next owner start/end abilities are stopped; ordinary attacks, guard, damage reduction, non-periodic buffs remain",
+    "periodicStop only supports one-owner-turn duration in this candidate"
+  ],
+  "engineSHA256": "a5b921e375779e4fc5b93ec60a72889ad0c889ab1f952fea65d3867074c78e04"
+}

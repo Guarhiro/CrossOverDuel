@@ -1,0 +1,184 @@
+{
+  "date": "2026-10-09",
+  "type": "headless unit integration",
+  "hashes": {
+    "app.js": "6708138ca5952c68c235daf824cfecbdb4519d62c28fcc6229d4a376ec59f011",
+    "new-cards.js": "10b62bae022602cb23de111c89ce70c5b0cfdd9f894715ca9624ee98d983ef72",
+    "scripts/duel-vm.cjs": "0b3148558361b653dcf445efe42ed6ff8d5d40462c169f13518d7450164cacc3",
+    "scripts/test-new-cards.cjs": "b228ae3e17e0bc62ecb2c12dc8b481faca8c1c7a00ffd5dcec50371c509bddab"
+  },
+  "storageIsolation": "private in-memory Map",
+  "storageAudit": {
+    "writes": 0,
+    "reads": 0
+  },
+  "total": 40,
+  "passed": 40,
+  "failed": 0,
+  "results": [
+    {
+      "name": "seven card definitions and unchanged starter/AI deck contents",
+      "passed": true
+    },
+    {
+      "name": "all new instances initialize effect state and share negative-status helpers",
+      "passed": true
+    },
+    {
+      "name": "Aria recovers one real grave as a fresh unbuffed instance",
+      "passed": true
+    },
+    {
+      "name": "Aria uses printed cost and excludes the same name",
+      "passed": true
+    },
+    {
+      "name": "Aria cannot duplicate an S12-returned grave record",
+      "passed": true
+    },
+    {
+      "name": "Aria cannot duplicate a Maria-returned grave record",
+      "passed": true
+    },
+    {
+      "name": "fixed new effects ignore S04 and preserve C15 pending multiplier",
+      "passed": true
+    },
+    {
+      "name": "ST summon counter consumes one effect while Nox SP bypasses that counter",
+      "passed": true
+    },
+    {
+      "name": "Nox stops one of two Marguerites and expires after the next enemy turn",
+      "passed": true
+    },
+    {
+      "name": "Nox has backline-only choices without Aria and respects status immunity",
+      "passed": true
+    },
+    {
+      "name": "Nox plus Aria can stop a frontline periodic skill without disabling guard or attacks",
+      "passed": true
+    },
+    {
+      "name": "periodic stop covers auto awakening but not forced S05 awakening",
+      "passed": true
+    },
+    {
+      "name": "periodic stop covers secondary C25 end buff and harmful end abilities",
+      "passed": true
+    },
+    {
+      "name": "C50 and C56 cleanse periodic stop using shared status helpers",
+      "passed": true
+    },
+    {
+      "name": "Stellaria move retains instance, buffs, statuses and attack-used state",
+      "passed": true
+    },
+    {
+      "name": "Stellaria swaps lanes without resummon or extra draw",
+      "passed": true
+    },
+    {
+      "name": "Stellaria excludes self and never advances back-only C51/C15",
+      "passed": true
+    },
+    {
+      "name": "Stellaria choice can be skipped or invalidated without moving cards",
+      "passed": true
+    },
+    {
+      "name": "Seraphina blocks all S03 harms once and repeated protection does not stack",
+      "passed": true
+    },
+    {
+      "name": "Seraphina protects only one target of S06 and blocks S14 DEF zero",
+      "passed": true
+    },
+    {
+      "name": "Seraphina protection expires at the next enemy end and persists after source retreat",
+      "passed": true
+    },
+    {
+      "name": "Seraphina does not intercept C51 character damage",
+      "passed": true
+    },
+    {
+      "name": "Galdio intercepts nonlethal C51 damage before DEF once per enemy turn",
+      "passed": true
+    },
+    {
+      "name": "actual Marguerite start skill transfers damage to a periodic-stopped Galdio",
+      "passed": true
+    },
+    {
+      "name": "Galdio requires a character-skill source, a rear target, and a non-transferred packet",
+      "passed": true
+    },
+    {
+      "name": "two Galdios never serially absorb the same damage and can cover distinct hits",
+      "passed": true
+    },
+    {
+      "name": "Galdio preserves ignoreDef and a transferred hit cannot redirect to C25",
+      "passed": true
+    },
+    {
+      "name": "Galdio does not intercept normal attacks, own-turn damage, or when silenced",
+      "passed": true
+    },
+    {
+      "name": "Neiras adds only backline targets through guard and preserves DEF absorption",
+      "passed": true
+    },
+    {
+      "name": "Neiras can turn a ready ATK3 attack into a guarded Marguerite removal",
+      "passed": true
+    },
+    {
+      "name": "Neiras preserves summon sickness and unused routes expire",
+      "passed": true
+    },
+    {
+      "name": "Neiras route is consumed by normal guard attacks and native C01 extra attacks",
+      "passed": true
+    },
+    {
+      "name": "Neiras route is consumed by S08 reflection and Seraphina does not prevent reflection",
+      "passed": true
+    },
+    {
+      "name": "new automatic choices grant a usable Neiras route during main phase",
+      "passed": true
+    },
+    {
+      "name": "Kanon summon cleans all statuses without restoring combat values or triggering bind damage",
+      "passed": true
+    },
+    {
+      "name": "Kanon active cleanse spends one energy once per turn and ignores attack-used/periodic stop",
+      "passed": true
+    },
+    {
+      "name": "Kanon cannot actively cleanse when stunned, silenced or lacking energy; skip is free",
+      "passed": true
+    },
+    {
+      "name": "Kanon active commands are gated by phase, turn, busy and pending actions",
+      "passed": true
+    },
+    {
+      "name": "Kanon active ST counter consumes energy/use but leaves target status",
+      "passed": true
+    },
+    {
+      "name": "Kanon cleansing after start does not replay a skipped Marguerite shot",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "DOM/audio/visual timing are stubbed; browser interaction and rendering are not tested.",
+    "All card rules are loaded from current production app.js and new-cards.js; no prototype rule patches are applied."
+  ]
+}

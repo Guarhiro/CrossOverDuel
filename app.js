@@ -1110,6 +1110,7 @@ const CHARACTERS = [
     skill: "パレス統括",
     text: "配置時、味方全体最大HP+1/DEF+1。アルカディアパレス4体以上なら味方撤退時1回だけ手札に戻す",
   },
+  ...NEW_CHARACTERS,
 ];
 
 const AI_LANE_FRONT = "front";
@@ -1181,6 +1182,13 @@ const AI_CHARACTER_LANE_PLAN = Object.freeze({
   C63: AI_LANE_BACK,
   C64: AI_LANE_FRONT,
   C65: AI_LANE_BACK,
+  C66: AI_LANE_BACK,
+  C67: AI_LANE_BACK,
+  C68: AI_LANE_BACK,
+  C69: AI_LANE_BACK,
+  C70: AI_LANE_FRONT,
+  C71: AI_LANE_BACK,
+  C72: AI_LANE_BACK,
 });
 
 const AI_FRONT_PRESSURE_EFFECT_IDS = new Set(["C16", "C28", "C34", "C44", "C55", "C56", "C64"]);
@@ -2082,6 +2090,7 @@ const audio = {
 };
 
 function voiceCandidatePaths(cardId, eventName) {
+  if (NEW_CHARACTER_IDS.has(cardId)) return [];
   const fileNames = VOICE_EVENT_FILE_NAMES[eventName] || [];
   return [...new Set(fileNames.map((fileName) => `assets/voice/${cardId}/${fileName}`))];
 }
@@ -2104,7 +2113,7 @@ function renderTitleCards() {
     .map((id, index) => {
       const card = CARD_DB.get(id);
       const slot = TITLE_CARD_SLOTS[index % TITLE_CARD_SLOTS.length];
-      return `<img class="title-card" src="assets/cards/${card.id}.png" alt="" style="${titleCardStyle(slot)}" />`;
+      return `<img class="title-card" src="${cardArtPath(card)}" alt="" style="${titleCardStyle(slot)}" />`;
     })
     .join("");
 }
@@ -2192,6 +2201,7 @@ function createInstance(base, ownerKey = null) {
       guardOff: 0,
       bind: 0,
       silenced: 0,
+      periodicStop: 0,
     };
     card.attacked = false;
     card.summonedOnTurn = 0;
@@ -2203,6 +2213,10 @@ function createInstance(base, ownerKey = null) {
     card.extraAttackUsed = false;
     card.selfSacrificeBuffed = false;
     card.interceptUsed = false;
+    card.supportProtection = null;
+    card.illusionRouteTurn = -1;
+    card.activeCleanseTurn = -1;
+    card.galdioProtectTurn = -1;
   }
   return card;
 }
@@ -2234,6 +2248,7 @@ async function startNewGame(aiProfileOverride = null) {
     rewardsGiven: false,
     pendingDeckChoice: null,
     pendingSupport: null,
+    pendingCardChoice: null,
     summonDropId: null,
     log: [],
   };
@@ -2360,7 +2375,11 @@ function endTurn(player) {
   boardCards(player).forEach((card) => {
     // tempDefは次の相手ターン終了まで残し、自ターン開始時に消す（S09が防御として機能するように）
     card.tempAtk = 0;
+    card.illusionRouteTurn = -1;
     decrementStatuses(card);
+  });
+  boardCards(opponentOf(player)).forEach((card) => {
+    if (card.supportProtection?.expiresAfterTurn <= player.turns) card.supportProtection = null;
   });
   tickBannerEffect(player);
   player.energy = 0;
@@ -2431,6 +2450,7 @@ function applySummonEffects(card, player, lane) {
 
   if (card.id === "C47") applySerenaBoostsToClaire(card, player);
   if (card.role === "ST" && consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) return;
+  if (handleNewCardSummon(card, player)) return;
 
   switch (card.id) {
     case "C04":
@@ -2569,7 +2589,7 @@ function applySummonEffects(card, player, lane) {
       break;
     }
     case "C53":
-      moveEnemyBacklineToFront(player, foe);
+      moveEnemyBacklineToFront(player, foe, card);
       break;
     case "C57":
       cycleHandThroughDeck(player);
@@ -2628,7 +2648,7 @@ function applyStartEffects(player) {
   const foe = opponentOf(player);
   const cards = [...boardCards(player)];
   cards.forEach((card) => {
-    if (card.status.silenced) return;
+    if (card.status.silenced || card.status.periodicStop) return;
     if (card.dormant && !card.awakened) return;
     switch (card.id) {
       case "C01":
@@ -2673,6 +2693,7 @@ function applyStartEffects(player) {
   });
 
   boardCards(player).forEach((card) => {
+    if (card.status.periodicStop) return;
     if ((card.id === "C02" || card.id === "C06") && !card.awakened) {
       const livedTurns = player.turns - card.summonedOnTurn;
       if (livedTurns >= 3) awaken(card, player);
@@ -2683,7 +2704,7 @@ function applyStartEffects(player) {
 function applyEndEffects(player) {
   const cards = [...boardCards(player)];
   cards.forEach((card) => {
-    if (card.status.silenced) return;
+    if (card.status.silenced || card.status.periodicStop) return;
     switch (card.id) {
       case "C04":
         if (consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) break;
@@ -2736,7 +2757,7 @@ function applyEndEffects(player) {
         break;
       }
       case "C64":
-        damageCharacter(card, 1, opponentOf(player), { ignoreDef: true, silentDamage: true });
+        damageCharacter(card, 1, player, { ignoreDef: true, silentDamage: true, cause: "self-damage", sourceCard: card });
         log(`${card.name} は独占衝動で自傷した。`, "effect");
         break;
       default:
@@ -2745,6 +2766,7 @@ function applyEndEffects(player) {
   });
 
   boardCards(player).forEach((card) => {
+    if (card.status.periodicStop) return;
     if (card.id === "C25" && !card.selfSacrificeBuffed && card.currentHp <= 2) {
       card.selfSacrificeBuffed = true;
       boardCards(player).forEach((ally) => buffDef(ally, 2));
@@ -2756,7 +2778,7 @@ function applyEndEffects(player) {
 function randomBotanEffect(card, player, foe) {
   const roll = Math.floor(Math.random() * 4);
   if (roll === 0) {
-    boardCards(foe).forEach((enemy) => damageCharacter(enemy, 2, player));
+    boardCards(foe).forEach((enemy) => damageCharacter(enemy, 2, player, { cause: "character-skill", sourceCard: card }));
     log("牡丹の気まぐれ: 相手全体に2ダメージ。", "effect");
   } else if (roll === 1) {
     boardCards(player).forEach((ally) => healCharacter(ally, 2));
@@ -2765,7 +2787,7 @@ function randomBotanEffect(card, player, foe) {
     boardCards(player).forEach((ally) => buffAtk(ally, 1));
     log("牡丹の気まぐれ: 味方全体ATK+1。", "effect");
   } else {
-    damageCharacter(card, 2, foe, { ignoreDef: true });
+    damageCharacter(card, 2, player, { ignoreDef: true, cause: "self-damage", sourceCard: card });
     log("牡丹の気まぐれ: 自傷2。", "effect");
   }
 }
@@ -2814,6 +2836,33 @@ function setStatus(card, key, value) {
   return true;
 }
 
+function hasNegativeStatus(card) {
+  return ["stun", "guardOff", "bind", "silenced", "periodicStop"].some((key) => card?.status?.[key] > 0);
+}
+
+function clearAllStatuses(card) {
+  if (!card?.status) return false;
+  const cleared = hasNegativeStatus(card);
+  ["stun", "guardOff", "bind", "silenced", "periodicStop"].forEach((key) => {
+    card.status[key] = 0;
+  });
+  return cleared;
+}
+
+// Call only when a support's direct resolution would harm this target.
+function protectFromHarmfulSupport(target, sourceCard, sourcePlayer) {
+  const protection = target?.supportProtection;
+  if (!protection || sourceCard?.kind !== "support" || !sourcePlayer || sourcePlayer.key === target.ownerKey) return false;
+  if (sourcePlayer.turns > protection.expiresAfterTurn) {
+    target.supportProtection = null;
+    return false;
+  }
+  target.supportProtection = null;
+  audio.sfx("counter");
+  log(`${target.name} は外交上の保護で ${sourceCard.name} の不利益を防いだ。`, "effect");
+  return true;
+}
+
 function arcadiaCount(player, extraCard = null) {
   return boardCards(player).filter((ally) => ally.series === ARCADIA_SERIES).length + (extraCard?.series === ARCADIA_SERIES ? 1 : 0);
 }
@@ -2846,9 +2895,9 @@ function discountArcadiaInHand(player) {
 }
 
 function clearOneStatusFromAlly(player) {
-  const target = boardCards(player).find((ally) => Object.values(ally.status || {}).some((value) => value > 0));
+  const target = boardCards(player).find(hasNegativeStatus);
   if (!target) return false;
-  const key = ["stun", "guardOff", "bind", "silenced"].find((statusKey) => target.status[statusKey] > 0);
+  const key = ["stun", "guardOff", "bind", "silenced", "periodicStop"].find((statusKey) => target.status[statusKey] > 0);
   if (!key) return false;
   target.status[key] = 0;
   log(`${target.name} の状態異常を解除。`, "effect");
@@ -2915,18 +2964,13 @@ function removeSerenaBoostFromClaires(player, serena) {
 function clearAllyStatusesAndBolsterGuards(player, scale = 1) {
   let cleared = 0;
   boardCards(player).forEach((ally) => {
-    const hadStatus = Object.values(ally.status || {}).some((value) => value > 0);
-    if (hadStatus) cleared += 1;
-    ally.status.stun = 0;
-    ally.status.guardOff = 0;
-    ally.status.bind = 0;
-    ally.status.silenced = 0;
+    if (clearAllStatuses(ally)) cleared += 1;
     if (ally.role === "GD") buffMaxHp(ally, 2 * scale);
   });
   log(`フィーネが状態異常を解除し、ガーディアンを補強した${cleared ? `（解除${cleared}体）` : ""}。`, "effect");
 }
 
-function moveEnemyBacklineToFront(player, foe) {
+function moveEnemyBacklineToFront(player, foe, sourceCard) {
   const frontIndex = foe.front.findIndex((slot) => !slot);
   const backIndex = foe.back.findIndex(Boolean);
   if (frontIndex < 0 || backIndex < 0) {
@@ -2936,7 +2980,7 @@ function moveEnemyBacklineToFront(player, foe) {
   const [target] = foe.back.splice(backIndex, 1, null);
   foe.front[frontIndex] = target;
   log(`${target.name} を後衛から前衛へ引きずり出した。`, "effect");
-  damageCharacter(target, 2, player);
+  damageCharacter(target, 2, player, { cause: "character-skill", sourceCard });
 }
 
 function fireMargueriteBacklineShot(card, player, foe) {
@@ -2945,7 +2989,7 @@ function fireMargueriteBacklineShot(card, player, foe) {
     foe.front.filter(Boolean).sort((a, b) => a.currentHp - b.currentHp || effectiveAtk(b) - effectiveAtk(a))[0];
   if (!target) return;
   log(`${card.name} が${findCardLocation(target)?.lane === "back" ? "後衛" : "前衛"}の${target.name}を砲撃。`, "effect");
-  damageCharacter(target, 2, player);
+  damageCharacter(target, 2, player, { cause: "character-skill", sourceCard: card });
 }
 
 function triggerLucreziaEnergy(card, player) {
@@ -2972,12 +3016,14 @@ function triggerMariaArcadiaReturn(owner, fallenCard) {
   if (consumeEffectNullify(maria, owner, "マリアの撤退保護")) return false;
   maria.mariaReturnUsed = true;
   owner.hand.push(createInstance(CARD_DB.get(fallenCard.id), owner.key));
+  const graveIndex = owner.grave.indexOf(fallenCard);
+  if (graveIndex >= 0) owner.grave.splice(graveIndex, 1);
   log(`マリアの統括で ${fallenCard.name} が手札に戻った。`, "effect");
   return true;
 }
 
 function useSelectedSupport() {
-  if (state.current !== "player" || state.phase !== "main" || state.busy) return;
+  if (!canAcceptPlayerCommands() || state.phase !== "main") return;
   const player = state.player;
   const card = player.hand[state.selectedHandIndex];
   if (!card || card.kind !== "support") return;
@@ -3060,6 +3106,8 @@ function resolveSupport(player, foe, card, target) {
     }
     case "S03":
       if (target) {
+        const wouldHarm = !target.statusImmune && (target.status.stun < 1 || target.status.guardOff < 1);
+        if (wouldHarm && protectFromHarmfulSupport(target, card, player)) break;
         const stunned = setStatus(target, "stun", Math.max(target.status.stun, 1));
         const guardOff = setStatus(target, "guardOff", Math.max(target.status.guardOff, 1));
         if (stunned || guardOff) log(`${target.name} は1ターン行動不能。ガードも停止。`, "effect");
@@ -3076,7 +3124,11 @@ function resolveSupport(player, foe, card, target) {
       const hasFire = boardCards(player).some((ally) => ally.element === "炎");
       const hasWater = boardCards(player).some((ally) => ally.element === "水");
       if (hasFire && hasWater) {
-        [...foe.front].filter(Boolean).forEach((enemy) => damageCharacter(enemy, 2, player));
+        [...foe.front].filter(Boolean).forEach((enemy) => {
+          if (!protectFromHarmfulSupport(enemy, card, player)) {
+            damageCharacter(enemy, 2, player, { cause: "support", sourceCard: card });
+          }
+        });
         log("氷焔の双剣が相手前衛全体を斬る。", "effect");
       } else {
         log("炎と水が揃わず、双剣は不発。", "warn");
@@ -3094,7 +3146,7 @@ function resolveSupport(player, foe, card, target) {
         buffDef(ally, 3);
         log(`${ally.name} に闘技場の防具。DEF+3。`, "effect");
       } else {
-        damageCharacter(ally, 2, foe, { ignoreDef: true });
+        damageCharacter(ally, 2, player, { ignoreDef: true, cause: "self-damage", sourceCard: card });
         log(`${ally.name} は武器に振り回され2ダメージ。`, "effect");
       }
       break;
@@ -3149,6 +3201,7 @@ function resolveSupport(player, foe, card, target) {
     }
     case "S14":
       if (target) {
+        if (effectiveDef(target) > 0 && protectFromHarmfulSupport(target, card, player)) break;
         target.currentDef = 0;
         target.tempDef = 0;
         log(`${target.name} のDEFを0にした。`, "effect");
@@ -3311,6 +3364,7 @@ async function performAttack(attacker, target, options = {}) {
     render();
     return;
   }
+  if (attacker.illusionRouteTurn === owner.turns) attacker.illusionRouteTurn = -1;
 
   const previousBusy = state.busy;
   state.busy = true;
@@ -3355,7 +3409,7 @@ async function performAttack(attacker, target, options = {}) {
       await fx.hitStop(110);
     }
     log(`${foe.name} の紫禁の策謀。攻撃を無効化し${attackValue}反射。`, "effect");
-    damageCharacter(attacker, attackValue, foe, { ignoreDef: true });
+    damageCharacter(attacker, attackValue, foe, { ignoreDef: true, cause: "support", sourceCard: CARD_DB.get("S08") });
     await sleep(IMPACT_SETTLE_DELAY);
     state.busy = previousBusy;
     if (checkGameOver()) return;
@@ -3377,11 +3431,13 @@ async function performAttack(attacker, target, options = {}) {
     const result = damageCharacter(target.card, attackValue, owner, {
       ignoreDef: attacker.id === "C28" || atomicFlareActive,
       attacker,
+      cause: "attack",
+      sourceCard: attacker,
     });
     killed = result.killed;
     hpDamage = result.hpDamage;
-    if (target.card?.id === "C30") damageCharacter(attacker, 1, foe, { ignoreDef: true });
-    if (target.card?.id === "C40") damageCharacter(attacker, 2, foe, { ignoreDef: true });
+    if (target.card?.id === "C30") damageCharacter(attacker, 1, foe, { ignoreDef: true, cause: "character-skill", sourceCard: target.card });
+    if (target.card?.id === "C40") damageCharacter(attacker, 2, foe, { ignoreDef: true, cause: "character-skill", sourceCard: target.card });
     if (attacker.id === "C22" && target.card && !result.killed) buffAtk(target.card, -1);
     if (attacker.id === "C35" && target.card && !result.killed) target.card.currentDef = Math.max(0, target.card.currentDef - 1);
     if (attacker.id === "C34" && hpDamage > 0) drawCard(owner);
@@ -3412,7 +3468,7 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
     });
 
   if (attacker.id === "C14") {
-    foe.back.filter(Boolean).forEach((enemy) => damageCharacter(enemy, 2, owner, { ignoreDef: false }));
+    foe.back.filter(Boolean).forEach((enemy) => damageCharacter(enemy, 2, owner, { ignoreDef: false, cause: "character-skill", sourceCard: attacker }));
     log("アグニアの残火が後衛にも届いた。", "effect");
   }
 
@@ -3434,7 +3490,7 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
   if (killed) {
     if (attacker.id === "C46" && effects.atomicFlareActive) {
       const blastTargets = foe.back.filter(Boolean);
-      blastTargets.forEach((enemy) => damageCharacter(enemy, 2, owner));
+      blastTargets.forEach((enemy) => damageCharacter(enemy, 2, owner, { cause: "character-skill", sourceCard: attacker }));
       if (blastTargets.length) log("カトリーナのアトミックフレアが着弾点を爆破。", "effect");
     }
     if (attacker.id === "C07") {
@@ -3442,7 +3498,7 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
       buffAtk(attacker, 3);
       log("悠久ニィアルが撃破でATK+3。", "effect");
       if (attacker.killCount === 3) {
-        boardCards(foe).forEach((enemy) => damageCharacter(enemy, 5, owner));
+        boardCards(foe).forEach((enemy) => damageCharacter(enemy, 5, owner, { cause: "character-skill", sourceCard: attacker }));
         damageLp(foe, 5, attacker.name);
         log("3体撃破。伝説の英雄が相手全体へ5ダメージ。", "effect");
       }
@@ -3468,6 +3524,15 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
   if (!card || amount <= 0 || state.gameOver) return { killed: false, hpDamage: 0, totalDamage: 0 };
   const owner = state[card.ownerKey];
   let damage = Math.max(0, amount);
+  const protector = findGaldioProtector(owner, card, sourcePlayer, options);
+  if (protector) {
+    protector.galdioProtectTurn = sourcePlayer.turns;
+    const transferredDamage = Math.min(2, damage);
+    damage -= transferredDamage;
+    log(`${protector.name} が ${card.name} へのスキルダメージ${transferredDamage}を肩代わりした。`, "effect");
+    damageCharacter(protector, transferredDamage, sourcePlayer, { ...options, transferred: true });
+    if (damage <= 0) return { killed: false, hpDamage: 0, totalDamage: 0 };
+  }
   if (card.id === "C03" && card.status.silenced <= 0) damage = Math.max(1, damage - 1);
 
   let hpDamage = 0;
@@ -3512,14 +3577,14 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
   }
 
   if (card.currentHp <= 0) {
-    const interceptor = findInterceptGuardian(owner, card);
+    const interceptor = options.transferred ? null : findInterceptGuardian(owner, card);
     if (interceptor && hpDamage > 0) {
       interceptor.interceptUsed = true;
       card.currentHp += hpDamage;
       audio.sfx("guard", { ...card, amount: hpDamage });
       animateCard(card.instanceId, "", `+${hpDamage}`, true);
       log(`${interceptor.name} が ${card.name} を庇い、代わりに${hpDamage}ダメージを受けた。`, "effect");
-      damageCharacter(interceptor, hpDamage, sourcePlayer, { ignoreDef: true });
+      damageCharacter(interceptor, hpDamage, sourcePlayer, { ...options, ignoreDef: true, transferred: true });
       return { killed: false, hpDamage, totalDamage };
     }
     if (card.id === "C49" && !card.lastStandUsed) {
@@ -3534,6 +3599,18 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
     return { killed: true, hpDamage, totalDamage };
   }
   return { killed: false, hpDamage, totalDamage };
+}
+
+function findGaldioProtector(owner, target, sourcePlayer, options) {
+  if (
+    !owner || !sourcePlayer || sourcePlayer.key === owner.key || state.current !== sourcePlayer.key ||
+    !owner.back.includes(target) || options.transferred || options.cause !== "character-skill" ||
+    options.sourceCard?.kind !== "character"
+  ) return null;
+  return owner.front.find((ally) =>
+    ally?.id === "C70" && ally.currentHp > 0 && ally.status.silenced <= 0 && ally.status.stun <= 0 &&
+    ally.galdioProtectTurn !== sourcePlayer.turns,
+  ) || null;
 }
 
 function findInterceptGuardian(owner, dying) {
@@ -3576,6 +3653,8 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
   if (!returnedByMaria && owner.reviveTrap > 0) {
     owner.reviveTrap -= 1;
     owner.hand.push(createInstance(CARD_DB.get(card.id), owner.key));
+    const graveIndex = owner.grave.indexOf(card);
+    if (graveIndex >= 0) owner.grave.splice(graveIndex, 1);
     log(`すれ違いの再会で ${card.name} が手札に戻った。`, "effect");
   }
 
@@ -3585,12 +3664,12 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
       break;
     case "C16": {
       const target = randomItem([...boardCards(owner), ...boardCards(foe)]);
-      if (target) damageCharacter(target, 3, sourcePlayer || foe, { ignoreDef: true });
+      if (target) damageCharacter(target, 3, owner, { ignoreDef: true, cause: "character-skill", sourceCard: card });
       break;
     }
     case "C18": {
       const target = randomItem(boardCards(foe));
-      if (target) damageCharacter(target, Math.max(0, effectiveAtk(card)), owner);
+      if (target) damageCharacter(target, Math.max(0, effectiveAtk(card)), owner, { cause: "character-skill", sourceCard: card });
       break;
     }
     case "C31": {
@@ -3681,14 +3760,14 @@ function buffMaxHp(card, amount) {
 }
 
 function decrementStatuses(card) {
-  ["stun", "guardOff", "silenced"].forEach((key) => {
+  ["stun", "guardOff", "silenced", "periodicStop"].forEach((key) => {
     if (card.status[key] > 0) card.status[key] -= 1;
   });
   if (card.status.bind > 0) {
     card.status.bind -= 1;
     if (card.status.bind === 0) {
       const source = opponentOf(state[card.ownerKey]);
-      damageCharacter(card, 2, source, { ignoreDef: true });
+      damageCharacter(card, 2, source, { ignoreDef: true, cause: "status", sourceCard: null });
       log(`${card.name} の束縛が解け、2ダメージ。`, "effect");
     }
   }
@@ -3707,7 +3786,13 @@ function canAttack(card, player) {
 function getLegalTargets(attacker, owner) {
   const foe = opponentOf(owner);
   const guards = activeGuards(foe);
-  if (guards.length) return guards.map((card) => ({ type: "card", card }));
+  if (guards.length) {
+    const targets = guards.map((card) => ({ type: "card", card }));
+    if (attacker.illusionRouteTurn === owner.turns) {
+      targets.push(...foe.back.filter(Boolean).map((card) => ({ type: "card", card })));
+    }
+    return targets;
+  }
   const targets = boardCards(foe).map((card) => ({ type: "card", card }));
   if (!isSummonTurnHasteAttack(attacker, owner)) {
     targets.push({ type: "lp", player: foe });
@@ -5491,7 +5576,7 @@ function renderGalleryStage(card, count) {
       : `Cost ${card.cost} / ATK ${card.atk} / DEF ${card.def} / HP ${card.hp}`;
   return `
     <div class="gallery-card-preview">
-      <img src="assets/cards/${card.id}.png" alt="${escapeHtml(card.name)}" />
+      <img src="${cardArtPath(card)}" alt="${escapeHtml(card.name)}" />
     </div>
     <div class="gallery-card-info">
       <div class="inspect-title">
@@ -5513,7 +5598,7 @@ function renderGalleryStage(card, count) {
 function renderGalleryCardButton(card, count, selected) {
   const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
   return `
-    <button class="gallery-card-button ${selected ? "is-selected" : ""}" style="--element:${color}; --card-image:url('assets/cards/${card.id}.png')" data-card-id="${card.id}">
+    <button class="gallery-card-button ${selected ? "is-selected" : ""}" style="--element:${color}; --card-image:url('${cardArtPath(card)}')" data-card-id="${card.id}">
       <span>${escapeHtml(card.no)} ${card.rarity}</span>
       <strong>${escapeHtml(card.name)}</strong>
       <small>x${count}</small>
@@ -6128,7 +6213,7 @@ function renderExchangeCard(card, owned, collection, selected, savedDeckCounts, 
   const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
   const elementLine = `${card.element || "無"}属性`;
   return `
-    <div class="deck-exchange-card" style="--element:${color}; --card-image:url('assets/cards/${card.id}.png')" data-card-id="${card.id}">
+    <div class="deck-exchange-card" style="--element:${color}; --card-image:url('${cardArtPath(card)}')" data-card-id="${card.id}">
       <div class="exchange-card-main">
         <span class="exchange-card-kicker">${escapeHtml(card.no)} ${card.rarity} / ${escapeHtml(elementLine)}</span>
         <strong>${escapeHtml(card.name)}</strong>
@@ -6168,7 +6253,7 @@ function compareDeckEditorLibraryCards(a, b) {
 
 function renderDeckEditorCard(card, count, meta, disabled, zone) {
   const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
-  const image = `assets/cards/${card.id}.png`;
+  const image = cardArtPath(card);
   const elementLine = `${card.element || "無"}属性`;
   const typeLine = deckEditorTypeLabel(card);
   const statItems =
@@ -6225,6 +6310,8 @@ function render() {
   renderRows();
   renderHand();
   renderInspector();
+  if (typeof renderNewCardActions === "function") renderNewCardActions();
+  if (typeof renderNewCardChoice === "function") renderNewCardChoice();
   renderLog();
   renderControls();
   renderCollectionSummary();
@@ -6389,7 +6476,7 @@ function closeHandDock() {
 
 function renderCard(card, options = {}) {
   const color = ELEMENT_COLORS[card.element || "無"] || ELEMENT_COLORS.無;
-  const cardImage = `assets/cards/${card.id}.png`;
+  const cardImage = cardArtPath(card);
   const selected = options.selected || state.selectedAttackerId === card.instanceId || isSelectedField(card);
   const targetable = options.field && (isCardTargetable(card) || isSupportTargetable(card));
   const exhausted = options.field && card.kind === "character" && (card.attacked || !canAttack(card, state[card.ownerKey]));
@@ -6398,6 +6485,7 @@ function renderCard(card, options = {}) {
   const classes = [
     options.field ? "field-card" : "game-card",
     "has-card-art",
+    card.referenceArt ? "new-character-card" : "",
     card.kind === "support" ? "support-card" : "",
     `rarity-${card.rarity}`,
     selected ? "selected" : "",
@@ -6413,6 +6501,7 @@ function renderCard(card, options = {}) {
     <article class="${classes}" style="--element:${color}; --card-image:url('${cardImage}')" data-iid="${card.instanceId}" data-card-id="${card.id}"
       ${options.handIndex !== undefined ? `data-hand-index="${options.handIndex}"` : ""}
       ${options.ownerKey ? `data-owner="${options.ownerKey}" data-lane="${options.lane}" data-index="${options.index}"` : ""}>
+      ${card.referenceArt && typeof renderNewCharacterArt === "function" ? renderNewCharacterArt(card) : ""}
       <div class="card-top">
         <span>${card.no} ${card.rarity}</span>
         <span class="cost-badge">${card.kind === "support" ? card.cost : effectiveCost(card, state?.[card.ownerKey] || state?.player || { key: "player" })}</span>
@@ -6448,6 +6537,10 @@ function renderStatusStrip(card) {
   if (card.status.stun > 0) chips.push("STUN");
   if (card.status.bind > 0) chips.push("BIND");
   if (card.status.silenced > 0) chips.push("SEAL");
+  if (card.status.periodicStop > 0) chips.push("閉律");
+  if (card.supportProtection) chips.push("保護");
+  if (card.illusionRouteTurn === state[card.ownerKey]?.turns && state.current === card.ownerKey) chips.push("幻影経路");
+  if (card.id === "C72" && card.activeCleanseTurn === state[card.ownerKey]?.turns) chips.push("祓い済");
   if (card.awakened) chips.push("AWAKE");
   if (card.dormant && !card.awakened) chips.push("SLEEP");
   return chips.length ? `<div class="status-strip">${chips.map((chip) => `<span class="status-chip">${chip}</span>`).join("")}</div>` : "";
@@ -6576,6 +6669,7 @@ function renderInspector() {
     <p class="inspect-text"><strong>${escapeHtml(card.skill)}</strong><br>${escapeHtml(card.text)}</p>
     ${card.kind === "character" ? `<p class="inspect-text">ATK ${effectiveAtk(card)} / DEF ${effectiveDef(card)} / HP ${Math.max(0, card.currentHp)} / ${card.maxHp}</p>` : ""}
     ${action}
+    <div id="newCardActions"></div>
   `;
 }
 
@@ -6591,7 +6685,7 @@ function renderControls() {
   const isPlayerMain = state.current === "player" && state.phase === "main" && !state.gameOver;
   const endTurnAvailable = canAcceptPlayerCommands();
   updateBattleBgmStyleButton();
-  qs("#battleBtn").disabled = !isPlayerMain || state.busy;
+  qs("#battleBtn").disabled = !isPlayerMain || !canAcceptPlayerCommands();
   qs("#endTurnBtn").disabled = !endTurnAvailable;
   qs("#endTurnBtn").setAttribute("aria-disabled", String(!endTurnAvailable));
   const phaseLabel = state.phase === "gameover" ? "Game Over" : state.phase === "intro" ? "Intro" : state.phase === "battle" ? "Battle" : "Main";
@@ -6612,7 +6706,7 @@ function renderControls() {
 }
 
 function canAcceptPlayerCommands() {
-  return state.current === "player" && !state.gameOver && !state.busy;
+  return state.current === "player" && !state.gameOver && !state.busy && !state.pendingCardChoice;
 }
 
 function renderCollectionSummary() {
@@ -6625,11 +6719,12 @@ function hintText() {
   if (state.gameOver) return `ゲーム終了。報酬${rewardCardCountForResult(state.ai.lp <= 0)}枚を獲得しています。`;
   if (state.phase === "intro") return "コイントスで先攻を決定中です。";
   if (state.current === "ai") return "AIが思考中です。";
+  if (state.pendingCardChoice) return `${state.pendingCardChoice.title}：対象を選択してください。`;
   const pendingSupport = getPendingSupportCard();
   if (pendingSupport) return `${pendingSupport.name} の対象を選択してください。`;
   if (state.phase === "main") return "手札を選択。もう一度タップでサポート使用、キャラは配置先選択へ。";
   const attacker = getSelectedAttacker();
-  if (attacker) return "攻撃対象を選択してください。ガード持ちがいる場合はガードのみ攻撃できます。";
+  if (attacker) return attacker.illusionRouteTurn === state.player.turns ? "攻撃対象を選択。幻影の誘導でガード越しに後衛も選べます。最初の攻撃で消費します。" : "攻撃対象を選択してください。ガード持ちがいる場合はガードのみ攻撃できます。";
   return "前衛の攻撃可能なキャラを選択してください。";
 }
 
@@ -6640,7 +6735,7 @@ function hasPlayableSlotForCard(player, card) {
 
 function isPlayableSlot(ownerKey, lane, index) {
   if (ownerKey !== "player" || state.current !== "player" || state.phase !== "main" || state.busy) return false;
-  if (state.pendingSupport) return false;
+  if (state.pendingSupport || state.pendingCardChoice) return false;
   if (state.player[lane][index]) return false;
   const card = state.selectedHandIndex !== null ? state.player.hand[state.selectedHandIndex] : null;
   return Boolean(card && card.kind === "character" && canPay(state.player, card) && isValidLane(card, lane));
@@ -6718,6 +6813,7 @@ async function runAiTurn() {
 
 async function aiPlayBestCard() {
   const ai = state.ai;
+  if (useAiKanonCleanse(ai)) return true;
   const playableSupports = ai.hand
     .map((card, index) => ({ card, index }))
     .filter(({ card }) => card.kind === "support" && canPay(ai, card))
@@ -6845,7 +6941,7 @@ function isSupportWorthUsing(card, player, foe) {
 }
 
 function isBackSkillCandidate(card) {
-  return card?.kind === "character" && (card.backOnly || ["ST", "SP"].includes(card.role));
+  return card?.kind === "character" && !NEW_CHARACTER_IDS.has(card.id) && (card.backOnly || ["ST", "SP"].includes(card.role));
 }
 
 function canJoinUpcomingAttack(card, player) {
@@ -6918,11 +7014,13 @@ function chooseAiSlot(card) {
     return { lane: AI_LANE_FRONT, index: frontOpen };
   }
   if (backOpen >= 0) return { lane: AI_LANE_BACK, index: backOpen };
+  if (NEW_CHARACTER_IDS.has(card.id) && frontOpen >= 0) return { lane: AI_LANE_FRONT, index: frontOpen };
   return null;
 }
 
 function scoreCardForAi(card, slot = null, player = state.ai) {
   let score = RARITY_ORDER[card.rarity] * 10 + (card.atk || 0) + (card.def || 0) + (card.hp || 0) - card.cost * 0.4;
+  if (NEW_CHARACTER_IDS.has(card.id)) score += newCardAiValue(card, player);
   if (!slot || card.kind !== "character") return score;
 
   const lanePlan = aiLanePlanFor(card);
@@ -7181,7 +7279,8 @@ function chooseAiAttackTarget(attacker) {
   };
 
   return cardTargets
-    .map((target) => ({ target, score: scoreAiAttackTarget(attacker, target, context) }))
+    .map((target) => ({ target, score: scoreAiAttackTarget(attacker, target, context)
+      + (attacker.illusionRouteTurn === state.ai.turns && findCardLocation(target.card)?.lane === "back" ? (target.card.id === "C51" ? 70 : 35) : 0) }))
     .sort((a, b) => b.score - a.score)[0].target;
 }
 
@@ -7248,7 +7347,7 @@ function handleDeckEditorCardOut(event) {
 function handleHandClick(event) {
   const found = getHandCardFromEvent(event);
   openHandDock();
-  if (!found || state.busy || state.current !== "player") return;
+  if (!found || !canAcceptPlayerCommands()) return;
   const doubleTap = isHandDoubleTap(found);
   state.pendingSupport = null;
   state.selectedHandIndex = found.index;
@@ -7285,7 +7384,7 @@ function handleHandClick(event) {
 }
 
 async function handleFieldClick(event) {
-  if (state.busy || state.current !== "player") return;
+  if (!canAcceptPlayerCommands()) return;
   hideSkillPopup();
   const cardEl = event.target.closest(".field-card");
   const slotEl = event.target.closest(".slot");
@@ -7659,7 +7758,7 @@ function bindEvents() {
     if (event.target.id === "newGameConfirmModal") closeNewGameConfirm();
   });
   qs("#battleBtn").addEventListener("click", () => {
-    if (state.current !== "player" || state.phase !== "main" || state.busy) return;
+    if (!canAcceptPlayerCommands() || state.phase !== "main") return;
     hideSkillPopup();
     closeHandDock();
     state.pendingSupport = null;

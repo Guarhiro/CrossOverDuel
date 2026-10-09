@@ -1,0 +1,583 @@
+{
+  "scope": "Focused artwork integration QA; production render functions with isolated fixture state; disposable browser context and HTTP server; no user browser profile or saves",
+  "screenshots": [
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/field-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/hand-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/library-C66-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/deck-row-C66-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/exchange-C66-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/library-C67-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/deck-row-C67-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/exchange-C67-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/gallery-C66-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/gallery-C67-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/choice-1440.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/field-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/hand-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/library-C66-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/deck-row-C66-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/exchange-C66-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/library-C67-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/deck-row-C67-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/exchange-C67-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/gallery-C66-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/gallery-C67-390.png",
+    "/Users/guarhiro/Projects/apps/crossover-duel/docs/validation/resonance-duo-card-art-v2/choice-390.png"
+  ],
+  "errors": [],
+  "missingResources": [],
+  "assets": [
+    {
+      "id": "C66",
+      "path": "assets/characters/C66-card-v2.png",
+      "uiPath": "assets/characters/C66-card-v2.png",
+      "choicePath": "assets/characters/C66-card-v2.png",
+      "width": 1024,
+      "height": 1536,
+      "viewportWidth": 1440
+    },
+    {
+      "id": "C67",
+      "path": "assets/characters/C67-card-v2.png",
+      "uiPath": "assets/characters/C67-card-v2.png",
+      "choicePath": "assets/characters/C67-card-v2.png",
+      "width": 1024,
+      "height": 1536,
+      "viewportWidth": 1440
+    },
+    {
+      "id": "C66",
+      "path": "assets/characters/C66-card-v2.png",
+      "uiPath": "assets/characters/C66-card-v2.png",
+      "choicePath": "assets/characters/C66-card-v2.png",
+      "width": 1024,
+      "height": 1536,
+      "viewportWidth": 390
+    },
+    {
+      "id": "C67",
+      "path": "assets/characters/C67-card-v2.png",
+      "uiPath": "assets/characters/C67-card-v2.png",
+      "choicePath": "assets/characters/C67-card-v2.png",
+      "width": 1024,
+      "height": 1536,
+      "viewportWidth": 390
+    }
+  ],
+  "measurements": [
+    {
+      "surface": "field",
+      "viewportWidth": 1440,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 344.65625,
+            "height": 196.421875
+          },
+          "image": {
+            "src": "assets/characters/C66-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 40%"
+          },
+          "backgroundSize": "auto, cover, auto",
+          "backgroundPosition": "0% 0%, 50% 22%, 0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 344.671875,
+            "height": 196.421875
+          },
+          "image": {
+            "src": "assets/characters/C67-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 33%"
+          },
+          "backgroundSize": "auto, cover, auto",
+          "backgroundPosition": "0% 0%, 50% 22%, 0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    },
+    {
+      "surface": "hand",
+      "viewportWidth": 1440,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 168,
+            "height": 246
+          },
+          "image": {
+            "src": "assets/characters/C66-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 0%"
+          },
+          "backgroundSize": "auto, cover, auto",
+          "backgroundPosition": "0% 0%, 50% 50%, 0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 168,
+            "height": 246
+          },
+          "image": {
+            "src": "assets/characters/C67-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 0%"
+          },
+          "backgroundSize": "auto, cover, auto",
+          "backgroundPosition": "0% 0%, 50% 50%, 0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    },
+    {
+      "surface": "library",
+      "viewportWidth": 1440,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 160.265625,
+            "height": 190
+          },
+          "image": null,
+          "backgroundSize": "100% 100%, cover, 100% 100%",
+          "backgroundPosition": "50% 50%, 50% 0%, 50% 50%",
+          "mobileArtPosition": "50% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 160.265625,
+            "height": 190
+          },
+          "image": null,
+          "backgroundSize": "100% 100%, cover, 100% 100%",
+          "backgroundPosition": "50% 50%, 50% 0%, 50% 50%",
+          "mobileArtPosition": "50% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    },
+    {
+      "surface": "deck-row",
+      "viewportWidth": 1440,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 478.671875,
+            "height": 116
+          },
+          "image": null,
+          "backgroundSize": "100% 100%, cover, 100% 100%",
+          "backgroundPosition": "50% 50%, 50% 40%, 50% 50%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 478.671875,
+            "height": 116
+          },
+          "image": null,
+          "backgroundSize": "100% 100%, cover, 100% 100%",
+          "backgroundPosition": "50% 50%, 50% 33%, 50% 50%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    },
+    {
+      "surface": "exchange",
+      "viewportWidth": 1440,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 263.1875,
+            "height": 92
+          },
+          "image": null,
+          "backgroundSize": "100% 100%, cover, 100% 100%",
+          "backgroundPosition": "50% 50%, 50% 40%, 50% 50%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 263.203125,
+            "height": 92
+          },
+          "image": null,
+          "backgroundSize": "100% 100%, cover, 100% 100%",
+          "backgroundPosition": "50% 50%, 50% 33%, 50% 50%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    },
+    {
+      "surface": "choice",
+      "viewportWidth": 1440,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 64,
+            "height": 80
+          },
+          "image": {
+            "src": "assets/characters/C66-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 0%"
+          },
+          "backgroundSize": "auto",
+          "backgroundPosition": "0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 64,
+            "height": 80
+          },
+          "image": {
+            "src": "assets/characters/C67-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 0%"
+          },
+          "backgroundSize": "auto",
+          "backgroundPosition": "0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    },
+    {
+      "surface": "field",
+      "viewportWidth": 390,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 107.328125,
+            "height": 129.609375
+          },
+          "image": {
+            "src": "assets/characters/C66-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 40%"
+          },
+          "backgroundSize": "auto, cover, auto",
+          "backgroundPosition": "0% 0%, 50% 22%, 0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 107.328125,
+            "height": 129.609375
+          },
+          "image": {
+            "src": "assets/characters/C67-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 33%"
+          },
+          "backgroundSize": "auto, cover, auto",
+          "backgroundPosition": "0% 0%, 50% 22%, 0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    },
+    {
+      "surface": "hand",
+      "viewportWidth": 390,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 134,
+            "height": 210
+          },
+          "image": {
+            "src": "assets/characters/C66-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 0%"
+          },
+          "backgroundSize": "auto, cover, auto",
+          "backgroundPosition": "0% 0%, 50% 50%, 0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 134,
+            "height": 210
+          },
+          "image": {
+            "src": "assets/characters/C67-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 0%"
+          },
+          "backgroundSize": "auto, cover, auto",
+          "backgroundPosition": "0% 0%, 50% 50%, 0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    },
+    {
+      "surface": "library",
+      "viewportWidth": 390,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 165,
+            "height": 255
+          },
+          "image": null,
+          "backgroundSize": "100% 100%",
+          "backgroundPosition": "50% 50%",
+          "mobileArtPosition": "50% 0%",
+          "name": {
+            "top": 0.047549019607843135,
+            "bottom": 0.12886029411764705,
+            "text": "アリア・ルーチェ"
+          },
+          "role": {
+            "top": 0.13486519607843137,
+            "bottom": 0.18737745098039216,
+            "text": "サポーター"
+          }
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 165,
+            "height": 255
+          },
+          "image": null,
+          "backgroundSize": "100% 100%",
+          "backgroundPosition": "50% 50%",
+          "mobileArtPosition": "50% 0%",
+          "name": {
+            "top": 0.047549019607843135,
+            "bottom": 0.12886029411764705,
+            "text": "ノクス・リゾルブ"
+          },
+          "role": {
+            "top": 0.13486519607843137,
+            "bottom": 0.18737745098039216,
+            "text": "スペシャル"
+          }
+        }
+      ]
+    },
+    {
+      "surface": "deck-row",
+      "viewportWidth": 390,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 334,
+            "height": 122
+          },
+          "image": null,
+          "backgroundSize": "100% 100%, cover, 100% 100%",
+          "backgroundPosition": "50% 50%, 50% 40%, 50% 50%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 334,
+            "height": 122
+          },
+          "image": null,
+          "backgroundSize": "100% 100%, cover, 100% 100%",
+          "backgroundPosition": "50% 50%, 50% 33%, 50% 50%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    },
+    {
+      "surface": "exchange",
+      "viewportWidth": 390,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 334,
+            "height": 92
+          },
+          "image": null,
+          "backgroundSize": "100% 100%, cover, 100% 100%",
+          "backgroundPosition": "50% 50%, 50% 40%, 50% 50%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 334,
+            "height": 92
+          },
+          "image": null,
+          "backgroundSize": "100% 100%, cover, 100% 100%",
+          "backgroundPosition": "50% 50%, 50% 33%, 50% 50%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    },
+    {
+      "surface": "choice",
+      "viewportWidth": 390,
+      "entries": [
+        {
+          "id": "C66",
+          "size": {
+            "width": 64,
+            "height": 80
+          },
+          "image": {
+            "src": "assets/characters/C66-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 0%"
+          },
+          "backgroundSize": "auto",
+          "backgroundPosition": "0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        },
+        {
+          "id": "C67",
+          "size": {
+            "width": 64,
+            "height": 80
+          },
+          "image": {
+            "src": "assets/characters/C67-card-v2.png",
+            "width": 1024,
+            "height": 1536,
+            "objectFit": "cover",
+            "objectPosition": "50% 0%"
+          },
+          "backgroundSize": "auto",
+          "backgroundPosition": "0% 0%",
+          "mobileArtPosition": "0% 0%",
+          "name": null,
+          "role": null
+        }
+      ]
+    }
+  ],
+  "surfaces": [
+    {
+      "viewportWidth": 1440,
+      "checked": [
+        "field",
+        "hand",
+        "library",
+        "deck-row",
+        "exchange",
+        "gallery",
+        "choice"
+      ]
+    },
+    {
+      "viewportWidth": 390,
+      "checked": [
+        "field",
+        "hand",
+        "library",
+        "deck-row",
+        "exchange",
+        "gallery",
+        "choice"
+      ]
+    }
+  ],
+  "completedAt": "2026-10-09T16:18:16.612Z",
+  "visualReview": {
+    "method": "All 22 screenshots viewed manually; field screenshots recaptured after title-screen fade completed",
+    "passed": true,
+    "findings": [
+      "390px mobile library: both names end at 12.886% and role badges end at 18.738%; quiet upper background remains beneath both bands and character faces, hair and tuning devices begin below them",
+      "1440px and390px hand cards preserve centered portrait framing and show both faces",
+      "Field, wide deck and exchange crops show both faces; intentional lower-body cropping on wide surfaces",
+      "Gallery contains each complete illustration including boots and upper background",
+      "Choice thumbnails use v2 portraits and fit both viewports"
+    ],
+    "limits": [
+      "Production rendering functions with isolated fixture state; no saved user game or live deployment tested",
+      "Full artwork aesthetic approval remains with user"
+    ]
+  }
+}

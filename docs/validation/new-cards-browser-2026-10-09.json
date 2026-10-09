@@ -1,0 +1,78 @@
+{
+  "completedAt": "2026-10-09T16:28:19.946Z",
+  "passed": 11,
+  "checks": [
+    "Actual HTML and classic script load without JavaScript errors",
+    "Hand click → placement → selected enemy periodic stop; phase controls locked during choice",
+    "Kanon active button → selected cleanse → energy/use consumed and button disabled",
+    "Grave choice removes the record and creates a base-state hand card",
+    "Formation choice performs a swap and returns to normal controls",
+    "Escape skips an optional placement choice",
+    "All seven actual image assets decode in Chrome",
+    "New cards appear in the collection/deck library and Nox costs 50P in exchange",
+    "Signed transfer retains new-card ownership/decks, rejects tampering, and accepts authentic prior catalog metadata",
+    "Choice dialogs stay within 390px and 768px viewports",
+    "All seven production card components render together for visual review"
+  ],
+  "errors": [],
+  "missingResources": [],
+  "artResults": [
+    {
+      "id": "C66",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "id": "C67",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "id": "C68",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "id": "C69",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "id": "C70",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "id": "C71",
+      "width": 1024,
+      "height": 1536
+    },
+    {
+      "id": "C72",
+      "width": 1024,
+      "height": 1536
+    }
+  ],
+  "transferResult": {
+    "count": 88,
+    "ownsNox": 2,
+    "deckNox": true,
+    "tamperRejected": true,
+    "legacyCardsRetained": true
+  },
+  "screenshots": [
+    "docs/validation/new-card-choice-desktop.png",
+    "docs/validation/new-card-choice-390.png",
+    "docs/validation/new-card-choice-768.png",
+    "docs/validation/new-cards-duel-desktop.png",
+    "docs/validation/new-cards-art-overview.png"
+  ],
+  "hashes": {
+    "app.js": "c239e3e2e80f3444d627a36ab5926f29e12ab9da6347c85ca4c5e5680d9182a8",
+    "new-cards.js": "10b62bae022602cb23de111c89ce70c5b0cfdd9f894715ca9624ee98d983ef72",
+    "new-card-ui.js": "8bd80694fc3dd91a694a52097fb7f20051883fa73354154d07b318b41d72ac51",
+    "styles.css": "551fc3a42daad6f6cdd942f8d53e96fca9272e00d9c98b2626927fc952f9e534",
+    "index.html": "5d7be57d1db094446ce3753a38919d0b3e7a96350a8ea3392ecb8572cc6dd8b2"
+  },
+  "storage": "disposable Playwright browser context; no user browser profile"
+}

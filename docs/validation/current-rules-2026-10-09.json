@@ -1,0 +1,72 @@
+{
+  "guardTargets": [
+    "C03"
+  ],
+  "silencedGuardTargets": [
+    "C03"
+  ],
+  "stunnedGuardTargets": [
+    "C03",
+    "C51",
+    "lp"
+  ],
+  "readyAttack": true,
+  "summonAttack": false,
+  "hasteSummonAttack": false,
+  "hasteSummonTargets": [],
+  "hasteWithEnemy": true,
+  "boundCanAttack": true,
+  "silencedCanAttack": true,
+  "defConsumed": {
+    "first": [
+      1,
+      6
+    ],
+    "second": [
+      0,
+      5
+    ]
+  },
+  "margShotThroughGuard": {
+    "backDef": 0,
+    "backHp": 4,
+    "guardDef": 5,
+    "guardHp": 7
+  },
+  "stunnedMargStillShoots": 2,
+  "silencedMargStops": 2,
+  "margTargetsLowHpNotEffectiveHealth": {
+    "lowHpDef": 7,
+    "otherHp": 3
+  },
+  "silencedCounterStillTriggers": {
+    "attackerHp": 2,
+    "initialHp": 3,
+    "guarded": [
+      "C30"
+    ]
+  },
+  "silencedLastStandStillTriggers": {
+    "hp": 1,
+    "stillOnBoard": true
+  },
+  "silencedFionaStillReduces": {
+    "hp": 6,
+    "initialHp": 7
+  },
+  "silencedAutoAwakening": {
+    "awakened": true,
+    "atk": 9
+  },
+  "statusOwnerEnd": {
+    "stun": 0,
+    "guardOff": 0,
+    "bind": 0,
+    "silenced": 0,
+    "hp": 2
+  },
+  "firstTurnEnergy": {
+    "first": 1,
+    "second": 2
+  }
+}

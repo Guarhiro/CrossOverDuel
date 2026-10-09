@@ -2,6 +2,10 @@
 
 Browser card battle game.
 
+C66–C72 add Aria, Nox, Stellaria, Seraphina, Galdio, Neiras and Kanon. Their selected placement effects and Kanon's active cleanse are available in the duel UI, collection, deck editor, rewards and exchange. Rules are documented in [the performance specification](docs/new-card-performance-v1.md); reference artwork is tracked in [the art asset notes](docs/new-card-art-assets.md).
+
+Run `node scripts/test-new-cards.cjs` for isolated rule checks and `node scripts/simulate-new-cards.cjs` for seeded automated battles. These use private in-memory storage. Browser checks use `node scripts/test-new-cards-browser.cjs` with Playwright and Chrome; set `CROSSOVER_BROWSER_MODULES` and `CROSSOVER_CHROME` to override the local dependency paths.
+
 ## Publish with GitHub Pages
 
 1. Create a GitHub repository.

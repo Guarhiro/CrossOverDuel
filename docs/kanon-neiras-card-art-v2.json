@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-10",
+  "revision": "v2",
+  "tool": "built-in image_gen edit",
+  "request": "上部に名前が入るカードデザインだから少し余白が欲しい",
+  "purpose": "カード上部の名前・役割欄に人物や主要な小物が重ならないよう、自然な背景を広げる。",
+  "format": {
+    "width": 1024,
+    "height": 1536,
+    "aspect_ratio": "2:3",
+    "type": "PNG",
+    "text": false,
+    "card_frame": false
+  },
+  "deliverables": [
+    {
+      "output": "/Users/guarhiro/Projects/apps/crossover-duel/assets/characters/C72-card-v2.png",
+      "source": "/Users/guarhiro/.codex/generated_images/01a1214c-d425-7e50-be4f-2a59c09fab2c/exec-91850c74-9add-4ca1-ada2-b34d174f98e8.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "ddbadf319acb9fa6fedd1e81dd16198ab1bd741d92555666585a1259cee1cf69",
+      "copy_identical": true,
+      "id": "C72",
+      "name": "カノン",
+      "input": "/Users/guarhiro/Projects/apps/crossover-duel/assets/characters/C72-card-v1.png",
+      "prompt": "Use case: identity-preserve.\nAsset type: edited finished portrait card illustration, exactly 1024x1536, 2:3, opaque PNG.\nInput image 1 is the EXACT edit target and source of truth. Make one focused composition adjustment only: add a little clean headroom for a card name that the game UI will overlay at the TOP. Preserve the existing beautiful illustration, character likeness, facial expressions, costumes, gestures, colors, lighting, drawing style, and narrative content as closely as possible.\nCreate a continuous quiet background-only title safe area across the full width of the TOP 22% of the canvas (approximately y=0–338 px), with no characters, hands, props, butterflies, bright light trails, dense highlights or foreground details. It should feel like natural breathing room in the same scene, not a blank white strip, panel, border, frame or pasted box. No text should be generated.\nReframe the existing composition slightly smaller and lower to make this room, preserving body proportions, detailed anatomy and all main features. Keep subjects clear and large enough for a character card. Smoothly extend the existing background to fill the upper area and any side gaps. Preserve sharp refined linework and quality; no blurred repaint or new design. Output remains 1024x1536.\nKanon-specific invariants: keep the TWO ASPECTS OF THE SAME WOMAN layered exactly as in the target: solid uniform self with long loose black hair, warm smile, gold-ochre cape, dark-brown vest, striped tie, sapphire brooch in the lower foreground; large translucent miko self with hair up and ornate kanzashi, white/vermilion/gold kagura dress, graceful closed-eye profile, golden multi-bell kagura wand in raised hand and extended opposite arm behind her. Keep the overlay blended naturally, and keep both faces and complete bell wand visible below the name safe area. Reposition the highest tip of the golden bell wand to just below y=355 px; do not cut it off or remove it. Preserve sunset, distant castle, torii and rice fields. Top area is softly graduated golden-amber sky with low-contrast delicate clouds only. No strong bright cloud edges directly behind future name. Do not add people, text, card decorations or a name.",
+      "visual_review": "中央上部の名前・役割欄に自然な空の余白を確保。鈴の先端は画像上端から約18%の左側、巫女の髪飾りは約22%から。制服と巫女の重なり、神楽鈴と舞の仕草を維持。"
+    },
+    {
+      "output": "/Users/guarhiro/Projects/apps/crossover-duel/assets/characters/C71-card-v2.png",
+      "source": "/Users/guarhiro/.codex/generated_images/01a1214c-d425-7e50-be4f-2a59c09fab2c/exec-ecfc7879-5557-4ac1-8b7a-ddbb71210dbf.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "d47bba1641668d33cfb90c4474e9266c9a9dec22fb73fdc4e5918adf9e63cb8c",
+      "copy_identical": true,
+      "id": "C71",
+      "name": "ネイラス",
+      "input": "/Users/guarhiro/Projects/apps/crossover-duel/assets/characters/C71-card-v1.png",
+      "prompt": "Use case: identity-preserve.\nAsset type: edited finished portrait card illustration, exactly 1024x1536, 2:3, opaque PNG.\nInput image 1 is the EXACT edit target and source of truth. Make one focused composition adjustment only: add a little clean headroom for a card name that the game UI will overlay at the TOP. Preserve the existing beautiful illustration, character likeness, facial expressions, costumes, gestures, colors, lighting, drawing style, and narrative content as closely as possible.\nCreate a continuous quiet background-only title safe area across the full width of the TOP 22% of the canvas (approximately y=0–338 px), with no characters, hands, props, butterflies, bright light trails, dense highlights or foreground details. It should feel like natural breathing room in the same scene, not a blank white strip, panel, border, frame or pasted box. No text should be generated.\nReframe the existing composition slightly smaller and lower to make this room, preserving body proportions, detailed anatomy and all main features. Keep subjects clear and large enough for a character card. Smoothly extend the existing background to fill the upper area and any side gaps. Preserve sharp refined linework and quality; no blurred repaint or new design. Output remains 1024x1536.\nNeiras-specific invariants: exactly ONE young man with the same silver/platinum layered hair, golden eyes, playful smile, dangling gold earrings, gold-ochre embroidered short shoulder cape with dark purple lining, dark-brown vest, white shirt with ruffled cuffs, striped gold/dark tie, sapphire brooch and gold chains. Preserve both hands' elegant conjuring poses and the spiraling luminous butterflies made of warm white, gold, pale pink, lavender and subtle blue light. Move all butterflies and their light trails out of the TOP 22% title safe area and keep their flowing arc around his hands and shoulders BELOW it. Keep the top of his hair comfortably below y=365 px. Preserve the ornate deep indigo-violet academy gallery and stained-glass atmosphere; upper title safe area is a quiet dark indigo-violet architectural/shadow gradient with only low-contrast suggestions of the gallery. No bright stained-glass outlines or ornaments crossing the future name zone. No white stage suit, extra characters, new props or text.",
+      "visual_review": "上部約24%に落ち着いた学院背景を確保。銀髪、金色の瞳、学院制服、両手の仕草、光の蝶を維持。"
+    }
+  ],
+  "visual_review_method": "生成結果2枚の全体を目視し、別エージェントでも名前欄位置と人物・小物を確認。背景の水平な継ぎ目・白帯なし。",
+  "checks": "PNG寸法確認、生成元と保存先のバイト一致・SHA256確認",
+  "requested_safe_area": "プロンプトは上部22%を指定。カノンの実出力は左側の鈴が約18%からだが中央の名前・役割欄には重ならないため、ユーザーの余白追加依頼に適合すると判断。",
+  "source_preservation": "v1と生成元は保存したままv2を追加。",
+  "user_visual_approval": "未実施",
+  "delivery_scope": "カード絵の余白調整と保存。ゲーム表示の参照コードは本依頼では変更していない。"
+}
