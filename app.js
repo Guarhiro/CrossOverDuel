@@ -2090,9 +2090,9 @@ const audio = {
 };
 
 function voiceCandidatePaths(cardId, eventName) {
-  if (NEW_CHARACTER_IDS.has(cardId)) return [];
   const fileNames = VOICE_EVENT_FILE_NAMES[eventName] || [];
-  return [...new Set(fileNames.map((fileName) => `assets/voice/${cardId}/${fileName}`))];
+  const candidates = NEW_CHARACTER_IDS.has(cardId) && fileNames.length ? [`${eventName}.mp3`, ...fileNames] : fileNames;
+  return [...new Set(candidates.map((fileName) => `assets/voice/${cardId}/${fileName}`))];
 }
 
 document.addEventListener("pointerdown", () => audio.unlock(), { once: true });

@@ -23,4 +23,5 @@ Run `node scripts/test-new-cards.cjs` for isolated rule checks and `node scripts
 - Use `DATA TRANSFER` on the title screen to export/import a signed JSON package. The same signature key is required on import, and modified files are rejected.
 - Card exchange rates: converting cards gives C 1P, R 2P, SR 3P, SSR 5P, UR 10P. Buying cards costs C 25P, R 50P, SR 100P, SSR 200P, UR 300P.
 - `SYSTEM VOICE` lists the browser's `speechSynthesis` voices and saves the selected system voice in localStorage. The signed transfer payload also carries this setting, but another browser may require choosing a local equivalent voice.
-- Custom character/system voices are not bundled yet. Add future implementations through `CUSTOM_SYSTEM_VOICE_OPTIONS` in `app.js`, while browser voice selection remains available as the fallback.
+- Character voices are bundled in `assets/voice/`. C66–C72 use `summon.mp3`, `attack.mp3`, and `retreat.mp3` for placement, attack, and retreat. `VOICE` toggles character playback; browser speech remains the system-voice fallback.
+- Additional custom system voices can be registered through `CUSTOM_SYSTEM_VOICE_OPTIONS` in `app.js`.
