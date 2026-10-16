@@ -1446,7 +1446,7 @@ const PLAYER_DECK_ACTIVE_SLOT_STORAGE_KEY = "crossover-duel-player-deck-active-s
 const PLAYER_DECK_SLOT_COUNT = 5;
 const PLAYER_DECK_SIZE = PLAYER_DECK.length;
 const FREEPLAY_WIN_STORAGE_KEY = "crossover-duel-freeplay-wins";
-const FREEPLAY_MAX_WINS = 55;
+const FREEPLAY_MAX_WINS = 65;
 const REWARD_CARD_COUNT = 4;
 const DEFEAT_REWARD_CARD_COUNT = 2;
 const BATTLE_BGM_STYLE_STORAGE_KEY = "crossover-duel-battle-bgm-style";
@@ -1578,6 +1578,20 @@ const AI_DECKS = [
     name: "Arcadia Bond Guard",
     concept: "初動のミムと厚いガード網で受け切り、パレス支援で押し返しつつ、催眠と妖精の輪で要所を崩す。",
     deck: ["C47", "C47", "C49", "C49", "C30", "C30", "C55", "C56", "C56", "C57", "C58", "C58", "C59", "C61", "C62", "C63", "C64", "C65", "S03", "S14"],
+  },
+  {
+    level: 12,
+    wins: 60,
+    name: "Eternia Royal Aegis",
+    concept: "ガルディオの護衛にセラフィナの保護とカノンの祓いを重ね、ステラリアの隊列整理とエヴの全体強化で反撃する。",
+    deck: ["C04", "C21", "C21", "C28", "C28", "C40", "C40", "C45", "C62", "C68", "C68", "C69", "C70", "C70", "C72", "S01", "S10", "S13", "S14", "S15"],
+  },
+  {
+    level: 13,
+    wins: 65,
+    name: "Resonance Phantom Raid",
+    concept: "フィオナの防衛と杏の強化を土台に、ノクスで継続スキルを止め、ネイラスが速攻アタッカーとクラウディアを後衛へ導く。アリアの回収で攻めをつなぐ。",
+    deck: ["C03", "C11", "C21", "C28", "C28", "C40", "C40", "C44", "C44", "C55", "C55", "C56", "C66", "C67", "C71", "S03", "S10", "S10", "S14", "S15"],
   },
 ];
 
