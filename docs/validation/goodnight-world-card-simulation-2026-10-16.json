@@ -1,0 +1,2630 @@
+{
+  "date": "2026-10-16",
+  "type": "seeded paired production-rule AI integration for C73/C74",
+  "hashes": {
+    "app.js": "1faaf7e55abe8d934b862a45c5a75fe0f19efff3944f85a2a1e1b3f7bd6030f0",
+    "new-cards.js": "38fe0367f114d56d5395be86c8dce372c161dcfd7eba6b8bfb3430b2d8c65c1f",
+    "scripts/duel-vm.cjs": "0b3148558361b653dcf445efe42ed6ff8d5d40462c169f13518d7450164cacc3",
+    "scripts/simulation-bot.js": "193bf834e4a82994fc67b56b52e683cad58e8438c74d1c8abccee773b3ba23b2",
+    "sim-driver.js (isolated choice-aware player bot)": "18e1820d9ef845d06e593b91edbb0c78e7f7309d02f278b8eefabbc792cc8f1c",
+    "scripts/simulate-goodnight-world-cards.cjs": "e26f7d4237cea9fe8a1ef7641d7678eb5fb00ea870d91dde0e6467dc1d6891aa"
+  },
+  "seedsPerFirst": 10,
+  "totalGames": 360,
+  "totals": {
+    "games": 360,
+    "playerWins": 278,
+    "playerWinRate": 77.22,
+    "timeouts": 0,
+    "avgRounds": 14.68,
+    "metrics": {
+      "player": {
+        "emperorSummons": 222,
+        "linaSummons": 285,
+        "emperorNormalAttacks": 2136,
+        "velocityGranted": 772,
+        "velocityUsed": 772,
+        "velocityDamagingHits": 718,
+        "slowApplications": 280,
+        "slowTurns": 231
+      },
+      "ai": {
+        "emperorSummons": 0,
+        "linaSummons": 0,
+        "emperorNormalAttacks": 0,
+        "velocityGranted": 0,
+        "velocityUsed": 0,
+        "velocityDamagingHits": 0,
+        "slowApplications": 0,
+        "slowTurns": 0
+      }
+    }
+  },
+  "byVariant": {
+    "baseline": {
+      "games": 120,
+      "playerWins": 79,
+      "playerWinRate": 65.83,
+      "timeouts": 0,
+      "avgRounds": 15.33,
+      "metrics": {
+        "player": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      }
+    },
+    "C73x1+C74x1": {
+      "games": 120,
+      "playerWins": 103,
+      "playerWinRate": 85.83,
+      "timeouts": 0,
+      "avgRounds": 14.03,
+      "metrics": {
+        "player": {
+          "emperorSummons": 110,
+          "linaSummons": 95,
+          "emperorNormalAttacks": 1080,
+          "velocityGranted": 385,
+          "velocityUsed": 385,
+          "velocityDamagingHits": 363,
+          "slowApplications": 94,
+          "slowTurns": 76
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      }
+    },
+    "C73x1+C74x2": {
+      "games": 120,
+      "playerWins": 96,
+      "playerWinRate": 80,
+      "timeouts": 0,
+      "avgRounds": 14.67,
+      "metrics": {
+        "player": {
+          "emperorSummons": 112,
+          "linaSummons": 190,
+          "emperorNormalAttacks": 1056,
+          "velocityGranted": 387,
+          "velocityUsed": 387,
+          "velocityDamagingHits": 355,
+          "slowApplications": 186,
+          "slowTurns": 155
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      }
+    }
+  },
+  "storageIsolation": "private in-memory VM Map; no browser saves or user collection touched",
+  "storageAudit": {
+    "writes": 2438,
+    "reads": 4599
+  },
+  "legalDecksAndCopyLimits": true,
+  "existingProductionDeckDefinitionsUnchanged": true,
+  "ruleAuditViolations": 0,
+  "playerBot": "Existing simulation bot, common choice-aware harness adjustments, and minimal velocity-progress fix; identical for baselines and variants.",
+  "opponentBot": "Current production AI; custom Marg Chip is a VM profile override only.",
+  "metrics": {
+    "velocityGranted": "Actual false-to-true grant after production afterAttackEffects.",
+    "velocityUsed": "Legal follow-up attack declarations including reflected attacks.",
+    "velocityDamagingHits": "Follow-up normal-attack damage packets with positive actual DEF or HP damage.",
+    "slowApplications": "New successful Slow states applied by production setStatus, attributed to the other side.",
+    "slowTurns": "Slowed targets still present when their own turn begins."
+  },
+  "decks": [
+    {
+      "family": "AGGRO",
+      "variant": "baseline",
+      "deck": [
+        "C22",
+        "C22",
+        "C28",
+        "C28",
+        "C29",
+        "C29",
+        "C34",
+        "C34",
+        "C35",
+        "C35",
+        "C44",
+        "C44",
+        "C55",
+        "C55",
+        "C64",
+        "C11",
+        "C11",
+        "C56",
+        "C56",
+        "S09"
+      ],
+      "substitutions": [],
+      "opponent": "Lv11"
+    },
+    {
+      "family": "AGGRO",
+      "variant": "baseline",
+      "deck": [
+        "C22",
+        "C22",
+        "C28",
+        "C28",
+        "C29",
+        "C29",
+        "C34",
+        "C34",
+        "C35",
+        "C35",
+        "C44",
+        "C44",
+        "C55",
+        "C55",
+        "C64",
+        "C11",
+        "C11",
+        "C56",
+        "C56",
+        "S09"
+      ],
+      "substitutions": [],
+      "opponent": "Custom Marg Chip"
+    },
+    {
+      "family": "AGGRO",
+      "variant": "C73x1+C74x1",
+      "deck": [
+        "C22",
+        "C22",
+        "C28",
+        "C28",
+        "C29",
+        "C29",
+        "C34",
+        "C34",
+        "C35",
+        "C35",
+        "C44",
+        "C44",
+        "C73",
+        "C55",
+        "C64",
+        "C11",
+        "C11",
+        "C74",
+        "C56",
+        "S09"
+      ],
+      "substitutions": [
+        [
+          "C55",
+          "C73"
+        ],
+        [
+          "C56",
+          "C74"
+        ]
+      ],
+      "opponent": "Lv11"
+    },
+    {
+      "family": "AGGRO",
+      "variant": "C73x1+C74x1",
+      "deck": [
+        "C22",
+        "C22",
+        "C28",
+        "C28",
+        "C29",
+        "C29",
+        "C34",
+        "C34",
+        "C35",
+        "C35",
+        "C44",
+        "C44",
+        "C73",
+        "C55",
+        "C64",
+        "C11",
+        "C11",
+        "C74",
+        "C56",
+        "S09"
+      ],
+      "substitutions": [
+        [
+          "C55",
+          "C73"
+        ],
+        [
+          "C56",
+          "C74"
+        ]
+      ],
+      "opponent": "Custom Marg Chip"
+    },
+    {
+      "family": "AGGRO",
+      "variant": "C73x1+C74x2",
+      "deck": [
+        "C22",
+        "C22",
+        "C28",
+        "C28",
+        "C29",
+        "C29",
+        "C34",
+        "C34",
+        "C35",
+        "C35",
+        "C44",
+        "C44",
+        "C73",
+        "C55",
+        "C64",
+        "C11",
+        "C11",
+        "C74",
+        "C74",
+        "S09"
+      ],
+      "substitutions": [
+        [
+          "C55",
+          "C73"
+        ],
+        [
+          "C56",
+          "C74"
+        ],
+        [
+          "C56",
+          "C74"
+        ]
+      ],
+      "opponent": "Lv11"
+    },
+    {
+      "family": "AGGRO",
+      "variant": "C73x1+C74x2",
+      "deck": [
+        "C22",
+        "C22",
+        "C28",
+        "C28",
+        "C29",
+        "C29",
+        "C34",
+        "C34",
+        "C35",
+        "C35",
+        "C44",
+        "C44",
+        "C73",
+        "C55",
+        "C64",
+        "C11",
+        "C11",
+        "C74",
+        "C74",
+        "S09"
+      ],
+      "substitutions": [
+        [
+          "C55",
+          "C73"
+        ],
+        [
+          "C56",
+          "C74"
+        ],
+        [
+          "C56",
+          "C74"
+        ]
+      ],
+      "opponent": "Custom Marg Chip"
+    },
+    {
+      "family": "GUARD_WALL",
+      "variant": "baseline",
+      "deck": [
+        "C03",
+        "C05",
+        "C47",
+        "C47",
+        "C49",
+        "C49",
+        "C25",
+        "C25",
+        "C30",
+        "C30",
+        "C40",
+        "C40",
+        "C38",
+        "C38",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "S11",
+        "C27"
+      ],
+      "substitutions": [],
+      "opponent": "Lv11"
+    },
+    {
+      "family": "GUARD_WALL",
+      "variant": "baseline",
+      "deck": [
+        "C03",
+        "C05",
+        "C47",
+        "C47",
+        "C49",
+        "C49",
+        "C25",
+        "C25",
+        "C30",
+        "C30",
+        "C40",
+        "C40",
+        "C38",
+        "C38",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "S11",
+        "C27"
+      ],
+      "substitutions": [],
+      "opponent": "Custom Marg Chip"
+    },
+    {
+      "family": "GUARD_WALL",
+      "variant": "C73x1+C74x1",
+      "deck": [
+        "C03",
+        "C05",
+        "C73",
+        "C47",
+        "C49",
+        "C49",
+        "C25",
+        "C25",
+        "C30",
+        "C30",
+        "C74",
+        "C40",
+        "C38",
+        "C38",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "S11",
+        "C27"
+      ],
+      "substitutions": [
+        [
+          "C47",
+          "C73"
+        ],
+        [
+          "C40",
+          "C74"
+        ]
+      ],
+      "opponent": "Lv11"
+    },
+    {
+      "family": "GUARD_WALL",
+      "variant": "C73x1+C74x1",
+      "deck": [
+        "C03",
+        "C05",
+        "C73",
+        "C47",
+        "C49",
+        "C49",
+        "C25",
+        "C25",
+        "C30",
+        "C30",
+        "C74",
+        "C40",
+        "C38",
+        "C38",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "S11",
+        "C27"
+      ],
+      "substitutions": [
+        [
+          "C47",
+          "C73"
+        ],
+        [
+          "C40",
+          "C74"
+        ]
+      ],
+      "opponent": "Custom Marg Chip"
+    },
+    {
+      "family": "GUARD_WALL",
+      "variant": "C73x1+C74x2",
+      "deck": [
+        "C03",
+        "C05",
+        "C73",
+        "C47",
+        "C49",
+        "C49",
+        "C25",
+        "C25",
+        "C30",
+        "C30",
+        "C74",
+        "C74",
+        "C38",
+        "C38",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "S11",
+        "C27"
+      ],
+      "substitutions": [
+        [
+          "C47",
+          "C73"
+        ],
+        [
+          "C40",
+          "C74"
+        ],
+        [
+          "C40",
+          "C74"
+        ]
+      ],
+      "opponent": "Lv11"
+    },
+    {
+      "family": "GUARD_WALL",
+      "variant": "C73x1+C74x2",
+      "deck": [
+        "C03",
+        "C05",
+        "C73",
+        "C47",
+        "C49",
+        "C49",
+        "C25",
+        "C25",
+        "C30",
+        "C30",
+        "C74",
+        "C74",
+        "C38",
+        "C38",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "S11",
+        "C27"
+      ],
+      "substitutions": [
+        [
+          "C47",
+          "C73"
+        ],
+        [
+          "C40",
+          "C74"
+        ],
+        [
+          "C40",
+          "C74"
+        ]
+      ],
+      "opponent": "Custom Marg Chip"
+    },
+    {
+      "family": "MARG_CHIP",
+      "variant": "baseline",
+      "deck": [
+        "C51",
+        "C51",
+        "C03",
+        "C47",
+        "C47",
+        "C49",
+        "C49",
+        "C30",
+        "C30",
+        "C25",
+        "C25",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "C38",
+        "C38",
+        "C09",
+        "C09",
+        "S11"
+      ],
+      "substitutions": [],
+      "opponent": "Lv11"
+    },
+    {
+      "family": "MARG_CHIP",
+      "variant": "baseline",
+      "deck": [
+        "C51",
+        "C51",
+        "C03",
+        "C47",
+        "C47",
+        "C49",
+        "C49",
+        "C30",
+        "C30",
+        "C25",
+        "C25",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "C38",
+        "C38",
+        "C09",
+        "C09",
+        "S11"
+      ],
+      "substitutions": [],
+      "opponent": "Custom Marg Chip"
+    },
+    {
+      "family": "MARG_CHIP",
+      "variant": "C73x1+C74x1",
+      "deck": [
+        "C51",
+        "C51",
+        "C03",
+        "C47",
+        "C47",
+        "C49",
+        "C49",
+        "C30",
+        "C30",
+        "C25",
+        "C25",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "C74",
+        "C38",
+        "C73",
+        "C09",
+        "S11"
+      ],
+      "substitutions": [
+        [
+          "C09",
+          "C73"
+        ],
+        [
+          "C38",
+          "C74"
+        ]
+      ],
+      "opponent": "Lv11"
+    },
+    {
+      "family": "MARG_CHIP",
+      "variant": "C73x1+C74x1",
+      "deck": [
+        "C51",
+        "C51",
+        "C03",
+        "C47",
+        "C47",
+        "C49",
+        "C49",
+        "C30",
+        "C30",
+        "C25",
+        "C25",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "C74",
+        "C38",
+        "C73",
+        "C09",
+        "S11"
+      ],
+      "substitutions": [
+        [
+          "C09",
+          "C73"
+        ],
+        [
+          "C38",
+          "C74"
+        ]
+      ],
+      "opponent": "Custom Marg Chip"
+    },
+    {
+      "family": "MARG_CHIP",
+      "variant": "C73x1+C74x2",
+      "deck": [
+        "C51",
+        "C51",
+        "C03",
+        "C47",
+        "C47",
+        "C49",
+        "C49",
+        "C30",
+        "C30",
+        "C25",
+        "C25",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "C74",
+        "C74",
+        "C73",
+        "C09",
+        "S11"
+      ],
+      "substitutions": [
+        [
+          "C09",
+          "C73"
+        ],
+        [
+          "C38",
+          "C74"
+        ],
+        [
+          "C38",
+          "C74"
+        ]
+      ],
+      "opponent": "Lv11"
+    },
+    {
+      "family": "MARG_CHIP",
+      "variant": "C73x1+C74x2",
+      "deck": [
+        "C51",
+        "C51",
+        "C03",
+        "C47",
+        "C47",
+        "C49",
+        "C49",
+        "C30",
+        "C30",
+        "C25",
+        "C25",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "C74",
+        "C74",
+        "C73",
+        "C09",
+        "S11"
+      ],
+      "substitutions": [
+        [
+          "C09",
+          "C73"
+        ],
+        [
+          "C38",
+          "C74"
+        ],
+        [
+          "C38",
+          "C74"
+        ]
+      ],
+      "opponent": "Custom Marg Chip"
+    }
+  ],
+  "opponents": [
+    {
+      "key": "Lv11",
+      "level": 11,
+      "deck": [
+        "C47",
+        "C47",
+        "C49",
+        "C49",
+        "C30",
+        "C30",
+        "C55",
+        "C56",
+        "C56",
+        "C57",
+        "C58",
+        "C58",
+        "C59",
+        "C61",
+        "C62",
+        "C63",
+        "C64",
+        "C65",
+        "S03",
+        "S14"
+      ],
+      "override": false
+    },
+    {
+      "key": "Custom Marg Chip",
+      "level": 11,
+      "deck": [
+        "C51",
+        "C51",
+        "C03",
+        "C47",
+        "C47",
+        "C49",
+        "C49",
+        "C30",
+        "C30",
+        "C25",
+        "C25",
+        "S15",
+        "S15",
+        "S01",
+        "S01",
+        "C38",
+        "C38",
+        "C09",
+        "C09",
+        "S11"
+      ],
+      "override": true
+    }
+  ],
+  "summary": [
+    {
+      "matchup": "AGGRO|baseline|Lv11",
+      "games": 20,
+      "playerWins": 15,
+      "playerWinRate": 75,
+      "timeouts": 0,
+      "avgRounds": 9.65,
+      "metrics": {
+        "player": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 7,
+          "playerWinRate": 70,
+          "timeouts": 0,
+          "avgRounds": 9.9,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 8,
+          "playerWinRate": 80,
+          "timeouts": 0,
+          "avgRounds": 9.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "AGGRO|C73x1+C74x1|Lv11",
+      "games": 20,
+      "playerWins": 16,
+      "playerWinRate": 80,
+      "timeouts": 0,
+      "avgRounds": 10.95,
+      "metrics": {
+        "player": {
+          "emperorSummons": 14,
+          "linaSummons": 18,
+          "emperorNormalAttacks": 58,
+          "velocityGranted": 12,
+          "velocityUsed": 12,
+          "velocityDamagingHits": 12,
+          "slowApplications": 18,
+          "slowTurns": 12
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 7,
+          "playerWinRate": 70,
+          "timeouts": 0,
+          "avgRounds": 11.2,
+          "metrics": {
+            "player": {
+              "emperorSummons": 7,
+              "linaSummons": 9,
+              "emperorNormalAttacks": 27,
+              "velocityGranted": 6,
+              "velocityUsed": 6,
+              "velocityDamagingHits": 6,
+              "slowApplications": 9,
+              "slowTurns": 6
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 10.7,
+          "metrics": {
+            "player": {
+              "emperorSummons": 7,
+              "linaSummons": 9,
+              "emperorNormalAttacks": 31,
+              "velocityGranted": 6,
+              "velocityUsed": 6,
+              "velocityDamagingHits": 6,
+              "slowApplications": 9,
+              "slowTurns": 6
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "AGGRO|C73x1+C74x2|Lv11",
+      "games": 20,
+      "playerWins": 14,
+      "playerWinRate": 70,
+      "timeouts": 0,
+      "avgRounds": 11.85,
+      "metrics": {
+        "player": {
+          "emperorSummons": 15,
+          "linaSummons": 35,
+          "emperorNormalAttacks": 55,
+          "velocityGranted": 14,
+          "velocityUsed": 14,
+          "velocityDamagingHits": 14,
+          "slowApplications": 35,
+          "slowTurns": 26
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 7,
+          "playerWinRate": 70,
+          "timeouts": 0,
+          "avgRounds": 11.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 7,
+              "linaSummons": 17,
+              "emperorNormalAttacks": 26,
+              "velocityGranted": 7,
+              "velocityUsed": 7,
+              "velocityDamagingHits": 7,
+              "slowApplications": 17,
+              "slowTurns": 13
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 7,
+          "playerWinRate": 70,
+          "timeouts": 0,
+          "avgRounds": 12.3,
+          "metrics": {
+            "player": {
+              "emperorSummons": 8,
+              "linaSummons": 18,
+              "emperorNormalAttacks": 29,
+              "velocityGranted": 7,
+              "velocityUsed": 7,
+              "velocityDamagingHits": 7,
+              "slowApplications": 18,
+              "slowTurns": 13
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "AGGRO|baseline|Custom Marg Chip",
+      "games": 20,
+      "playerWins": 15,
+      "playerWinRate": 75,
+      "timeouts": 0,
+      "avgRounds": 11.75,
+      "metrics": {
+        "player": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 10.7,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 6,
+          "playerWinRate": 60,
+          "timeouts": 0,
+          "avgRounds": 12.8,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "AGGRO|C73x1+C74x1|Custom Marg Chip",
+      "games": 20,
+      "playerWins": 17,
+      "playerWinRate": 85,
+      "timeouts": 0,
+      "avgRounds": 10.75,
+      "metrics": {
+        "player": {
+          "emperorSummons": 16,
+          "linaSummons": 10,
+          "emperorNormalAttacks": 88,
+          "velocityGranted": 24,
+          "velocityUsed": 24,
+          "velocityDamagingHits": 24,
+          "slowApplications": 9,
+          "slowTurns": 6
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 10.3,
+          "metrics": {
+            "player": {
+              "emperorSummons": 6,
+              "linaSummons": 5,
+              "emperorNormalAttacks": 31,
+              "velocityGranted": 9,
+              "velocityUsed": 9,
+              "velocityDamagingHits": 9,
+              "slowApplications": 4,
+              "slowTurns": 3
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 8,
+          "playerWinRate": 80,
+          "timeouts": 0,
+          "avgRounds": 11.2,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 5,
+              "emperorNormalAttacks": 57,
+              "velocityGranted": 15,
+              "velocityUsed": 15,
+              "velocityDamagingHits": 15,
+              "slowApplications": 5,
+              "slowTurns": 3
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "AGGRO|C73x1+C74x2|Custom Marg Chip",
+      "games": 20,
+      "playerWins": 14,
+      "playerWinRate": 70,
+      "timeouts": 0,
+      "avgRounds": 11.5,
+      "metrics": {
+        "player": {
+          "emperorSummons": 17,
+          "linaSummons": 27,
+          "emperorNormalAttacks": 75,
+          "velocityGranted": 21,
+          "velocityUsed": 21,
+          "velocityDamagingHits": 20,
+          "slowApplications": 25,
+          "slowTurns": 17
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 8,
+          "playerWinRate": 80,
+          "timeouts": 0,
+          "avgRounds": 11,
+          "metrics": {
+            "player": {
+              "emperorSummons": 7,
+              "linaSummons": 14,
+              "emperorNormalAttacks": 29,
+              "velocityGranted": 10,
+              "velocityUsed": 10,
+              "velocityDamagingHits": 9,
+              "slowApplications": 12,
+              "slowTurns": 6
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 6,
+          "playerWinRate": 60,
+          "timeouts": 0,
+          "avgRounds": 12,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 13,
+              "emperorNormalAttacks": 46,
+              "velocityGranted": 11,
+              "velocityUsed": 11,
+              "velocityDamagingHits": 11,
+              "slowApplications": 13,
+              "slowTurns": 11
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "GUARD_WALL|baseline|Lv11",
+      "games": 20,
+      "playerWins": 18,
+      "playerWinRate": 90,
+      "timeouts": 0,
+      "avgRounds": 16.65,
+      "metrics": {
+        "player": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 8,
+          "playerWinRate": 80,
+          "timeouts": 0,
+          "avgRounds": 17.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 10,
+          "playerWinRate": 100,
+          "timeouts": 0,
+          "avgRounds": 15.9,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "GUARD_WALL|C73x1+C74x1|Lv11",
+      "games": 20,
+      "playerWins": 19,
+      "playerWinRate": 95,
+      "timeouts": 0,
+      "avgRounds": 14.25,
+      "metrics": {
+        "player": {
+          "emperorSummons": 20,
+          "linaSummons": 15,
+          "emperorNormalAttacks": 167,
+          "velocityGranted": 51,
+          "velocityUsed": 51,
+          "velocityDamagingHits": 51,
+          "slowApplications": 15,
+          "slowTurns": 12
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 14.1,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 8,
+              "emperorNormalAttacks": 72,
+              "velocityGranted": 22,
+              "velocityUsed": 22,
+              "velocityDamagingHits": 22,
+              "slowApplications": 8,
+              "slowTurns": 7
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 10,
+          "playerWinRate": 100,
+          "timeouts": 0,
+          "avgRounds": 14.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 7,
+              "emperorNormalAttacks": 95,
+              "velocityGranted": 29,
+              "velocityUsed": 29,
+              "velocityDamagingHits": 29,
+              "slowApplications": 7,
+              "slowTurns": 5
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "GUARD_WALL|C73x1+C74x2|Lv11",
+      "games": 20,
+      "playerWins": 20,
+      "playerWinRate": 100,
+      "timeouts": 0,
+      "avgRounds": 14.7,
+      "metrics": {
+        "player": {
+          "emperorSummons": 20,
+          "linaSummons": 26,
+          "emperorNormalAttacks": 182,
+          "velocityGranted": 56,
+          "velocityUsed": 56,
+          "velocityDamagingHits": 55,
+          "slowApplications": 25,
+          "slowTurns": 21
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 10,
+          "playerWinRate": 100,
+          "timeouts": 0,
+          "avgRounds": 14.8,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 14,
+              "emperorNormalAttacks": 85,
+              "velocityGranted": 27,
+              "velocityUsed": 27,
+              "velocityDamagingHits": 27,
+              "slowApplications": 13,
+              "slowTurns": 12
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 10,
+          "playerWinRate": 100,
+          "timeouts": 0,
+          "avgRounds": 14.6,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 12,
+              "emperorNormalAttacks": 97,
+              "velocityGranted": 29,
+              "velocityUsed": 29,
+              "velocityDamagingHits": 28,
+              "slowApplications": 12,
+              "slowTurns": 9
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "GUARD_WALL|baseline|Custom Marg Chip",
+      "games": 20,
+      "playerWins": 0,
+      "playerWinRate": 0,
+      "timeouts": 0,
+      "avgRounds": 19.9,
+      "metrics": {
+        "player": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 0,
+          "playerWinRate": 0,
+          "timeouts": 0,
+          "avgRounds": 20.2,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 0,
+          "playerWinRate": 0,
+          "timeouts": 0,
+          "avgRounds": 19.6,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "GUARD_WALL|C73x1+C74x1|Custom Marg Chip",
+      "games": 20,
+      "playerWins": 18,
+      "playerWinRate": 90,
+      "timeouts": 0,
+      "avgRounds": 17.65,
+      "metrics": {
+        "player": {
+          "emperorSummons": 20,
+          "linaSummons": 20,
+          "emperorNormalAttacks": 345,
+          "velocityGranted": 148,
+          "velocityUsed": 148,
+          "velocityDamagingHits": 133,
+          "slowApplications": 20,
+          "slowTurns": 16
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 17.9,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 10,
+              "emperorNormalAttacks": 183,
+              "velocityGranted": 79,
+              "velocityUsed": 79,
+              "velocityDamagingHits": 71,
+              "slowApplications": 10,
+              "slowTurns": 9
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 17.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 10,
+              "emperorNormalAttacks": 162,
+              "velocityGranted": 69,
+              "velocityUsed": 69,
+              "velocityDamagingHits": 62,
+              "slowApplications": 10,
+              "slowTurns": 7
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "GUARD_WALL|C73x1+C74x2|Custom Marg Chip",
+      "games": 20,
+      "playerWins": 14,
+      "playerWinRate": 70,
+      "timeouts": 0,
+      "avgRounds": 18.9,
+      "metrics": {
+        "player": {
+          "emperorSummons": 20,
+          "linaSummons": 40,
+          "emperorNormalAttacks": 349,
+          "velocityGranted": 154,
+          "velocityUsed": 154,
+          "velocityDamagingHits": 134,
+          "slowApplications": 39,
+          "slowTurns": 37
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 7,
+          "playerWinRate": 70,
+          "timeouts": 0,
+          "avgRounds": 19.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 20,
+              "emperorNormalAttacks": 192,
+              "velocityGranted": 85,
+              "velocityUsed": 85,
+              "velocityDamagingHits": 75,
+              "slowApplications": 19,
+              "slowTurns": 18
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 7,
+          "playerWinRate": 70,
+          "timeouts": 0,
+          "avgRounds": 18.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 20,
+              "emperorNormalAttacks": 157,
+              "velocityGranted": 69,
+              "velocityUsed": 69,
+              "velocityDamagingHits": 59,
+              "slowApplications": 20,
+              "slowTurns": 19
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "MARG_CHIP|baseline|Lv11",
+      "games": 20,
+      "playerWins": 19,
+      "playerWinRate": 95,
+      "timeouts": 0,
+      "avgRounds": 14.25,
+      "metrics": {
+        "player": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 14.1,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 10,
+          "playerWinRate": 100,
+          "timeouts": 0,
+          "avgRounds": 14.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "MARG_CHIP|C73x1+C74x1|Lv11",
+      "games": 20,
+      "playerWins": 19,
+      "playerWinRate": 95,
+      "timeouts": 0,
+      "avgRounds": 12.6,
+      "metrics": {
+        "player": {
+          "emperorSummons": 20,
+          "linaSummons": 13,
+          "emperorNormalAttacks": 135,
+          "velocityGranted": 42,
+          "velocityUsed": 42,
+          "velocityDamagingHits": 41,
+          "slowApplications": 13,
+          "slowTurns": 11
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 10,
+          "playerWinRate": 100,
+          "timeouts": 0,
+          "avgRounds": 12.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 6,
+              "emperorNormalAttacks": 70,
+              "velocityGranted": 23,
+              "velocityUsed": 23,
+              "velocityDamagingHits": 23,
+              "slowApplications": 6,
+              "slowTurns": 5
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 12.8,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 7,
+              "emperorNormalAttacks": 65,
+              "velocityGranted": 19,
+              "velocityUsed": 19,
+              "velocityDamagingHits": 18,
+              "slowApplications": 7,
+              "slowTurns": 6
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "MARG_CHIP|C73x1+C74x2|Lv11",
+      "games": 20,
+      "playerWins": 19,
+      "playerWinRate": 95,
+      "timeouts": 0,
+      "avgRounds": 12.75,
+      "metrics": {
+        "player": {
+          "emperorSummons": 20,
+          "linaSummons": 25,
+          "emperorNormalAttacks": 131,
+          "velocityGranted": 40,
+          "velocityUsed": 40,
+          "velocityDamagingHits": 39,
+          "slowApplications": 25,
+          "slowTurns": 18
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 12.1,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 12,
+              "emperorNormalAttacks": 69,
+              "velocityGranted": 22,
+              "velocityUsed": 22,
+              "velocityDamagingHits": 22,
+              "slowApplications": 12,
+              "slowTurns": 9
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 10,
+          "playerWinRate": 100,
+          "timeouts": 0,
+          "avgRounds": 13.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 13,
+              "emperorNormalAttacks": 62,
+              "velocityGranted": 18,
+              "velocityUsed": 18,
+              "velocityDamagingHits": 17,
+              "slowApplications": 13,
+              "slowTurns": 9
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "MARG_CHIP|baseline|Custom Marg Chip",
+      "games": 20,
+      "playerWins": 12,
+      "playerWinRate": 60,
+      "timeouts": 0,
+      "avgRounds": 19.8,
+      "metrics": {
+        "player": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 8,
+          "playerWinRate": 80,
+          "timeouts": 0,
+          "avgRounds": 20.6,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 4,
+          "playerWinRate": 40,
+          "timeouts": 0,
+          "avgRounds": 19,
+          "metrics": {
+            "player": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "MARG_CHIP|C73x1+C74x1|Custom Marg Chip",
+      "games": 20,
+      "playerWins": 14,
+      "playerWinRate": 70,
+      "timeouts": 0,
+      "avgRounds": 18,
+      "metrics": {
+        "player": {
+          "emperorSummons": 20,
+          "linaSummons": 19,
+          "emperorNormalAttacks": 287,
+          "velocityGranted": 108,
+          "velocityUsed": 108,
+          "velocityDamagingHits": 102,
+          "slowApplications": 19,
+          "slowTurns": 19
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 17.9,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 10,
+              "emperorNormalAttacks": 153,
+              "velocityGranted": 58,
+              "velocityUsed": 58,
+              "velocityDamagingHits": 56,
+              "slowApplications": 10,
+              "slowTurns": 10
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 5,
+          "playerWinRate": 50,
+          "timeouts": 0,
+          "avgRounds": 18.1,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 9,
+              "emperorNormalAttacks": 134,
+              "velocityGranted": 50,
+              "velocityUsed": 50,
+              "velocityDamagingHits": 46,
+              "slowApplications": 9,
+              "slowTurns": 9
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "matchup": "MARG_CHIP|C73x1+C74x2|Custom Marg Chip",
+      "games": 20,
+      "playerWins": 15,
+      "playerWinRate": 75,
+      "timeouts": 0,
+      "avgRounds": 18.3,
+      "metrics": {
+        "player": {
+          "emperorSummons": 20,
+          "linaSummons": 37,
+          "emperorNormalAttacks": 264,
+          "velocityGranted": 102,
+          "velocityUsed": 102,
+          "velocityDamagingHits": 93,
+          "slowApplications": 37,
+          "slowTurns": 36
+        },
+        "ai": {
+          "emperorSummons": 0,
+          "linaSummons": 0,
+          "emperorNormalAttacks": 0,
+          "velocityGranted": 0,
+          "velocityUsed": 0,
+          "velocityDamagingHits": 0,
+          "slowApplications": 0,
+          "slowTurns": 0
+        }
+      },
+      "first": {
+        "player": {
+          "games": 10,
+          "playerWins": 9,
+          "playerWinRate": 90,
+          "timeouts": 0,
+          "avgRounds": 18.4,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 19,
+              "emperorNormalAttacks": 137,
+              "velocityGranted": 55,
+              "velocityUsed": 55,
+              "velocityDamagingHits": 51,
+              "slowApplications": 19,
+              "slowTurns": 18
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        },
+        "ai": {
+          "games": 10,
+          "playerWins": 6,
+          "playerWinRate": 60,
+          "timeouts": 0,
+          "avgRounds": 18.2,
+          "metrics": {
+            "player": {
+              "emperorSummons": 10,
+              "linaSummons": 18,
+              "emperorNormalAttacks": 127,
+              "velocityGranted": 47,
+              "velocityUsed": 47,
+              "velocityDamagingHits": 42,
+              "slowApplications": 18,
+              "slowTurns": 18
+            },
+            "ai": {
+              "emperorSummons": 0,
+              "linaSummons": 0,
+              "emperorNormalAttacks": 0,
+              "velocityGranted": 0,
+              "velocityUsed": 0,
+              "velocityDamagingHits": 0,
+              "slowApplications": 0,
+              "slowTurns": 0
+            }
+          }
+        }
+      }
+    }
+  ],
+  "pairedComparisons": [
+    {
+      "family": "AGGRO",
+      "opponent": "Lv11",
+      "variant": "C73x1+C74x1",
+      "pairedGames": 20,
+      "baselineWins": 15,
+      "variantWins": 16,
+      "winRateChangePoints": 5,
+      "bothWin": 15,
+      "bothLose": 4,
+      "gainedWins": 1,
+      "lostWins": 0
+    },
+    {
+      "family": "AGGRO",
+      "opponent": "Lv11",
+      "variant": "C73x1+C74x2",
+      "pairedGames": 20,
+      "baselineWins": 15,
+      "variantWins": 14,
+      "winRateChangePoints": -5,
+      "bothWin": 14,
+      "bothLose": 5,
+      "gainedWins": 0,
+      "lostWins": 1
+    },
+    {
+      "family": "AGGRO",
+      "opponent": "Custom Marg Chip",
+      "variant": "C73x1+C74x1",
+      "pairedGames": 20,
+      "baselineWins": 15,
+      "variantWins": 17,
+      "winRateChangePoints": 10,
+      "bothWin": 15,
+      "bothLose": 3,
+      "gainedWins": 2,
+      "lostWins": 0
+    },
+    {
+      "family": "AGGRO",
+      "opponent": "Custom Marg Chip",
+      "variant": "C73x1+C74x2",
+      "pairedGames": 20,
+      "baselineWins": 15,
+      "variantWins": 14,
+      "winRateChangePoints": -5,
+      "bothWin": 13,
+      "bothLose": 4,
+      "gainedWins": 1,
+      "lostWins": 2
+    },
+    {
+      "family": "GUARD_WALL",
+      "opponent": "Lv11",
+      "variant": "C73x1+C74x1",
+      "pairedGames": 20,
+      "baselineWins": 18,
+      "variantWins": 19,
+      "winRateChangePoints": 5,
+      "bothWin": 17,
+      "bothLose": 0,
+      "gainedWins": 2,
+      "lostWins": 1
+    },
+    {
+      "family": "GUARD_WALL",
+      "opponent": "Lv11",
+      "variant": "C73x1+C74x2",
+      "pairedGames": 20,
+      "baselineWins": 18,
+      "variantWins": 20,
+      "winRateChangePoints": 10,
+      "bothWin": 18,
+      "bothLose": 0,
+      "gainedWins": 2,
+      "lostWins": 0
+    },
+    {
+      "family": "GUARD_WALL",
+      "opponent": "Custom Marg Chip",
+      "variant": "C73x1+C74x1",
+      "pairedGames": 20,
+      "baselineWins": 0,
+      "variantWins": 18,
+      "winRateChangePoints": 90,
+      "bothWin": 0,
+      "bothLose": 2,
+      "gainedWins": 18,
+      "lostWins": 0
+    },
+    {
+      "family": "GUARD_WALL",
+      "opponent": "Custom Marg Chip",
+      "variant": "C73x1+C74x2",
+      "pairedGames": 20,
+      "baselineWins": 0,
+      "variantWins": 14,
+      "winRateChangePoints": 70,
+      "bothWin": 0,
+      "bothLose": 6,
+      "gainedWins": 14,
+      "lostWins": 0
+    },
+    {
+      "family": "MARG_CHIP",
+      "opponent": "Lv11",
+      "variant": "C73x1+C74x1",
+      "pairedGames": 20,
+      "baselineWins": 19,
+      "variantWins": 19,
+      "winRateChangePoints": 0,
+      "bothWin": 18,
+      "bothLose": 0,
+      "gainedWins": 1,
+      "lostWins": 1
+    },
+    {
+      "family": "MARG_CHIP",
+      "opponent": "Lv11",
+      "variant": "C73x1+C74x2",
+      "pairedGames": 20,
+      "baselineWins": 19,
+      "variantWins": 19,
+      "winRateChangePoints": 0,
+      "bothWin": 19,
+      "bothLose": 1,
+      "gainedWins": 0,
+      "lostWins": 0
+    },
+    {
+      "family": "MARG_CHIP",
+      "opponent": "Custom Marg Chip",
+      "variant": "C73x1+C74x1",
+      "pairedGames": 20,
+      "baselineWins": 12,
+      "variantWins": 14,
+      "winRateChangePoints": 10,
+      "bothWin": 9,
+      "bothLose": 3,
+      "gainedWins": 5,
+      "lostWins": 3
+    },
+    {
+      "family": "MARG_CHIP",
+      "opponent": "Custom Marg Chip",
+      "variant": "C73x1+C74x2",
+      "pairedGames": 20,
+      "baselineWins": 12,
+      "variantWins": 15,
+      "winRateChangePoints": 15,
+      "bothWin": 9,
+      "bothLose": 2,
+      "gainedWins": 6,
+      "lostWins": 3
+    }
+  ],
+  "limitations": [
+    "These explicit replacement decks and deterministic bots do not establish human-play balance or a metagame tier.",
+    "Each matchup has only 20 games, evenly split first/second; small differences are noisy.",
+    "Substitutions change existing roles, cost curves and combinations, so the result does not isolate either new card alone.",
+    "The player bot favors direct LP attacks when no guard exists, and therefore does not optimize all Velocity opportunities.",
+    "Only rules and AI run headlessly; rendered cards, browser input, sound and deployment are separate checks."
+  ]
+}

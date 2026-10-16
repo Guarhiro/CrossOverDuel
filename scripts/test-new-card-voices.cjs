@@ -103,12 +103,13 @@ async function main() {
     assert.ok(decoded.every(clip => clip.native && clip.bytes > 0 && clip.frames > 0 && clip.decodedDuration > 0 && clip.metadataDuration > 0 && clip.peak > 0));
     checks.push({ name: 'All 21 supplied MP3s load as native audio and fully decode to non-silent PCM', passed: true });
 
-    const candidateCheck = await page.evaluate(() => ({
-      newPaths: Array.from(NEW_CHARACTER_IDS, id => ({ id, paths: ['summon', 'attack', 'retreat'].map(event => voiceCandidatePaths(id, event)) })),
+    const candidateCheck = await page.evaluate(voicedIds => ({
+      newPaths: voicedIds.map(id => ({ id, paths: ['summon', 'attack', 'retreat'].map(event => voiceCandidatePaths(id, event)) })),
+      addedPaths: ['C73', 'C74'].map(id => ({ id, paths: ['summon', 'attack', 'retreat'].map(event => voiceCandidatePaths(id, event)) })),
       legacyAttack: voiceCandidatePaths('C01', 'attack'),
       legacySummon: voiceCandidatePaths('C01', 'summon'),
-    }));
-    for (const item of candidateCheck.newPaths) {
+    }), ids);
+    for (const item of [...candidateCheck.newPaths, ...candidateCheck.addedPaths]) {
       item.paths.forEach((candidates, index) => assert.equal(candidates[0], `assets/voice/${item.id}/${events[index]}.mp3`));
     }
     assert.deepEqual(candidateCheck.legacyAttack, ['assets/voice/C01/atack.mp3', 'assets/voice/C01/attack.mp3']);

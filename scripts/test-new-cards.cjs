@@ -7,12 +7,12 @@ const test = (name, run) => cases.push({ name, run });
 test('seven card definitions and unchanged starter/AI deck contents', () => {
   const expected={C66:[3,1,1,4],C67:[3,1,2,4],C68:[2,1,1,4],C69:[2,1,1,3],C70:[3,2,3,4],C71:[3,1,1,4],C72:[3,1,1,4]};
   for(const [id,stats] of Object.entries(expected)){const c=CARD_DB.get(id);assert.ok(c);assert.deepEqual([c.cost,c.atk,c.def,c.hp],stats);assert.equal(c.kind,'character');assert.equal(c.backOnly,undefined);}
-  assert.equal(CHARACTERS.length,72);assert.equal(SUPPORTS.length,16);assert.equal(PLAYER_DECK.length,20);assert.ok(PLAYER_DECK.every(id=>!Object.hasOwn(expected,id)));assert.ok(AI_DECKS.every(p=>p.deck.every(id=>!Object.hasOwn(expected,id))));
+  assert.equal(CHARACTERS.length,74);assert.equal(SUPPORTS.length,16);assert.equal(PLAYER_DECK.length,20);assert.ok(PLAYER_DECK.every(id=>!Object.hasOwn(expected,id)));assert.ok(AI_DECKS.every(p=>p.deck.every(id=>!Object.hasOwn(expected,id))));
   assert.ok(CARD_DB.get('C70').tags.includes('guard'));
 });
 test('all new instances initialize effect state and share negative-status helpers', () => {
-  const artFiles={C66:'C66-card-v2.png',C67:'C67-card-v2.png',C68:'C68-card-v2.png',C69:'C69-card-v2.png',C70:'C70-card-v2.png',C71:'C71-card-v2.png',C72:'C72-card-v2.png'};
-  for(const id of NEW_CHARACTER_IDS){const c=createInstance(CARD_DB.get(id),'player');assert.equal(c.status.periodicStop,0);assert.equal(c.supportProtection,null);assert.equal(c.illusionRouteTurn,-1);assert.equal(c.activeCleanseTurn,-1);assert.equal(c.galdioProtectTurn,-1);assert.equal(hasNegativeStatus(c),false);c.status.periodicStop=1;assert.equal(hasNegativeStatus(c),true);clearAllStatuses(c);assert.equal(hasNegativeStatus(c),false);assert.equal(cardArtPath(c),`assets/characters/${artFiles[id]}`);}
+  const artFiles={C66:'C66-card-v2.png',C67:'C67-card-v2.png',C68:'C68-card-v2.png',C69:'C69-card-v2.png',C70:'C70-card-v2.png',C71:'C71-card-v2.png',C72:'C72-card-v2.png',C73:'C73.jpg',C74:'C74.jpg'};
+  for(const id of NEW_CHARACTER_IDS){const c=createInstance(CARD_DB.get(id),'player');assert.equal(c.status.periodicStop,0);assert.equal(c.status.slow,0);assert.equal(c.velocityAttackUsed,false);assert.equal(c.velocityTargetId,null);assert.equal(c.supportProtection,null);assert.equal(c.illusionRouteTurn,-1);assert.equal(c.activeCleanseTurn,-1);assert.equal(c.galdioProtectTurn,-1);assert.equal(hasNegativeStatus(c),false);c.status.periodicStop=1;assert.equal(hasNegativeStatus(c),true);clearAllStatuses(c);assert.equal(hasNegativeStatus(c),false);assert.equal(cardArtPath(c),`assets/characters/${artFiles[id]}`);}
 });
 test('Aria recovers one real grave as a fresh unbuffed instance', () => {
   const dead=createInstance(CARD_DB.get('C35'),'player');dead.currentAtk=9;dead.currentDef=0;dead.currentHp=0;dead.awakened=true;dead.status.bind=2;state.player.grave.push(dead);

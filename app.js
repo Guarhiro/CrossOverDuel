@@ -1189,9 +1189,11 @@ const AI_CHARACTER_LANE_PLAN = Object.freeze({
   C70: AI_LANE_FRONT,
   C71: AI_LANE_BACK,
   C72: AI_LANE_BACK,
+  C73: AI_LANE_FRONT,
+  C74: AI_LANE_BACK,
 });
 
-const AI_FRONT_PRESSURE_EFFECT_IDS = new Set(["C16", "C28", "C34", "C44", "C55", "C56", "C64"]);
+const AI_FRONT_PRESSURE_EFFECT_IDS = new Set(["C16", "C28", "C34", "C44", "C55", "C56", "C64", "C73"]);
 
 const SUPPORTS = [
   {
@@ -2202,6 +2204,7 @@ function createInstance(base, ownerKey = null) {
       bind: 0,
       silenced: 0,
       periodicStop: 0,
+      slow: 0,
     };
     card.attacked = false;
     card.summonedOnTurn = 0;
@@ -2217,6 +2220,8 @@ function createInstance(base, ownerKey = null) {
     card.illusionRouteTurn = -1;
     card.activeCleanseTurn = -1;
     card.galdioProtectTurn = -1;
+    card.velocityAttackUsed = false;
+    card.velocityTargetId = null;
   }
   return card;
 }
@@ -2350,6 +2355,8 @@ function startTurn(player) {
     card.attacked = false;
     card.extraAttackUsed = false;
     card.sionReattackUsed = false;
+    card.velocityAttackUsed = false;
+    card.velocityTargetId = null;
     card.interceptUsed = false;
     card.tempDef = 0;
   });
@@ -2524,6 +2531,7 @@ function applySummonEffects(card, player, lane) {
     case "C32":
       boardCards(player).forEach((ally) => {
         ally.status.bind = 0;
+        ally.status.slow = 0;
         if (ally.currentAtk < ally.atk) ally.currentAtk = ally.atk;
         if (ally.element === "炎" && ally !== card) buffAtk(ally, 1 * scale);
       });
@@ -2862,13 +2870,13 @@ function canReceiveHealing(card) {
 }
 
 function hasNegativeStatus(card) {
-  return ["stun", "guardOff", "bind", "silenced", "periodicStop"].some((key) => card?.status?.[key] > 0);
+  return ["stun", "guardOff", "bind", "silenced", "periodicStop", "slow"].some((key) => card?.status?.[key] > 0);
 }
 
 function clearAllStatuses(card) {
   if (!card?.status) return false;
   const cleared = hasNegativeStatus(card);
-  ["stun", "guardOff", "bind", "silenced", "periodicStop"].forEach((key) => {
+  ["stun", "guardOff", "bind", "silenced", "periodicStop", "slow"].forEach((key) => {
     card.status[key] = 0;
   });
   return cleared;
@@ -2922,7 +2930,7 @@ function discountArcadiaInHand(player) {
 function clearOneStatusFromAlly(player) {
   const target = boardCards(player).find(hasNegativeStatus);
   if (!target) return false;
-  const key = ["stun", "guardOff", "bind", "silenced", "periodicStop"].find((statusKey) => target.status[statusKey] > 0);
+  const key = ["stun", "guardOff", "bind", "silenced", "periodicStop", "slow"].find((statusKey) => target.status[statusKey] > 0);
   if (!key) return false;
   target.status[key] = 0;
   log(`${target.name} の状態異常を解除。`, "effect");
@@ -3383,6 +3391,7 @@ function awaken(card, player, forced = false) {
 async function performAttack(attacker, target, options = {}) {
   if ((state.busy && !options.allowWhileBusy) || state.gameOver || !target) return;
   const owner = state[attacker.ownerKey];
+  if (!owner || !canAttack(attacker, owner)) return;
   const foe = opponentOf(owner);
   const legal = getLegalTargets(attacker, owner);
   const legalOk = legal.some((item) => item.type === target.type && (target.type === "lp" || item.card === target.card));
@@ -3451,10 +3460,13 @@ async function performAttack(attacker, target, options = {}) {
   }
   let killed = false;
   let hpDamage = 0;
+  let totalDamage = 0;
   if (target.type === "lp") {
     damageLp(foe, attackValue, attacker.name);
     hpDamage = attackValue;
   } else {
+    const previousDef = effectiveDef(target.card);
+    const previousHp = target.card.currentHp;
     const result = damageCharacter(target.card, attackValue, owner, {
       ignoreDef: (attacker.id === "C28" && !isNoxSkillStopped(attacker)) || atomicFlareActive,
       attacker,
@@ -3463,6 +3475,9 @@ async function performAttack(attacker, target, options = {}) {
     });
     killed = result.killed;
     hpDamage = result.hpDamage;
+    // An intercepted HP hit can be fully restored on the original target.
+    // Velocity requires actual DEF or HP loss on that target, not its guardian.
+    totalDamage = Math.max(0, previousDef - effectiveDef(target.card)) + Math.max(0, previousHp - target.card.currentHp);
     if (target.card?.id === "C30" && !isNoxSkillStopped(target.card)) damageCharacter(attacker, 1, foe, { ignoreDef: true, cause: "character-skill", sourceCard: target.card });
     if (target.card?.id === "C40" && !isNoxSkillStopped(target.card)) damageCharacter(attacker, 2, foe, { ignoreDef: true, cause: "character-skill", sourceCard: target.card });
     if (attacker.id === "C22" && !isNoxSkillStopped(attacker) && target.card && !result.killed) buffAtk(target.card, -1);
@@ -3478,7 +3493,7 @@ async function performAttack(attacker, target, options = {}) {
     render();
     return;
   }
-  afterAttackEffects(attacker, owner, foe, target, killed, hpDamage, { atomicFlareActive });
+  afterAttackEffects(attacker, owner, foe, target, killed, hpDamage, { atomicFlareActive, totalDamage });
   state.busy = previousBusy;
   if (checkGameOver()) return;
   render();
@@ -3545,6 +3560,15 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
     attacker.extraAttackUsed = true;
     attacker.attacked = false;
     log("緋山玲奈はHP半分以下で追加攻撃可能。", "effect");
+  }
+
+  if (attacker.id === "C73" && attackerSkillsEnabled && !attacker.velocityAttackUsed && !killed
+    && target.type === "card" && effects.totalDamage > 0
+    && findCardLocation(attacker)?.owner === owner.key && findCardLocation(target.card)?.owner === foe.key) {
+    attacker.velocityAttackUsed = true;
+    attacker.velocityTargetId = target.card.instanceId;
+    attacker.attacked = false;
+    log(`ヴェロシティ：${attacker.name}は${target.card.name}へ1回だけ追撃できる。`, "effect");
   }
 }
 
@@ -3792,7 +3816,7 @@ function buffMaxHp(card, amount) {
 }
 
 function decrementStatuses(card) {
-  ["stun", "guardOff", "silenced"].forEach((key) => {
+  ["stun", "guardOff", "silenced", "slow"].forEach((key) => {
     if (card.status[key] > 0) card.status[key] -= 1;
   });
   if (card.status.bind > 0) {
@@ -3808,7 +3832,7 @@ function decrementStatuses(card) {
 function canAttack(card, player) {
   if (!card || player.key !== state.current || state.phase !== "battle") return false;
   if (!player.front.includes(card)) return false;
-  if (card.attacked || card.status.stun > 0) return false;
+  if (card.attacked || card.status.stun > 0 || card.status.slow > 0) return false;
   if (isDormant(card)) return false;
   if (effectiveAtk(card) <= 0) return false;
   const ready = hasActiveHaste(card) || player.turns > card.summonedOnTurn;
@@ -3818,16 +3842,22 @@ function canAttack(card, player) {
 function getLegalTargets(attacker, owner) {
   const foe = opponentOf(owner);
   const guards = activeGuards(foe);
+  let targets;
   if (guards.length) {
-    const targets = guards.map((card) => ({ type: "card", card }));
+    targets = guards.map((card) => ({ type: "card", card }));
     if (attacker.illusionRouteTurn === owner.turns) {
       targets.push(...foe.back.filter(Boolean).map((card) => ({ type: "card", card })));
     }
-    return targets;
+  } else {
+    targets = boardCards(foe).map((card) => ({ type: "card", card }));
+    if (!isSummonTurnHasteAttack(attacker, owner)) {
+      targets.push({ type: "lp", player: foe });
+    }
   }
-  const targets = boardCards(foe).map((card) => ({ type: "card", card }));
-  if (!isSummonTurnHasteAttack(attacker, owner)) {
-    targets.push({ type: "lp", player: foe });
+  // A Velocity follow-up is bound to the surviving instance, after normal guard checks.
+  if (attacker.id === "C73" && attacker.velocityTargetId) {
+    if (isNoxSkillStopped(attacker)) return [];
+    return targets.filter((target) => target.type === "card" && target.card.instanceId === attacker.velocityTargetId);
   }
   return targets;
 }
@@ -6575,6 +6605,8 @@ function renderStatusStrip(card) {
   if (card.status.bind > 0) chips.push("BIND");
   if (card.status.silenced > 0) chips.push("SEAL");
   if (card.status.periodicStop > 0) chips.push("閉律");
+  if (card.status.slow > 0) chips.push("スロー");
+  if (card.id === "C73" && card.velocityTargetId && !card.attacked && !isNoxSkillStopped(card)) chips.push("追撃待ち");
   if (card.supportProtection) chips.push("保護");
   if (card.illusionRouteTurn === state[card.ownerKey]?.turns && state.current === card.ownerKey) chips.push("幻影経路");
   if (card.id === "C72" && card.activeCleanseTurn === state[card.ownerKey]?.turns) chips.push("祓い済");
@@ -6955,7 +6987,7 @@ function isSupportWorthUsing(card, player, foe) {
     case "S07":
       return boardCards(player).length > 0;
     case "S08": {
-      const threats = foe.front.filter((enemy) => enemy && enemy.status.stun <= 0 && effectiveAtk(enemy) > 0).length;
+      const threats = foe.front.filter((enemy) => enemy && enemy.status.stun <= 0 && !(enemy.status.slow > 0) && effectiveAtk(enemy) > 0).length;
       return threats > 0 && player.counterAttack < threats;
     }
     case "S09":
@@ -6983,7 +7015,7 @@ function isBackSkillCandidate(card) {
 
 function canJoinUpcomingAttack(card, player) {
   if (!card || !player.front.includes(card)) return false;
-  if (card.attacked || card.status.stun > 0) return false;
+  if (card.attacked || card.status.stun > 0 || card.status.slow > 0) return false;
   if (isDormant(card)) return false;
   if (effectiveAtk(card) <= 0) return false;
   const ready = hasActiveHaste(card) || player.turns > card.summonedOnTurn;
@@ -7190,6 +7222,11 @@ function aiAttackSynergyScore(attacker, targetCard, profile, removes, location) 
     if (state.player.back.some(Boolean)) score += 6;
   }
   if (attacker.id === "C64" && removes && !attacker.sionReattackUsed) score += 10;
+  if (attacker.id === "C73" && !attacker.velocityAttackUsed && !removes && profile.totalDamage > 0) {
+    const followup = aiPredictedDamageProfile(attacker, targetCard, Math.max(0, effectiveDef(targetCard) - profile.shieldDamage));
+    score += followup.hpDamage * 2;
+    if (followup.hpDamage >= Math.max(1, targetCard.currentHp - profile.hpDamage)) score += 18;
+  }
   return score;
 }
 

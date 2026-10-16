@@ -1,0 +1,102 @@
+{
+  "completedAt": "2026-10-16T08:43:35.118Z",
+  "passed": 9,
+  "checks": [
+    "Actual page loads both approved cards with the corrected existing series and approved stats",
+    "Real Lina hand placement offers only enemy front targets, locks commands, applies visible Slow, and retains guard/skill",
+    "Escape skips Lina optional choice and restores phase controls without applying Slow",
+    "Actual Persephone summon attacks immediately without LP access, then the UI restricts one follow-up to the surviving first target",
+    "Both supplied image assets decode in actual Chrome",
+    "Actual series filter includes both new cards under the existing work; exchange uses UR 300P and SR 100P",
+    "Actual weighted reward selection can draw each new card with its existing rarity weight",
+    "Real signed transfer includes the 90-card catalog and both new ownership/deck records",
+    "Actual Slow choice, field follow-up, hand, gallery for both characters, and filtered editor render at desktop 1440px and mobile 390px"
+  ],
+  "cards": [
+    {
+      "id": "C73",
+      "name": "ペルセポネ",
+      "series": "グッドナイトワールド",
+      "rarity": "UR",
+      "element": "無",
+      "role": "AT",
+      "cost": 6,
+      "atk": 5,
+      "def": 2,
+      "hp": 5
+    },
+    {
+      "id": "C74",
+      "name": "リナ",
+      "series": "グッドナイトワールド",
+      "rarity": "SR",
+      "element": "無",
+      "role": "SP",
+      "cost": 3,
+      "atk": 2,
+      "def": 1,
+      "hp": 4
+    }
+  ],
+  "errors": [],
+  "missingResources": [],
+  "artResults": [
+    {
+      "id": "C73",
+      "path": "assets/characters/C73.jpg",
+      "width": 1122,
+      "height": 1402
+    },
+    {
+      "id": "C74",
+      "path": "assets/characters/C74.jpg",
+      "width": 1123,
+      "height": 1401
+    }
+  ],
+  "rewardResult": [
+    {
+      "id": "C73",
+      "drawn": "C73",
+      "weight": 3
+    },
+    {
+      "id": "C74",
+      "drawn": "C74",
+      "weight": 6
+    }
+  ],
+  "transferResult": {
+    "count": 90,
+    "owns": [
+      2,
+      2
+    ],
+    "deckIncludes": [
+      true,
+      true
+    ]
+  },
+  "screenshots": [
+    "docs/validation/goodnight-world-cards/slow-choice-1440.png",
+    "docs/validation/goodnight-world-cards/field-1440.png",
+    "docs/validation/goodnight-world-cards/hand-1440.png",
+    "docs/validation/goodnight-world-cards/gallery-C73-1440.png",
+    "docs/validation/goodnight-world-cards/gallery-C74-1440.png",
+    "docs/validation/goodnight-world-cards/editor-1440.png",
+    "docs/validation/goodnight-world-cards/slow-choice-390.png",
+    "docs/validation/goodnight-world-cards/field-390.png",
+    "docs/validation/goodnight-world-cards/hand-390.png",
+    "docs/validation/goodnight-world-cards/gallery-C73-390.png",
+    "docs/validation/goodnight-world-cards/gallery-C74-390.png",
+    "docs/validation/goodnight-world-cards/editor-390.png"
+  ],
+  "hashes": {
+    "app.js": "1faaf7e55abe8d934b862a45c5a75fe0f19efff3944f85a2a1e1b3f7bd6030f0",
+    "new-cards.js": "38fe0367f114d56d5395be86c8dce372c161dcfd7eba6b8bfb3430b2d8c65c1f",
+    "new-card-ui.js": "2c2b869f63f2c202001ebc7c4c265b2adfd450a31ad3cc7c795677ed630eb630",
+    "styles.css": "7b92c72f40155c6169895d07accd1be491500ea9b19bd707b4c45544d06e4ba2",
+    "index.html": "96530fdf10be83812679b3c13bfb9546a6ad8731a04688bf549ae2cefe194310"
+  },
+  "storage": "Disposable Playwright browser context; no user browser profile or save accessed"
+}

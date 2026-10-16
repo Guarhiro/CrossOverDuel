@@ -1,4 +1,4 @@
-/* Target selection and reference artwork for C66–C72. Rules live in new-cards.js. */
+/* Target selection and reference artwork for C66–C74. Rules live in new-cards.js. */
 const NEW_CHARACTER_ART_PATHS = Object.freeze({
   C66: "assets/characters/C66-card-v2.png",
   C67: "assets/characters/C67-card-v2.png",
@@ -7,6 +7,8 @@ const NEW_CHARACTER_ART_PATHS = Object.freeze({
   C70: "assets/characters/C70-card-v2.png",
   C71: "assets/characters/C71-card-v2.png",
   C72: "assets/characters/C72-card-v2.png",
+  C73: "assets/characters/C73.jpg",
+  C74: "assets/characters/C74.jpg",
 });
 
 let newCardUIBound = false;

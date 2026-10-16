@@ -1,0 +1,156 @@
+{
+  "date": "2026-10-16",
+  "type": "production-rule VM integration for C73/C74",
+  "hashes": {
+    "app.js": "1faaf7e55abe8d934b862a45c5a75fe0f19efff3944f85a2a1e1b3f7bd6030f0",
+    "new-cards.js": "38fe0367f114d56d5395be86c8dce372c161dcfd7eba6b8bfb3430b2d8c65c1f",
+    "scripts/duel-vm.cjs": "0b3148558361b653dcf445efe42ed6ff8d5d40462c169f13518d7450164cacc3",
+    "scripts/test-goodnight-world-cards.cjs": "0a0e0b821c6b006e0ec89baf07075de645d34646db5ccd2f371d72366d8521d3"
+  },
+  "storageIsolation": "private in-memory Map",
+  "storageAudit": {
+    "writes": 0,
+    "reads": 0
+  },
+  "total": 33,
+  "passed": 33,
+  "failed": 0,
+  "results": [
+    {
+      "name": "both new cards retain their approved names, series, stats and roles",
+      "passed": true
+    },
+    {
+      "name": "instances initialize independent velocity and slow state",
+      "passed": true
+    },
+    {
+      "name": "Persephone attacks immediately but never LP on her placement turn",
+      "passed": true
+    },
+    {
+      "name": "DEF-only damage activates exactly one same-target follow-up",
+      "passed": true
+    },
+    {
+      "name": "a first-hit removal gives no new enemy or LP attack",
+      "passed": true
+    },
+    {
+      "name": "ordinary LP attacks on later turns do not create a follow-up",
+      "passed": true
+    },
+    {
+      "name": "Albert interception with no original target DEF or HP loss gives no follow-up",
+      "passed": true
+    },
+    {
+      "name": "Albert interception still permits velocity when original target DEF was lost",
+      "passed": true
+    },
+    {
+      "name": "a surviving last-stand target can be hit twice without a kill chain",
+      "passed": true
+    },
+    {
+      "name": "target departure cannot redirect the follow-up to a replacement instance",
+      "passed": true
+    },
+    {
+      "name": "a follow-up rechecks guards and cannot retain Neiras one-attack bypass",
+      "passed": true
+    },
+    {
+      "name": "a newly active guard blocks redirection instead of becoming a follow-up target",
+      "passed": true
+    },
+    {
+      "name": "S08 reflection consumes the first attack without velocity even if emperor survives",
+      "passed": true
+    },
+    {
+      "name": "an attacker killed by a retaliation skill cannot gain a follow-up",
+      "passed": true
+    },
+    {
+      "name": "zero ATK cannot begin a velocity sequence",
+      "passed": true
+    },
+    {
+      "name": "a reflected second hit never generates a third hit",
+      "passed": true
+    },
+    {
+      "name": "own-turn start resets a skipped velocity opportunity without extra LP hits",
+      "passed": true
+    },
+    {
+      "name": "Nox stops placement haste and stops a mature emperor from gaining velocity",
+      "passed": true
+    },
+    {
+      "name": "Nox applied between hits suspends a pending follow-up",
+      "passed": true
+    },
+    {
+      "name": "ordinary generic silence retains existing haste and attack-trigger compatibility",
+      "passed": true
+    },
+    {
+      "name": "AI naturally performs the same legal target follow-up and then stops",
+      "passed": true
+    },
+    {
+      "name": "Lina targets exactly one selected eligible enemy front character",
+      "passed": true
+    },
+    {
+      "name": "slow preserves guard and actual start-of-turn skills",
+      "passed": true
+    },
+    {
+      "name": "slow lasts through exactly the next enemy turn and survives source retreat",
+      "passed": true
+    },
+    {
+      "name": "Lina respects immunity and has no legal target when only rear characters remain",
+      "passed": true
+    },
+    {
+      "name": "Lina can decline placement slow without consuming a target",
+      "passed": true
+    },
+    {
+      "name": "fixed slow does not gain extra targets or duration from S04 or Sophia",
+      "passed": true
+    },
+    {
+      "name": "slow is a shared negative status cleared by both full and single cleanses",
+      "passed": true
+    },
+    {
+      "name": "Kanon placement and active cleanses both remove slow without changing stats",
+      "passed": true
+    },
+    {
+      "name": "C50 placement and C56 after-attack cleanse recognize slow",
+      "passed": true
+    },
+    {
+      "name": "C32 existing deployment debuff cleanup also removes slow",
+      "passed": true
+    },
+    {
+      "name": "AI Lina chooses an attack-capable threat and never a rear character",
+      "passed": true
+    },
+    {
+      "name": "Nox suppresses Lina placement while SP remains outside the ST counter",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "DOM, sound, animation and browser input are stubbed; rendered visuals and live deployment require separate verification.",
+    "Tests load current production rules without prototype gameplay patches; they do not establish competitive win rates."
+  ]
+}

@@ -90,7 +90,7 @@ async function main() {
       img.onerror = () => resolve({ id: card.id, error: true }); img.src = cardArtPath(card);
     }))));
     assert.ok(artResults.every((result) => result.width > 0 && result.height > 0));
-    checks.push('All seven actual image assets decode in Chrome');
+    checks.push('All additional character image assets decode in Chrome');
 
     // Exercise collection/deck/exchange integration against a private browser save.
     await page.evaluate(() => { localStorage.setItem('crossover-duel-collection', JSON.stringify(Object.fromEntries(NEW_CHARACTERS.map(c => [c.id, 2])))); openDeckEditor(); });
@@ -117,7 +117,7 @@ async function main() {
       const legacyPayload = await verifyTransferObject(legacy, 'isolated-browser-test-key');
       return { count: packageData.app.cardCount, ownsNox: payload.collection.C67, deckNox: payload.deckSlots[0].includes('C67'), tamperRejected, legacyCardsRetained: legacyPayload.playerDeckIds.every(id => CARD_DB.has(id)) };
     });
-    assert.equal(transferResult.count, 88); assert.equal(transferResult.ownsNox, 2);
+    assert.equal(transferResult.count, 90); assert.equal(transferResult.ownsNox, 2);
     assert.equal(transferResult.deckNox, true); assert.equal(transferResult.tamperRejected, true); assert.equal(transferResult.legacyCardsRetained, true);
     checks.push('Signed transfer retains new-card ownership/decks, rejects tampering, and accepts authentic prior catalog metadata');
 
@@ -157,7 +157,7 @@ async function main() {
     await page.locator('.new-character-reference').evaluateAll(async images => Promise.all(images.map(img => img.decode())));
     const overview = path.join(ROOT, 'docs/validation/new-cards-art-overview.png');
     await page.screenshot({ path: overview, fullPage: true }); screenshots.push(path.relative(ROOT, overview));
-    checks.push('All seven production card components render together for visual review');
+    checks.push('All additional production card components render together for visual review');
     assert.deepEqual(errors, []);
     assert.deepEqual(missingResources, []);
     const sourceFiles = ['app.js', 'new-cards.js', 'new-card-ui.js', 'styles.css', 'index.html'];

@@ -1,0 +1,315 @@
+{
+  "date": "2026-10-16",
+  "type": "C73/C74 focused native Chrome character voice integration",
+  "root": "/Users/guarhiro/Documents/New project/crossover-duel-github",
+  "browserVersion": "151.0.7922.169",
+  "storageIsolation": "fresh disposable Chrome context; no user browser profile or saves",
+  "recording": "Audio constructor records real native HTMLAudioElements; play/pause and gameplay functions are not mocked",
+  "gesture": {
+    "trusted": true,
+    "userActivation": true,
+    "contextState": "running"
+  },
+  "defaultVolume": 0.86,
+  "candidateCheck": {
+    "newPaths": [
+      {
+        "id": "C73",
+        "paths": [
+          [
+            "assets/voice/C73/summon.mp3",
+            "assets/voice/C73/sumon.mp3"
+          ],
+          [
+            "assets/voice/C73/attack.mp3",
+            "assets/voice/C73/atack.mp3"
+          ],
+          [
+            "assets/voice/C73/retreat.mp3"
+          ]
+        ]
+      },
+      {
+        "id": "C74",
+        "paths": [
+          [
+            "assets/voice/C74/summon.mp3",
+            "assets/voice/C74/sumon.mp3"
+          ],
+          [
+            "assets/voice/C74/attack.mp3",
+            "assets/voice/C74/atack.mp3"
+          ],
+          [
+            "assets/voice/C74/retreat.mp3"
+          ]
+        ]
+      }
+    ],
+    "legacyAttack": [
+      "assets/voice/C01/atack.mp3",
+      "assets/voice/C01/attack.mp3"
+    ],
+    "legacySummon": [
+      "assets/voice/C01/summon.mp3",
+      "assets/voice/C01/sumon.mp3"
+    ],
+    "priorCardAttack": [
+      "assets/voice/C66/attack.mp3",
+      "assets/voice/C66/atack.mp3"
+    ]
+  },
+  "expectedAssets": 6,
+  "decodedAssets": 6,
+  "gameplayEvents": 6,
+  "mutedEvents": 6,
+  "total": 10,
+  "passed": 10,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "Production scripts load; a trusted browser click unlocks native media",
+      "passed": true
+    },
+    {
+      "name": "All six supplied MP3s load as native audio and fully decode to non-silent PCM",
+      "passed": true
+    },
+    {
+      "name": "All six native-decoded clips begin within 80ms and match asset-report onset within 6ms (2ms RMS frames, two consecutive above -50dBFS)",
+      "passed": true
+    },
+    {
+      "name": "New voices resolve canonical paths first; legacy spelling order is preserved",
+      "passed": true
+    },
+    {
+      "name": "Every real summon, legal attack and retreat starts the correct native clip at the configured volume",
+      "passed": true
+    },
+    {
+      "name": "Stopping each of the six gameplay clips pauses and rewinds it and clears active voice tracking",
+      "passed": true
+    },
+    {
+      "name": "Cached native playback honors a changed character voice volume",
+      "passed": true
+    },
+    {
+      "name": "The real Voice OFF button stops and rewinds a currently playing character clip",
+      "passed": true
+    },
+    {
+      "name": "All six real gameplay events remain muted while Voice is OFF",
+      "passed": true
+    },
+    {
+      "name": "No JavaScript errors or missing HTTP resources during decoding and playback",
+      "passed": true
+    }
+  ],
+  "decoded": [
+    {
+      "path": "assets/voice/C73/summon.mp3",
+      "bytes": 60388,
+      "decodedDuration": 5.2,
+      "metadataDuration": 5.2,
+      "sampleRate": 96000,
+      "channels": 1,
+      "frames": 499200,
+      "peak": 0.9308682084083557,
+      "native": true,
+      "onsetAboveMinus50DBFSSeconds": 0.028,
+      "manifestOnsetSeconds": 0.027937,
+      "onsetDifferenceSeconds": 0.00006300000000000056
+    },
+    {
+      "path": "assets/voice/C73/attack.mp3",
+      "bytes": 59909,
+      "decodedDuration": 5.314979166666666,
+      "metadataDuration": 5.314989,
+      "sampleRate": 96000,
+      "channels": 1,
+      "frames": 510238,
+      "peak": 0.9344239234924316,
+      "native": true,
+      "onsetAboveMinus50DBFSSeconds": 0.024,
+      "manifestOnsetSeconds": 0.023946,
+      "onsetDifferenceSeconds": 0.00005400000000000196
+    },
+    {
+      "path": "assets/voice/C73/retreat.mp3",
+      "bytes": 40025,
+      "decodedDuration": 3.19,
+      "metadataDuration": 3.19,
+      "sampleRate": 96000,
+      "channels": 1,
+      "frames": 306240,
+      "peak": 0.9305714964866638,
+      "native": true,
+      "onsetAboveMinus50DBFSSeconds": 0.032,
+      "manifestOnsetSeconds": 0.031927,
+      "onsetDifferenceSeconds": 0.00007300000000000362
+    },
+    {
+      "path": "assets/voice/C74/summon.mp3",
+      "bytes": 26594,
+      "decodedDuration": 2.1,
+      "metadataDuration": 2.1,
+      "sampleRate": 96000,
+      "channels": 1,
+      "frames": 201600,
+      "peak": 0.8502766489982605,
+      "native": true,
+      "onsetAboveMinus50DBFSSeconds": 0.026,
+      "manifestOnsetSeconds": 0.025941,
+      "onsetDifferenceSeconds": 0.000059000000000000025
+    },
+    {
+      "path": "assets/voice/C74/attack.mp3",
+      "bytes": 29041,
+      "decodedDuration": 2.1850104166666666,
+      "metadataDuration": 2.185011,
+      "sampleRate": 96000,
+      "channels": 1,
+      "frames": 209761,
+      "peak": 0.8288329839706421,
+      "native": true,
+      "onsetAboveMinus50DBFSSeconds": 0.028,
+      "manifestOnsetSeconds": 0.027937,
+      "onsetDifferenceSeconds": 0.00006300000000000056
+    },
+    {
+      "path": "assets/voice/C74/retreat.mp3",
+      "bytes": 45390,
+      "decodedDuration": 4.050041666666667,
+      "metadataDuration": 4.050045,
+      "sampleRate": 96000,
+      "channels": 1,
+      "frames": 388804,
+      "peak": 0.5055090188980103,
+      "native": true,
+      "onsetAboveMinus50DBFSSeconds": 0.054,
+      "manifestOnsetSeconds": 0.053878,
+      "onsetDifferenceSeconds": 0.00012199999999999711
+    }
+  ],
+  "gameplay": [
+    {
+      "id": "C73",
+      "event": "summon",
+      "path": "assets/voice/C73/summon.mp3",
+      "native": true,
+      "played": true,
+      "plays": 1,
+      "playingVolume": 0.86,
+      "error": null,
+      "duration": 5.2,
+      "paused": false,
+      "currentTime": 0.01957,
+      "volume": 0.86,
+      "readyState": 4
+    },
+    {
+      "id": "C73",
+      "event": "attack",
+      "path": "assets/voice/C73/attack.mp3",
+      "native": true,
+      "played": true,
+      "plays": 1,
+      "playingVolume": 0.86,
+      "error": null,
+      "duration": 5.314989,
+      "paused": false,
+      "currentTime": 0.815196,
+      "volume": 0.86,
+      "readyState": 4
+    },
+    {
+      "id": "C73",
+      "event": "retreat",
+      "path": "assets/voice/C73/retreat.mp3",
+      "native": true,
+      "played": true,
+      "plays": 1,
+      "playingVolume": 0.86,
+      "error": null,
+      "duration": 3.19,
+      "paused": false,
+      "currentTime": 0.019968,
+      "volume": 0.86,
+      "readyState": 4
+    },
+    {
+      "id": "C74",
+      "event": "summon",
+      "path": "assets/voice/C74/summon.mp3",
+      "native": true,
+      "played": true,
+      "plays": 1,
+      "playingVolume": 0.86,
+      "error": null,
+      "duration": 2.1,
+      "paused": false,
+      "currentTime": 0.019071,
+      "volume": 0.86,
+      "readyState": 4
+    },
+    {
+      "id": "C74",
+      "event": "attack",
+      "path": "assets/voice/C74/attack.mp3",
+      "native": true,
+      "played": true,
+      "plays": 1,
+      "playingVolume": 0.86,
+      "error": null,
+      "duration": 2.185011,
+      "paused": false,
+      "currentTime": 0.8054,
+      "volume": 0.86,
+      "readyState": 4
+    },
+    {
+      "id": "C74",
+      "event": "retreat",
+      "path": "assets/voice/C74/retreat.mp3",
+      "native": true,
+      "played": true,
+      "plays": 1,
+      "playingVolume": 0.86,
+      "error": null,
+      "duration": 4.050045,
+      "paused": false,
+      "currentTime": 0.020881,
+      "volume": 0.86,
+      "readyState": 4
+    }
+  ],
+  "errors": [],
+  "missingResources": [],
+  "failure": null,
+  "hashes": {
+    "index.html": "df1db1bc29f386b3b56c041a8f5fe52d0e59ba4e2a90b6ee999d2a792fa5f0eb",
+    "app.js": "65d73abc4126829dd79c3df9c1740c676ecbd143d8518002849395fe3a7bb090",
+    "new-cards.js": "38fe0367f114d56d5395be86c8dce372c161dcfd7eba6b8bfb3430b2d8c65c1f",
+    "scripts/test-goodnight-world-voices.cjs": "eb21cc58104d94fa1804719ab23a08107cca267f6fd432f9ae21508121c8d165",
+    "assets/voice/C73/summon.mp3": "78e1e5638cf34cfa9478955c11de3a03e8e8997598c601fba9be44c40bda5a9f",
+    "assets/voice/C73/attack.mp3": "07f2fae18fb51d20dddad8eded9eb251790b4696f08b17e5f3dff293e9d93134",
+    "assets/voice/C73/retreat.mp3": "ac53d628f4b8560edce40b0ed8fa2b15cfbb8d0e88f24c20d1f624a1d55b388c",
+    "assets/voice/C74/summon.mp3": "4297ae112e168cb0af753b2855cf51448700895229bea1530d136b9e48bedfda",
+    "assets/voice/C74/attack.mp3": "2c2518833a698bb0c6263fbc51f4e506b1340fd3b57d7001465ddfb774e09cec",
+    "assets/voice/C74/retreat.mp3": "500f5333a17836a9fdda44e306c1e93a9e388a04a386e7eaf936ecb7acab8875"
+  },
+  "onsetMeasurement": {
+    "frameMilliseconds": 2,
+    "consecutiveFrames": 2,
+    "thresholdDBFS": -50,
+    "maximumOnsetSeconds": 0.08,
+    "maximumManifestDifferenceSeconds": 0.006
+  },
+  "limitations": [
+    "Confirms native decoding, playing events and advancing playback time in headless Chrome; physical speaker output and human listening are not assessed.",
+    "BGM, sound effects and visual effects are disabled to isolate character voices; this does not replace broader game or balance validation."
+  ]
+}

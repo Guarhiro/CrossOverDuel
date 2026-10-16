@@ -135,8 +135,9 @@ window.__duel = (() => {
       const target = botChooseTarget(attacker, p, foe);
       if (!target) break;
       const wasAttacked = attacker.attacked;
+      const beforeVelocityUsed = attacker.velocityAttackUsed;
       await performAttack(attacker, target, { allowWhileBusy: true });
-      if (!state.gameOver && attacker.attacked === wasAttacked && findCardLocation(attacker)) break;
+      if (!state.gameOver && attacker.attacked === wasAttacked && attacker.velocityAttackUsed === beforeVelocityUsed && findCardLocation(attacker)) break;
     }
   };
 

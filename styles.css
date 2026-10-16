@@ -5400,8 +5400,8 @@ body.fx-danger::after {
     opacity: 0.5;
   }
 }
-/* C66–C72 artwork is framed in CSS for the game. */
-:is([data-card-id="C66"], [data-card-id="C67"], [data-card-id="C68"], [data-card-id="C69"], [data-card-id="C70"], [data-card-id="C71"], [data-card-id="C72"]) { --new-art-height: 100%; --new-art-offset: -50%; --new-art-top: 0%; --new-art-bg-size: cover; --new-art-bg-position: center top; }
+/* C66–C74 artwork is framed in CSS for the game. */
+:is([data-card-id="C66"], [data-card-id="C67"], [data-card-id="C68"], [data-card-id="C69"], [data-card-id="C70"], [data-card-id="C71"], [data-card-id="C72"], [data-card-id="C73"], [data-card-id="C74"]) { --new-art-height: 100%; --new-art-offset: -50%; --new-art-top: 0%; --new-art-bg-size: cover; --new-art-bg-position: center top; }
 
 .new-character-card > .new-character-art {
   position: absolute;
@@ -5428,17 +5428,23 @@ body.fx-danger::after {
   transform: translateX(var(--new-art-offset, -50%));
 }
 
-/* Dedicated C66–C72 portraits retain their name headroom on portrait surfaces. */
-:is([data-card-id="C66"], [data-card-id="C67"], [data-card-id="C68"], [data-card-id="C69"], [data-card-id="C70"], [data-card-id="C71"], [data-card-id="C72"]) .new-character-reference,
-.new-card-choice-portrait:is([data-card-id="C66"], [data-card-id="C67"], [data-card-id="C68"], [data-card-id="C69"], [data-card-id="C70"], [data-card-id="C71"], [data-card-id="C72"]) img {
+/* Character portraits retain their name headroom on portrait surfaces. */
+:is([data-card-id="C66"], [data-card-id="C67"], [data-card-id="C68"], [data-card-id="C69"], [data-card-id="C70"], [data-card-id="C71"], [data-card-id="C72"], [data-card-id="C73"], [data-card-id="C74"]) .new-character-reference,
+.new-card-choice-portrait:is([data-card-id="C66"], [data-card-id="C67"], [data-card-id="C68"], [data-card-id="C69"], [data-card-id="C70"], [data-card-id="C71"], [data-card-id="C72"], [data-card-id="C73"], [data-card-id="C74"]) img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center top;
 }
 
-.card-library :is([data-card-id="C66"], [data-card-id="C67"], [data-card-id="C68"], [data-card-id="C69"], [data-card-id="C70"], [data-card-id="C71"], [data-card-id="C72"]) .deck-card-mobile-face::before {
+.card-library :is([data-card-id="C66"], [data-card-id="C67"], [data-card-id="C68"], [data-card-id="C69"], [data-card-id="C70"], [data-card-id="C71"], [data-card-id="C72"], [data-card-id="C73"], [data-card-id="C74"]) .deck-card-mobile-face::before {
   background-position: center top;
+}
+
+/* The supplied emperor portrait places the eyes near the mobile role header. */
+.card-library [data-card-id="C73"] .deck-card-mobile-face::before {
+  top: 5%;
+  bottom: -5%;
 }
 
 .field-card[data-card-id="C66"] .new-character-reference {
@@ -5459,6 +5465,12 @@ body.fx-danger::after {
 .field-card[data-card-id="C72"] .new-character-reference {
   object-position: center 63%;
 }
+.field-card[data-card-id="C73"] .new-character-reference {
+  object-position: center top;
+}
+.field-card[data-card-id="C74"] .new-character-reference {
+  object-position: center 28%;
+}
 
 /* Wide rows retain the faces at their individual heights in the portraits. */
 :is(.deck-list .deck-edit-card, .deck-exchange-card)[data-card-id="C66"] {
@@ -5478,6 +5490,12 @@ body.fx-danger::after {
 }
 :is(.deck-list .deck-edit-card, .deck-exchange-card)[data-card-id="C72"] {
   --new-art-bg-position: center 64%;
+}
+:is(.deck-list .deck-edit-card, .deck-exchange-card)[data-card-id="C73"] {
+  --new-art-bg-position: center 15%;
+}
+:is(.deck-list .deck-edit-card, .deck-exchange-card)[data-card-id="C74"] {
+  --new-art-bg-position: center 30%;
 }
 
 .new-character-art-shade {
@@ -5525,7 +5543,7 @@ body.fx-danger::after {
 .field-card .new-character-art-label strong { font-size: .66rem; }
 .field-card .new-character-art-label span { font-size: .55rem; }
 
-:is(.gallery-card-button, .deck-edit-card, .deck-exchange-card):is([data-card-id="C66"], [data-card-id="C67"], [data-card-id="C68"], [data-card-id="C69"], [data-card-id="C70"], [data-card-id="C71"], [data-card-id="C72"]) {
+:is(.gallery-card-button, .deck-edit-card, .deck-exchange-card):is([data-card-id="C66"], [data-card-id="C67"], [data-card-id="C68"], [data-card-id="C69"], [data-card-id="C70"], [data-card-id="C71"], [data-card-id="C72"], [data-card-id="C73"], [data-card-id="C74"]) {
   background-size: 100% 100%, var(--new-art-bg-size), 100% 100%;
   background-position: center, var(--new-art-bg-position), center;
 }

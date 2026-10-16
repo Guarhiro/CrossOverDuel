@@ -7,10 +7,13 @@ const NEW_CHARACTERS = [
   { id: "C70", name: "ガルディオ・ヴェルム", series: "エテルニアステラリア", rarity: "R", element: "地", role: "GD", cost: 3, atk: 2, def: 3, hp: 4, skill: "忠義の護衛", tags: ["guard"], text: "【ガード】前衛にいる間、相手ターンに1回、味方後衛への相手キャラスキルダメージをDEF適用前に最大2肩代わり。DEF無視は引き継ぎ、再転送しない" },
   { id: "C71", name: "ネイラス", series: "光と幻の幻想譚", rarity: "SR", element: "無", role: "ST", cost: 3, atk: 1, def: 1, hp: 4, skill: "幻影の誘導", text: "配置時、味方前衛1体を選ぶ。このターン最初の通常攻撃だけ、ガード越しに相手後衛を選べる。LP・非ガード前衛は解禁せず、攻撃宣言で消費" },
   { id: "C72", name: "カノン", series: "神楽の舞い手", rarity: "SR", element: "風", role: "ST", cost: 3, atk: 1, def: 1, hp: 4, skill: "結びと祓い", text: "配置時、味方1体の状態異常を全解除。自分のメインに1ターン1回、1エネルギーで同じ祓いを使える。HP・ATK・DEFは戻さない" },
+  { id: "C73", name: "ペルセポネ", series: "グッドナイトワールド", rarity: "UR", element: "無", role: "AT", cost: 6, atk: 5, def: 2, hp: 5, skill: "ヴェロシティ", haste: true, text: "先制攻撃（配置ターンはLP攻撃不可）。各自ターン1回、通常攻撃で相手キャラのDEFかHPを削り、双方が場に残れば同じ相手へ1回追撃できる。追撃もガードに従う" },
+  { id: "C74", name: "リナ", series: "グッドナイトワールド", rarity: "SR", element: "無", role: "SP", cost: 3, atk: 2, def: 1, hp: 4, skill: "スロー", text: "配置時、相手前衛1体を選び、次の相手ターン終了までスローにする。スロー中は通常攻撃不可。ガードと固有スキルは維持し、状態異常解除で治せる" },
 ].map((card) => ({ kind: "character", no: `#${card.id.slice(1)}`, ...card, referenceArt: true }));
 const NEW_CHARACTER_IDS = new Set(NEW_CHARACTERS.map((card) => card.id));
 
 function cardArtPath(card) {
+  if (["C73", "C74"].includes(card.id)) return `assets/characters/${card.id}.jpg`;
   if (["C66", "C67", "C68", "C69", "C70", "C71", "C72"].includes(card.id)) return `assets/characters/${card.id}-card-v2.png`;
   return card.referenceArt ? `assets/characters/${card.id}.png` : `assets/cards/${card.id}.png`;
 }
@@ -36,7 +39,7 @@ function noxSkillValue(card, includeStopped = false) {
     if (["C08", "C29", "C64"].includes(card.id)) value -= 2;
   }
   // These effects also work under the older generic silence, so closing them still has value.
-  const eventValues = { C01: 6, C07: 14, C09: 5, C14: 9, C16: 2, C18: 8, C22: 4, C26: 5, C28: 8, C30: 4, C31: 5, C34: 6, C35: 4, C37: 4, C40: 7, C44: 6, C56: 5 };
+  const eventValues = { C01: 6, C07: 14, C09: 5, C14: 9, C16: 2, C18: 8, C22: 4, C26: 5, C28: 8, C30: 4, C31: 5, C34: 6, C35: 4, C37: 4, C40: 7, C44: 6, C56: 5, C73: 12 };
   value += eventValues[card.id] || 0;
   if (card.id === "C07" && card.killCount === 2) value += 10;
   if (card.id === "C21") value += Math.max(0, 3 - (card.heatStacks || 0)) * 3;
@@ -62,6 +65,7 @@ function cleanseValue(card) {
   if (!hasNegativeStatus(card)) return 0;
   let value = 1;
   if (card.status.stun) value += effectiveAtk(card) * 2 + (card.tags?.includes("guard") ? 4 : 0);
+  if (card.status.slow) value += effectiveAtk(card) * 2;
   if (card.status.guardOff && card.tags?.includes("guard")) value += 5;
   if (card.status.bind) value += 3 + (card.currentHp <= 2 ? 6 : 0);
   if (card.status.silenced) value += ["ST", "SP"].includes(card.role) ? 7 : 3;
@@ -120,7 +124,7 @@ function eligibleAriaGraves(source, player) {
 function formationValue(card, lane, player) {
   if (lane === "front") {
     if (card.tags?.includes("guard")) return 8 + effectiveDef(card);
-    const ready = !card.attacked && !card.status.stun && !isDormant(card) && (hasActiveHaste(card) || player.turns > card.summonedOnTurn);
+    const ready = !card.attacked && !card.status.stun && !card.status.slow && !isDormant(card) && (hasActiveHaste(card) || player.turns > card.summonedOnTurn);
     return effectiveAtk(card) * (ready ? 3 : 1) - (card.currentHp <= 1 ? 3 : 0);
   }
   return ["ST", "SP"].includes(card.role) ? 6 : (card.currentHp <= 1 ? 5 : 0);
@@ -201,6 +205,16 @@ function handleNewCardSummon(source, player) {
       description = "味方1体の状態異常を全解除します。HP・ATK・DEFは変わりません。";
       options = kanonCleanseOptions(source, player, false);
       break;
+    case "C73":
+      return true;
+    case "C74":
+      description = "相手前衛1体を次の相手ターン終了までスローにします。通常攻撃だけを止め、ガードと固有スキルは維持します。";
+      options = foe.front.filter((card) => card && !card.statusImmune).map((card) => newCardChoiceOption(card, card.name,
+        "スロー / 通常攻撃不可・ガードとスキルは維持", linaSlowValue(card), () => {
+          if (!foe.front.includes(card)) return;
+          if (setStatus(card, "slow", Math.max(card.status.slow || 0, 1))) log(`スロー：${card.name}は次の相手ターン終了まで通常攻撃できない。ガードと固有スキルは維持。`, "effect");
+        }));
+      break;
   }
   requestNewCardChoice(source, player, description, options);
   return true;
@@ -239,6 +253,11 @@ function useAiKanonCleanse(player) {
   return kanon ? requestKanonCleanse(kanon, player) : false;
 }
 
+function linaSlowValue(card) {
+  if (!card || card.statusImmune || card.status.slow > 0 || card.status.stun > 0 || isDormant(card)) return 0;
+  return effectiveAtk(card) * 3 + (card.id === "C73" && !isNoxSkillStopped(card) ? 8 : 0);
+}
+
 function newCardAiValue(card, player) {
   const foe = opponentOf(player);
   switch (card.id) {
@@ -249,6 +268,8 @@ function newCardAiValue(card, player) {
     case "C70": return player.back.some(Boolean) && hasBoardCard(foe, "C51") ? 15 : 0;
     case "C71": return foe.back.some(Boolean) && player.front.some((ally) => ally && canJoinUpcomingAttack(ally, player)) ? 22 : -8;
     case "C72": return Math.max(0, ...boardCards(player).map(cleanseValue)) * 2;
+    case "C73": return foe.front.some(Boolean) ? 8 : 0;
+    case "C74": return Math.max(0, ...foe.front.filter(Boolean).map(linaSlowValue));
     default: return 0;
   }
 }
