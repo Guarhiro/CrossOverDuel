@@ -10,6 +10,13 @@ Run `node scripts/test-goodnight-world-cards.cjs` for their focused gameplay che
 
 Run `node scripts/test-new-cards.cjs` for isolated rule checks and `node scripts/simulate-new-cards.cjs` for seeded automated battles. These use private in-memory storage. Browser checks use `node scripts/test-new-cards-browser.cjs` with Playwright and Chrome; set `CROSSOVER_BROWSER_MODULES` and `CROSSOVER_CHROME` to override the local dependency paths.
 
+CPU battles now extend to Lv.13. Two additional 20-card decks use the new characters; existing win totals unlock them automatically in DUEL START.
+
+| Level | Unlock | Deck | Strategy |
+| --- | --- | --- | --- |
+| 12 | 60 wins | Eternia Royal Aegis | Galdio guards the backline, Seraphina protects against supports, and Kanon cleanses. Stellaria rearranges the formation and Eve buffs the counterattack. |
+| 13 | 65 wins | Resonance Phantom Raid | Nox stops periodic skills, Neiras guides haste attackers and Claudia past guards to the backline, and Aria recovers fallen low-cost allies. |
+
 ## Publish with GitHub Pages
 
 1. Create a GitHub repository.
