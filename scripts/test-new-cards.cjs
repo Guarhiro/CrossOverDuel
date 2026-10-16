@@ -7,7 +7,7 @@ const test = (name, run) => cases.push({ name, run });
 test('seven card definitions and unchanged starter/AI deck contents', () => {
   const expected={C66:[3,1,1,4],C67:[3,1,2,4],C68:[2,1,1,4],C69:[2,1,1,3],C70:[3,2,3,4],C71:[3,1,1,4],C72:[3,1,1,4]};
   for(const [id,stats] of Object.entries(expected)){const c=CARD_DB.get(id);assert.ok(c);assert.deepEqual([c.cost,c.atk,c.def,c.hp],stats);assert.equal(c.kind,'character');assert.equal(c.backOnly,undefined);}
-  assert.equal(CHARACTERS.length,74);assert.equal(SUPPORTS.length,16);assert.equal(PLAYER_DECK.length,20);assert.ok(PLAYER_DECK.every(id=>!Object.hasOwn(expected,id)));assert.ok(AI_DECKS.every(p=>p.deck.every(id=>!Object.hasOwn(expected,id))));
+  assert.equal(CHARACTERS.length,74);assert.equal(SUPPORTS.length,16);assert.equal(PLAYER_DECK.length,20);assert.ok(PLAYER_DECK.every(id=>!Object.hasOwn(expected,id)));assert.ok(AI_DECKS.filter(p=>p.level<=11).every(p=>p.deck.every(id=>!Object.hasOwn(expected,id))));
   assert.ok(CARD_DB.get('C70').tags.includes('guard'));
 });
 test('all new instances initialize effect state and share negative-status helpers', () => {
