@@ -1,7 +1,7 @@
 // Additional characters. Classic script loaded before app.js; effects run after the duel initializes.
 const NEW_CHARACTERS = [
   { id: "C66", name: "アリア・ルーチェ", series: "レゾナンスデュオ", rarity: "SR", element: "風", role: "ST", cost: 3, atk: 1, def: 1, hp: 4, skill: "再奏", text: "配置時、撤退済みの味方キャラ1枚を選んで基本状態で手札に戻す。記載コスト2以下・同名以外。味方ノクスがいれば3以下" },
-  { id: "C67", name: "ノクス・リゾルブ", series: "レゾナンスデュオ", rarity: "R", element: "無", role: "SP", cost: 3, atk: 1, def: 2, hp: 4, skill: "閉律", text: "配置時、相手後衛1体の開始時・終了時スキルを次の相手ターン終了まで停止。味方アリアがいれば前衛も選べる。攻撃・常在効果は停止しない" },
+  { id: "C67", name: "ノクス・リゾルブ", series: "レゾナンスデュオ", rarity: "R", element: "無", role: "SP", cost: 3, atk: 1, def: 2, hp: 4, skill: "閉律", text: "配置時、相手後衛1体の全固有スキルを次の相手ターン終了まで停止。味方アリアがいれば前衛も選べる。通常攻撃・ガード・既存の強化は維持" },
   { id: "C68", name: "ステラリア・フォン・エテルニア", series: "エテルニアステラリア", rarity: "R", element: "無", role: "ST", cost: 2, atk: 1, def: 1, hp: 4, skill: "皇帝の勅命", text: "配置時、他の味方1体を空いた反対の列へ移すか、他の味方前衛と後衛を入れ替える。配置制限・状態・攻撃済みを保持。整理しない選択も可" },
   { id: "C69", name: "セラフィナ・オルブライト", series: "エテルニアステラリア", rarity: "R", element: "無", role: "ST", cost: 2, atk: 1, def: 1, hp: 3, skill: "外交上の保護", text: "配置時、味方1体を選ぶ。次の相手ターン終了まで、相手サポートの直接解決によるその味方へのダメージ・状態異常・能力低下を1回防ぐ" },
   { id: "C70", name: "ガルディオ・ヴェルム", series: "エテルニアステラリア", rarity: "R", element: "地", role: "GD", cost: 3, atk: 2, def: 3, hp: 4, skill: "忠義の護衛", tags: ["guard"], text: "【ガード】前衛にいる間、相手ターンに1回、味方後衛への相手キャラスキルダメージをDEF適用前に最大2肩代わり。DEF無視は引き継ぎ、再転送しない" },
@@ -15,15 +15,47 @@ function cardArtPath(card) {
   return card.referenceArt ? `assets/characters/${card.id}.png` : `assets/cards/${card.id}.png`;
 }
 
+function noxSkillValue(card, includeStopped = false) {
+  if (!card || (!includeStopped && isNoxSkillStopped(card)) || card.statusImmune) return 0;
+  const silenced = card.status?.silenced > 0;
+  const owner = state?.[card.ownerKey];
+  let value = 0;
+  if (!silenced) {
+    const periodicValues = { C01: 8, C04: 5, C05: 4, C10: 10, C12: 8, C24: 7, C27: 4, C38: 4, C51: 24, C62: 6 };
+    const passiveValues = { C03: 8, C10: 6, C11: 4, C23: 6, C24: 5, C32: 4, C48: 6, C63: 6 };
+    value += (periodicValues[card.id] || 0) + (passiveValues[card.id] || 0);
+    if (card.id === "C15" && card.sophiaBoostPending) value += 10;
+    if (card.id === "C18" && !card.rageUsed && card.currentHp <= Math.ceil(card.maxHp / 2)) value += 8;
+    if (card.id === "C25" && !card.status.stun) value += 10;
+    if (card.id === "C26" && owner && hasActiveBoardCard(owner, "C07")) value += 6;
+    if (card.id === "C54" && !card.energyBoosted) value += 8;
+    if (card.id === "C65" && !card.mariaReturnUsed && owner && arcadiaCount(owner) >= 4) value += 10;
+    if (card.id === "C70" && !card.status.stun && owner?.front.includes(card)) value += 8;
+    if (card.id === "C72" && !card.status.stun) value += 8;
+    // Preventing a self-retreat or self-damage can benefit the opponent.
+    if (["C08", "C29", "C64"].includes(card.id)) value -= 2;
+  }
+  // These effects also work under the older generic silence, so closing them still has value.
+  const eventValues = { C01: 6, C07: 14, C09: 5, C14: 9, C16: 2, C18: 8, C22: 4, C26: 5, C28: 8, C30: 4, C31: 5, C34: 6, C35: 4, C37: 4, C40: 7, C44: 6, C56: 5 };
+  value += eventValues[card.id] || 0;
+  if (card.id === "C07" && card.killCount === 2) value += 10;
+  if (card.id === "C21") value += Math.max(0, 3 - (card.heatStacks || 0)) * 3;
+  if (card.id === "C25" && !card.selfSacrificeBuffed && card.currentHp <= 2) value += 5;
+  if (card.id === "C46" && !card.atomicFlareUsed) value += 16;
+  if (card.id === "C49" && !card.lastStandUsed) value += 8;
+  if (card.id === "C55") value += Math.max(0, 2 - (card.vanguardStacks || 0)) * 3;
+  // A target's per-turn extra attack resets before its next turn under Nox.
+  if (card.id === "C64" && (!card.sionReattackUsed || state?.current !== card.ownerKey)) value += 10;
+  if (["C02", "C06"].includes(card.id) && !card.awakened && owner) {
+    const awakeningDue = owner.turns + 1 - card.summonedOnTurn >= 3;
+    value += awakeningDue ? 12 : (card.id === "C06" ? -8 : 0);
+  }
+  return value;
+}
+
+// Retain the entry point used by existing simulation drivers.
 function periodicSkillValue(card) {
-  if (!card || card.status?.silenced || card.status?.periodicStop || card.statusImmune) return 0;
-  const values = { C01: 8, C04: 5, C05: 4, C10: 10, C12: 8, C15: 10, C24: 7, C27: 4, C38: 4, C51: 24, C62: 6 };
-  // Closing a disposable card's self-retreat or self-damage can benefit the opponent.
-  if (["C08", "C29", "C64"].includes(card.id)) return -2;
-  if (["C02", "C06"].includes(card.id)) return !card.awakened && state[card.ownerKey].turns + 1 - card.summonedOnTurn >= 3 ? 12 : 0;
-  if (card.id === "C18") return !card.rageUsed && card.currentHp <= Math.ceil(card.maxHp / 2) ? 8 : 0;
-  if (card.id === "C54") return card.energyBoosted ? 0 : 8;
-  return values[card.id] || (card.id === "C25" && !card.selfSacrificeBuffed && card.currentHp <= 2 ? 5 : 0);
+  return noxSkillValue(card);
 }
 
 function cleanseValue(card) {
@@ -33,7 +65,7 @@ function cleanseValue(card) {
   if (card.status.guardOff && card.tags?.includes("guard")) value += 5;
   if (card.status.bind) value += 3 + (card.currentHp <= 2 ? 6 : 0);
   if (card.status.silenced) value += ["ST", "SP"].includes(card.role) ? 7 : 3;
-  if (card.status.periodicStop) value += card.id === "C51" ? 10 : 3;
+  if (card.status.periodicStop) value += Math.max(3, noxSkillValue(card, true));
   return value;
 }
 
@@ -88,7 +120,7 @@ function eligibleAriaGraves(source, player) {
 function formationValue(card, lane, player) {
   if (lane === "front") {
     if (card.tags?.includes("guard")) return 8 + effectiveDef(card);
-    const ready = !card.attacked && !card.status.stun && (card.haste || player.turns > card.summonedOnTurn);
+    const ready = !card.attacked && !card.status.stun && !isDormant(card) && (hasActiveHaste(card) || player.turns > card.summonedOnTurn);
     return effectiveAtk(card) * (ready ? 3 : 1) - (card.currentHp <= 1 ? 3 : 0);
   }
   return ["ST", "SP"].includes(card.role) ? 6 : (card.currentHp <= 1 ? 5 : 0);
@@ -136,10 +168,10 @@ function handleNewCardSummon(source, player) {
       break;
     case "C67": {
       const enemies = hasBoardCard(player, "C66") ? boardCards(foe) : foe.back.filter(Boolean);
-      description = "次の相手ターン終了まで、開始時・終了時のキャラスキルを停止します。";
-      options = enemies.filter((card) => !card.statusImmune).map((card) => newCardChoiceOption(card, card.name, `${card.skill} / 通常攻撃・ガードは維持`, periodicSkillValue(card), () => {
+      description = "次の相手ターン終了まで全固有スキルを停止します。通常攻撃・ガード・既存の強化は維持します。";
+      options = enemies.filter((card) => !card.statusImmune).map((card) => newCardChoiceOption(card, card.name, `${card.skill} / 通常攻撃・ガード・既存の強化は維持`, noxSkillValue(card), () => {
         if (findCardLocation(card)?.owner !== foe.key) return;
-        if (setStatus(card, "periodicStop", Math.max(card.status.periodicStop || 0, 1))) log(`閉律：${card.name}の開始時・終了時スキルを次の相手ターン終了まで停止。`, "effect");
+        if (setStatus(card, "periodicStop", Math.max(card.status.periodicStop || 0, 1))) log(`閉律：${card.name}の全固有スキルを次の相手ターン終了まで停止。通常攻撃・ガードは維持。`, "effect");
       }));
       break;
     }
@@ -178,7 +210,7 @@ function canUseKanon(card, player) {
   return Boolean(card?.id === "C72" && player && state.current === player.key && state.phase === "main" && !state.gameOver
     && (player.key !== "player" || !state.busy)
     && !state.pendingCardChoice && !state.pendingSupport && !state.pendingDeckChoice
-    && findCardLocation(card)?.owner === player.key && !card.status.stun && !card.status.silenced
+    && findCardLocation(card)?.owner === player.key && !card.status.stun && !card.status.silenced && !isNoxSkillStopped(card)
     && card.activeCleanseTurn !== player.turns && player.energy >= 1 && boardCards(player).some(hasNegativeStatus));
 }
 
@@ -211,7 +243,7 @@ function newCardAiValue(card, player) {
   const foe = opponentOf(player);
   switch (card.id) {
     case "C66": return eligibleAriaGraves(card, player).length ? 14 : -8;
-    case "C67": return Math.max(0, ...((hasBoardCard(player, "C66") ? boardCards(foe) : foe.back.filter(Boolean)).map(periodicSkillValue))) * 1.5;
+    case "C67": return Math.max(0, ...((hasBoardCard(player, "C66") ? boardCards(foe) : foe.back.filter(Boolean)).map((target) => noxSkillValue(target)))) * 1.5;
     case "C68": return Math.max(0, ...formationOptions(card, player).map((option) => option.score));
     case "C69": return boardCards(player).length ? 4 : 0;
     case "C70": return player.back.some(Boolean) && hasBoardCard(foe, "C51") ? 15 : 0;

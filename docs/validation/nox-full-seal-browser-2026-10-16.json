@@ -1,0 +1,173 @@
+{
+  "completedAt": "2026-10-16T08:20:09.775Z",
+  "passed": 7,
+  "checks": [
+    "Actual classic-script game loads in an isolated Chrome context",
+    "Real hand selection and placement with Aria can select front-row Nial at desktop and 390px; explanations state all unique skills and retained attack/guard/buffs",
+    "Target dialogs, complete card explanations, and target-selection phase locks fit desktop and 390px screens",
+    "During the next opposing turn Nial can attack and kill normally, but gains no ATK or kill credit while seal stays at 1",
+    "Seal expires at the end of the opposing turn, and Nial gains ATK+3 and kill credit on the next legal kill",
+    "A sealed guard still forces normal attacks to target that guard",
+    "Kanon active button is disabled with an explicit Nox hint; another ally can cleanse it and restore its active button"
+  ],
+  "stoppedAttack": {
+    "before": {
+      "atk": 5,
+      "killCount": 0,
+      "stop": 1,
+      "canAttack": true
+    },
+    "after": {
+      "atk": 5,
+      "killCount": 0,
+      "stop": 1,
+      "victimRemoved": true,
+      "attacked": true
+    }
+  },
+  "restoredAttack": {
+    "stopAfterExpiry": 0,
+    "before": {
+      "atk": 5,
+      "killCount": 0,
+      "stop": 0,
+      "canAttack": true
+    },
+    "after": {
+      "atk": 8,
+      "killCount": 1,
+      "stop": 0,
+      "victimRemoved": true
+    }
+  },
+  "retainedGuard": {
+    "canAttack": true,
+    "legalTargets": [
+      "C03"
+    ],
+    "guardStop": 1
+  },
+  "layouts": [
+    {
+      "label": "Nox target dialog 1440px",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "x": 360,
+      "y": 298.9375,
+      "width": 720,
+      "height": 402.109375,
+      "clientWidth": 718,
+      "scrollWidth": 718,
+      "clientHeight": 400,
+      "scrollHeight": 400,
+      "fontSize": "16px",
+      "text": "CHARACTER SKILL\n\nノクス・リゾルブ — 閉律\n\n次の相手ターン終了まで全固有スキルを停止します。通常攻撃・ガード・既存の強化は維持します。\n\nニィアル（悠久）\n伝説の英雄 / 通常攻撃・ガード・既存の強化は維持\nフィオナ\n第一王女の守護 / 通常攻撃・ガード・既存の強化は維持\nマルグリット・ヴィシェール\n後衛砲撃 / 通常攻撃・ガード・既存の強化は維持\n見送る"
+    },
+    {
+      "label": "Nox target explanation 1440px",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "x": 383,
+      "y": 380.9375,
+      "width": 674,
+      "height": 21.109375,
+      "clientWidth": 674,
+      "scrollWidth": 674,
+      "clientHeight": 21,
+      "scrollHeight": 21,
+      "fontSize": "14.08px",
+      "text": "次の相手ターン終了まで全固有スキルを停止します。通常攻撃・ガード・既存の強化は維持します。"
+    },
+    {
+      "label": "Nox full card explanation 1440px",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "x": 608.15625,
+      "y": 555.421875,
+      "width": 320,
+      "height": 163.125,
+      "clientWidth": 318,
+      "scrollWidth": 318,
+      "clientHeight": 161,
+      "scrollHeight": 161,
+      "fontSize": "16px",
+      "text": "ノクス・リゾルブ\nR\n無\nスペシャル\n\n閉律\n配置時、相手後衛1体の全固有スキルを次の相手ターン終了まで停止。味方アリアがいれば前衛も選べる。通常攻撃・ガード・既存の強化は維持\n\nATK 1 / DEF 2 / HP 4 / 4"
+    },
+    {
+      "label": "Nox target dialog 390px",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "x": 12,
+      "y": 12,
+      "width": 366,
+      "height": 508.375,
+      "clientWidth": 364,
+      "scrollWidth": 364,
+      "clientHeight": 506,
+      "scrollHeight": 506,
+      "fontSize": "16px",
+      "text": "CHARACTER SKILL\n\nノクス・リゾルブ — 閉律\n\n次の相手ターン終了まで全固有スキルを停止します。通常攻撃・ガード・既存の強化は維持します。\n\nニィアル（悠久）\n伝説の英雄 / 通常攻撃・ガード・既存の強化は維持\nフィオナ\n第一王女の守護 / 通常攻撃・ガード・既存の強化は維持\nマルグリット・ヴィシェール\n後衛砲撃 / 通常攻撃・ガード・既存の強化は維持\n見送る"
+    },
+    {
+      "label": "Nox target explanation 390px",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "x": 29,
+      "y": 78,
+      "width": 332,
+      "height": 39.375,
+      "clientWidth": 332,
+      "scrollWidth": 332,
+      "clientHeight": 39,
+      "scrollHeight": 39,
+      "fontSize": "13.12px",
+      "text": "次の相手ターン終了まで全固有スキルを停止します。通常攻撃・ガード・既存の強化は維持します。"
+    },
+    {
+      "label": "Nox full card explanation 390px",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "x": 58,
+      "y": 364.484375,
+      "width": 320,
+      "height": 163.125,
+      "clientWidth": 318,
+      "scrollWidth": 318,
+      "clientHeight": 161,
+      "scrollHeight": 161,
+      "fontSize": "16px",
+      "text": "ノクス・リゾルブ\nR\n無\nスペシャル\n\n閉律\n配置時、相手後衛1体の全固有スキルを次の相手ターン終了まで停止。味方アリアがいれば前衛も選べる。通常攻撃・ガード・既存の強化は維持\n\nATK 1 / DEF 2 / HP 4 / 4"
+    }
+  ],
+  "errors": [],
+  "missingResources": [],
+  "screenshots": [
+    "docs/validation/nox-full-seal-choice-1440-2026-10-16.png",
+    "docs/validation/nox-full-seal-description-1440-2026-10-16.png",
+    "docs/validation/nox-full-seal-choice-390-2026-10-16.png",
+    "docs/validation/nox-full-seal-description-390-2026-10-16.png",
+    "docs/validation/nox-full-seal-kanon-stopped-desktop-2026-10-16.png",
+    "docs/validation/nox-full-seal-kanon-restored-desktop-2026-10-16.png"
+  ],
+  "hashes": {
+    "app.js": "8407e1a4f3a1eb6e8a2b5ce5193cda274c691a75e9d910201fe946ccb653e0f7",
+    "new-cards.js": "142197f03878d1f45eaa890a56ce30afc9ac905699803719187612e441e21877",
+    "new-card-ui.js": "49592b30147156f8930bff9ac14ec5ebc333b03fb64f6c2bf631f3c723342a94",
+    "styles.css": "551fc3a42daad6f6cdd942f8d53e96fca9272e00d9c98b2626927fc952f9e534",
+    "index.html": "2196bfb703d969293aab1a3d3961c841acc9405eb6ba6f6aaa8726c795c1f1f3",
+    "scripts/test-nox-full-seal-browser.cjs": "fbd4ad289db3ef6c70a44cbccebb487d249a382a944477e1377bf834f419fe34"
+  },
+  "storage": "disposable Playwright browser context and temporary Chrome profile; no user save/profile opened"
+}

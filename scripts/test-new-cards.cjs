@@ -47,11 +47,11 @@ test('Nox stops one of two Marguerites and expires after the next enemy turn', (
 test('Nox has backline-only choices without Aria and respects status immunity', () => {
   const front=testPlace('C30','ai','front'),immune=testPlace('C61','ai','back');testSummon('C67');assert.equal(state.pendingCardChoice,null);assert.equal(front.status.periodicStop,0);assert.equal(immune.status.periodicStop,0);
 });
-test('Nox plus Aria can stop a frontline periodic skill without disabling guard or attacks', () => {
+test('Nox plus Aria can stop frontline skills without disabling guard or attacks', () => {
   testPlace('C66','player','back',0);const guard=testPlace('C21','ai','front');testSummon('C67','player','back',1);testChoose(guard);assert.equal(guard.status.periodicStop,1);assert.equal(activeGuards(state.ai).includes(guard),true);state.current='ai';state.phase='battle';assert.equal(canAttack(guard,state.ai),true);
 });
-test('periodic stop covers auto awakening but not forced S05 awakening', () => {
-  const c=testPlace('C02','ai','back');c.summonedOnTurn=0;c.status.periodicStop=1;applyStartEffects(state.ai);assert.equal(c.awakened,false);resolveSupport(state.ai,state.player,createInstance(CARD_DB.get('S05'),'ai'),c);assert.equal(c.awakened,true);
+test('Nox stops both auto awakening and forced S05 awakening', () => {
+  const c=testPlace('C02','ai','back');c.summonedOnTurn=0;c.status.periodicStop=1;applyStartEffects(state.ai);assert.equal(c.awakened,false);resolveSupport(state.ai,state.player,createInstance(CARD_DB.get('S05'),'ai'),c);assert.equal(c.awakened,false);
 });
 test('periodic stop covers secondary C25 end buff and harmful end abilities', () => {
   const c=testPlace('C25');c.currentHp=2;c.status.periodicStop=1;const before=c.currentDef;applyEndEffects(state.player);assert.equal(c.currentDef,before);assert.equal(c.selfSacrificeBuffed,false);
@@ -97,8 +97,8 @@ test('Galdio intercepts nonlethal C51 damage before DEF once per enemy turn', ()
   damageCharacter(target,2,state.ai,{cause:'character-skill',sourceCard:source});assert.equal(target.currentHp,1);assert.equal(g.currentDef,1);
   endTurn(state.ai);state.ai.turns+=1;damageCharacter(target,1,state.ai,{cause:'character-skill',sourceCard:source});assert.equal(g.currentDef,0);assert.equal(target.currentHp,1);
 });
-test('actual Marguerite start skill transfers damage to a periodic-stopped Galdio', () => {
-  const g=testPlace('C70'),target=testPlace('C51','player','back');testPlace('C51','ai','back');g.status.periodicStop=1;state.current='ai';state.ai.turns+=1;applyStartEffects(state.ai);assert.equal(target.currentHp,3);assert.equal(g.currentDef,1);assert.equal(g.galdioProtectTurn,state.ai.turns);
+test('Nox stops Galdio from intercepting an actual Marguerite start skill', () => {
+  const g=testPlace('C70'),target=testPlace('C51','player','back');testPlace('C51','ai','back');g.status.periodicStop=1;state.current='ai';state.ai.turns+=1;applyStartEffects(state.ai);assert.equal(target.currentHp,1);assert.equal(g.currentDef,3);assert.equal(g.galdioProtectTurn,-1);
 });
 test('Galdio requires a character-skill source, a rear target, and a non-transferred packet', () => {
   const g=testPlace('C70'),target=testPlace('C51','player','back'),front=testPlace('C35','player','front',1),source=testPlace('C51','ai','back');state.current='ai';state.ai.turns+=1;
@@ -143,8 +143,8 @@ test('new automatic choices grant a usable Neiras route during main phase', () =
 test('Kanon summon cleans all statuses without restoring combat values or triggering bind damage', () => {
   const target=testPlace('C35');target.currentAtk=1;target.currentDef=0;target.currentHp=2;target.status={stun:1,guardOff:1,bind:2,silenced:1,periodicStop:1};const kanon=testSummon('C72');testChoose(target);assert.equal(hasNegativeStatus(target),false);assert.deepEqual([target.currentAtk,target.currentDef,target.currentHp],[1,0,2]);assert.equal(kanon.activeCleanseTurn===state.player.turns,false);
 });
-test('Kanon active cleanse spends one energy once per turn and ignores attack-used/periodic stop', () => {
-  const target=testPlace('C35');const kanon=testSummon('C72');testSkip();kanon.attacked=true;kanon.status.periodicStop=1;target.status.stun=1;const energy=state.player.energy;assert.equal(canUseKanon(kanon,state.player),true);assert.equal(requestKanonCleanse(kanon,state.player),true);testChoose(target);assert.equal(target.status.stun,0);assert.equal(state.player.energy,energy-1);target.status.stun=1;assert.equal(canUseKanon(kanon,state.player),false);state.player.turns+=1;assert.equal(canUseKanon(kanon,state.player),true);
+test('Kanon active cleanse spends one energy once per turn and ignores attack-used state', () => {
+  const target=testPlace('C35');const kanon=testSummon('C72');testSkip();kanon.attacked=true;target.status.stun=1;const energy=state.player.energy;assert.equal(canUseKanon(kanon,state.player),true);assert.equal(requestKanonCleanse(kanon,state.player),true);testChoose(target);assert.equal(target.status.stun,0);assert.equal(state.player.energy,energy-1);target.status.stun=1;assert.equal(canUseKanon(kanon,state.player),false);state.player.turns+=1;assert.equal(canUseKanon(kanon,state.player),true);
 });
 test('Kanon cannot actively cleanse when stunned, silenced or lacking energy; skip is free', () => {
   const target=testPlace('C35');const kanon=testSummon('C72');target.status.stun=1;kanon.status.silenced=1;assert.equal(canUseKanon(kanon,state.player),false);kanon.status.silenced=0;kanon.status.stun=1;assert.equal(canUseKanon(kanon,state.player),false);kanon.status.stun=0;state.player.energy=0;assert.equal(canUseKanon(kanon,state.player),false);state.player.energy=2;requestKanonCleanse(kanon,state.player);testSkip();assert.equal(state.player.energy,2);assert.equal(kanon.activeCleanseTurn===state.player.turns,false);
@@ -164,7 +164,7 @@ test('Kanon cleansing after start does not replay a skipped Marguerite shot', ()
 async function main(){
   const duel=createDuelVm();const results=[];
   for(const entry of cases){duel.run('testReset();');try{await duel.run(entry.run);results.push({name:entry.name,passed:true});}catch(error){results.push({name:entry.name,passed:false,error:String(error.stack||error)});}}
-  const report={date:'2026-10-09',type:'headless unit integration',hashes:{...duel.hashes,'scripts/test-new-cards.cjs':hash(fs.readFileSync(__filename,'utf8'))},storageIsolation:'private in-memory Map',storageAudit:duel.storageAudit,total:results.length,passed:results.filter(r=>r.passed).length,failed:results.filter(r=>!r.passed).length,results,limitations:['DOM/audio/visual timing are stubbed; browser interaction and rendering are not tested.','All card rules are loaded from current production app.js and new-cards.js; no prototype rule patches are applied.']};
-  const target=writeReport('new-card-tests-2026-10-09.json',report);console.log(JSON.stringify({total:report.total,passed:report.passed,failed:report.failed,report:target,failures:results.filter(r=>!r.passed)},null,2));if(report.failed)process.exitCode=1;
+  const report={date:'2026-10-16',type:'headless unit integration',hashes:{...duel.hashes,'scripts/test-new-cards.cjs':hash(fs.readFileSync(__filename,'utf8'))},storageIsolation:'private in-memory Map',storageAudit:duel.storageAudit,total:results.length,passed:results.filter(r=>r.passed).length,failed:results.filter(r=>!r.passed).length,results,limitations:['DOM/audio/visual timing are stubbed; browser interaction and rendering are not tested.','All card rules are loaded from current production app.js and new-cards.js; no prototype rule patches are applied.']};
+  const target=writeReport('new-card-tests-2026-10-16.json',report);console.log(JSON.stringify({total:report.total,passed:report.passed,failed:report.failed,report:target,failures:results.filter(r=>!r.passed)},null,2));if(report.failed)process.exitCode=1;
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

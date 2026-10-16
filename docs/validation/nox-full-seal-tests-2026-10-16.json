@@ -1,0 +1,386 @@
+{
+  "contract": "C67 full intrinsic-skill closure; attack and guard maintained",
+  "passed": true,
+  "checks": 93,
+  "failures": 0,
+  "hashes": {
+    "app.js": "8407e1a4f3a1eb6e8a2b5ce5193cda274c691a75e9d910201fe946ccb653e0f7",
+    "new-cards.js": "142197f03878d1f45eaa890a56ce30afc9ac905699803719187612e441e21877",
+    "scripts/duel-vm.cjs": "0b3148558361b653dcf445efe42ed6ff8d5d40462c169f13518d7450164cacc3",
+    "scripts/test-nox-full-seal.cjs": "7df39f0d7e0a2628d8c76f629d9d3abea0d525cb4859bc254f137d6fd8928afb"
+  },
+  "results": [
+    {
+      "name": "C07 kill stacks, ATK +3 and third-kill blast stop together",
+      "passed": true
+    },
+    {
+      "name": "C21 allied attack trigger follows C21 status",
+      "passed": true
+    },
+    {
+      "name": "C55 hit stacks and ATK stop",
+      "passed": true
+    },
+    {
+      "name": "C01 additional attack stops without consuming its flag",
+      "passed": true
+    },
+    {
+      "name": "C64 additional attack stops without consuming its flag",
+      "passed": true
+    },
+    {
+      "name": "C10 allied kill draw follows C10 status",
+      "passed": true
+    },
+    {
+      "name": "stopped attacker does not silence independent C21 and C10 triggers",
+      "passed": true
+    },
+    {
+      "name": "C14 backline splash stops",
+      "passed": true
+    },
+    {
+      "name": "C16 random attack modifier stops",
+      "passed": true
+    },
+    {
+      "name": "C22 target ATK reduction stops",
+      "passed": true
+    },
+    {
+      "name": "C28 DEF bypass stops",
+      "passed": true
+    },
+    {
+      "name": "C30 defender retaliation stops",
+      "passed": true
+    },
+    {
+      "name": "C40 defender retaliation stops",
+      "passed": true
+    },
+    {
+      "name": "C34 attack draw stops",
+      "passed": true
+    },
+    {
+      "name": "C35 extra DEF erosion stops",
+      "passed": true
+    },
+    {
+      "name": "C44 ST bonus damage stops",
+      "passed": true
+    },
+    {
+      "name": "C46 first flare bypass stops without consuming flare",
+      "passed": true
+    },
+    {
+      "name": "C46 kill splash stops",
+      "passed": true
+    },
+    {
+      "name": "C49 last stand stops",
+      "passed": true
+    },
+    {
+      "name": "C25 sacrifice stops while guard remains",
+      "passed": true
+    },
+    {
+      "name": "C70 skill damage transfer stops while guard remains",
+      "passed": true
+    },
+    {
+      "name": "C03 intrinsic reduction stops while guard remains",
+      "passed": true
+    },
+    {
+      "name": "C09 retreat effect stops",
+      "passed": true
+    },
+    {
+      "name": "C16 retreat effect stops",
+      "passed": true
+    },
+    {
+      "name": "C18 retreat effect stops",
+      "passed": true
+    },
+    {
+      "name": "C31 retreat effect stops",
+      "passed": true
+    },
+    {
+      "name": "C37 retreat effect stops",
+      "passed": true
+    },
+    {
+      "name": "C26 own aura bonus and attack heal stop",
+      "passed": true
+    },
+    {
+      "name": "stopped condition card C07 still enables another C26 aura",
+      "passed": true
+    },
+    {
+      "name": "C24 own positive buff doubling stops",
+      "passed": true
+    },
+    {
+      "name": "stopped condition card C23 still enables another C24 doubling",
+      "passed": true
+    },
+    {
+      "name": "C11 new-ally buff stops; already applied buff remains",
+      "passed": true
+    },
+    {
+      "name": "C32 new-ally buff stops; already applied buff remains",
+      "passed": true
+    },
+    {
+      "name": "C48 new Claire boost stops; existing boost and withdrawal cleanup remain",
+      "passed": true
+    },
+    {
+      "name": "C48 retreat heal follows C48 status",
+      "passed": true
+    },
+    {
+      "name": "C23 support tax stops",
+      "passed": true
+    },
+    {
+      "name": "C63 support tax stops",
+      "passed": true
+    },
+    {
+      "name": "C65 new retreat return stops without consuming its once-only flag",
+      "passed": true
+    },
+    {
+      "name": "C72 active cleanse stops without spending energy or usage",
+      "passed": true
+    },
+    {
+      "name": "C02 natural awakening stops and resumes",
+      "passed": true
+    },
+    {
+      "name": "C02 forced awakening stops and resumes",
+      "passed": true
+    },
+    {
+      "name": "C06 natural awakening stops and resumes",
+      "passed": true
+    },
+    {
+      "name": "C06 forced awakening stops and resumes",
+      "passed": true
+    },
+    {
+      "name": "C06 dormant drawback stops only while closed",
+      "passed": true
+    },
+    {
+      "name": "C07 no-heal drawback stops only while closed",
+      "passed": true
+    },
+    {
+      "name": "haste stops on summon turn; normal attack returns on later turns",
+      "passed": true
+    },
+    {
+      "name": "Nox target lanes, immunity, expiry, normal attacks and skill recovery",
+      "passed": true
+    },
+    {
+      "name": "Aria enables front target choices even when her own skill is stopped",
+      "passed": true
+    },
+    {
+      "name": "Kanon cleanse immediately restores a stopped ally intrinsic effect",
+      "passed": true
+    },
+    {
+      "name": "existing numeric buffs, protection, route and next multiplier survive closure",
+      "passed": true
+    },
+    {
+      "name": "reserved support and effect nullification survive source closure",
+      "passed": true
+    },
+    {
+      "name": "existing silenced retains its previous limited attack behavior",
+      "passed": true
+    },
+    {
+      "name": "C01 start effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C02 start effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C05 start effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C06 start effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C12 start effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C15 start effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C18 start effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C24 start effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C51 start effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C54 start effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C04 end effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C08 end effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C10 end effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C25 end effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C27 end effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C29 end effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C38 end effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C62 end effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C64 end effect is still stopped, including state/counters",
+      "passed": true
+    },
+    {
+      "name": "C09 remains closed during turn-ending bind death",
+      "passed": true
+    },
+    {
+      "name": "C16 remains closed during turn-ending bind death",
+      "passed": true
+    },
+    {
+      "name": "C18 remains closed during turn-ending bind death",
+      "passed": true
+    },
+    {
+      "name": "C31 remains closed during turn-ending bind death",
+      "passed": true
+    },
+    {
+      "name": "C37 remains closed during turn-ending bind death",
+      "passed": true
+    },
+    {
+      "name": "C48 closure lasts through bind death when source is in front",
+      "passed": true
+    },
+    {
+      "name": "C48 closure lasts through bind death when source is in back",
+      "passed": true
+    },
+    {
+      "name": "C65 closure lasts through bind death before turn-ending status expiry",
+      "passed": true
+    },
+    {
+      "name": "C56 attack cleanse stops without cleansing its own closure",
+      "passed": true
+    },
+    {
+      "name": "C07 support-heal target eligibility follows temporary closure",
+      "passed": true
+    },
+    {
+      "name": "already awakened stats and permanent attack stacks persist through closure",
+      "passed": true
+    },
+    {
+      "name": "retreat of a closed C48 never removes a different C48 source boost",
+      "passed": true
+    },
+    {
+      "name": "AI values C64 extra attack after next-turn reset despite previous use",
+      "passed": true
+    },
+    {
+      "name": "AI actually chooses previously used C64 for Nox before its next-turn reset",
+      "passed": true
+    },
+    {
+      "name": "AI C28 DEF-bypass prediction matches stopped and active attacks",
+      "passed": true
+    },
+    {
+      "name": "AI C46 DEF-bypass prediction matches stopped and active attacks",
+      "passed": true
+    },
+    {
+      "name": "AI C44 ST bonus prediction matches stopped and active attacks",
+      "passed": true
+    },
+    {
+      "name": "AI C03 reduction prediction matches stopped and active defenders",
+      "passed": true
+    },
+    {
+      "name": "AI C49 last-stand removal and focused prediction match real attacks",
+      "passed": true
+    },
+    {
+      "name": "AI focused damage correctly spends DEF across multiple stopped bypass attackers",
+      "passed": true
+    },
+    {
+      "name": "AI C49 focus understands one active last stand needs a follow-up attack",
+      "passed": true
+    },
+    {
+      "name": "AI never predicts a used C46 flare as DEF-bypass after closure ends",
+      "passed": true
+    }
+  ]
+}

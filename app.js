@@ -2372,7 +2372,8 @@ function startTurn(player) {
 
 function endTurn(player) {
   applyEndEffects(player);
-  boardCards(player).forEach((card) => {
+  const endingCards = boardCards(player);
+  endingCards.forEach((card) => {
     // tempDefは次の相手ターン終了まで残し、自ターン開始時に消す（S09が防御として機能するように）
     card.tempAtk = 0;
     card.illusionRouteTurn = -1;
@@ -2382,6 +2383,11 @@ function endTurn(player) {
     if (card.supportProtection?.expiresAfterTurn <= player.turns) card.supportProtection = null;
   });
   tickBannerEffect(player);
+  // Keep Nox active through every card's end-of-turn status damage and retreat
+  // triggers; expiring it per card would make board order change the outcome.
+  endingCards.forEach((card) => {
+    if (card.status.periodicStop > 0) card.status.periodicStop -= 1;
+  });
   player.energy = 0;
   player.energyPulseUntil = 0;
 }
@@ -2444,11 +2450,12 @@ function applySummonEffects(card, player, lane) {
     log(`${card.name} の後衛スキル効果が2倍になった。`, "effect");
   }
 
-  if (hasActiveBoardCard(player, "C11") && card.role === "AT" && card.id !== "C11") buffAtk(card, 2 * scale);
-  if (hasActiveBoardCard(player, "C32") && card.element === "炎" && card.id !== "C32") buffAtk(card, 1 * scale);
+  if (hasActiveSkillSource(player, "C11") && card.role === "AT" && card.id !== "C11") buffAtk(card, 2 * scale);
+  if (hasActiveSkillSource(player, "C32") && card.element === "炎" && card.id !== "C32") buffAtk(card, 1 * scale);
   if (card.id === "C14" && hasActiveBoardCard(player, "C05")) buffAtk(card, 3 * scale);
 
   if (card.id === "C47") applySerenaBoostsToClaire(card, player);
+  if (isNoxSkillStopped(card)) return;
   if (card.role === "ST" && consumeEffectNullify(card, player, `${card.name} のサポータースキル`)) return;
   if (handleNewCardSummon(card, player)) return;
 
@@ -2836,6 +2843,24 @@ function setStatus(card, key, value) {
   return true;
 }
 
+// Keep the existing status key for saved/in-flight duels. Nox now stops every
+// intrinsic skill; ordinary attacks, guard and already resolved effects remain.
+function isNoxSkillStopped(card) {
+  return (card?.status?.periodicStop || 0) > 0;
+}
+
+function hasActiveHaste(card) {
+  return Boolean(card?.haste && !isNoxSkillStopped(card));
+}
+
+function isDormant(card) {
+  return Boolean(card?.dormant && !card.awakened && !isNoxSkillStopped(card));
+}
+
+function canReceiveHealing(card) {
+  return Boolean(card && (!card.noHeal || isNoxSkillStopped(card)));
+}
+
 function hasNegativeStatus(card) {
   return ["stun", "guardOff", "bind", "silenced", "periodicStop"].some((key) => card?.status?.[key] > 0);
 }
@@ -2909,7 +2934,7 @@ function serenaBoostAmount(serena) {
 }
 
 function applySerenaBoostsToClaire(card, player) {
-  const sources = boardCards(player).filter((ally) => ally.id === "C48" && ally.status.silenced <= 0);
+  const sources = boardCards(player).filter((ally) => ally.id === "C48" && ally.status.silenced <= 0 && !isNoxSkillStopped(ally));
   sources.forEach((serena) => applySerenaBoost(card, serena));
   if (sources.length) log(`${card.name} はセレナの号令で強化された。`, "effect");
 }
@@ -2926,7 +2951,7 @@ function triggerSophiaBoost(card, player) {
 }
 
 function applySerenaBoostToClaires(serena, player) {
-  if (serena.status.silenced > 0) return;
+  if (serena.status.silenced > 0 || isNoxSkillStopped(serena)) return;
   const claires = boardCards(player).filter((ally) => ally.id === "C47");
   claires.forEach((claire) => applySerenaBoost(claire, serena));
   if (claires.length) log("セレナの号令でクレアが強化された。", "effect");
@@ -2950,6 +2975,8 @@ function removeSerenaBoostFromClaires(player, serena) {
       let amount = C48_CLAIRE_BOOST;
       if (Array.isArray(claire.c48BoostSources) && claire.c48BoostSources.length) {
         const sourceIndex = sourceId ? claire.c48BoostSources.findIndex((boost) => boost.sourceId === sourceId) : -1;
+        // A stopped Serena may never have granted this Claire a bonus.
+        if (sourceId && sourceIndex < 0) return;
         const boostIndex = sourceIndex >= 0 ? sourceIndex : claire.c48BoostSources.length - 1;
         const [boost] = claire.c48BoostSources.splice(boostIndex, 1);
         amount = Number.isFinite(boost?.amount) ? boost.amount : C48_CLAIRE_BOOST;
@@ -3003,7 +3030,7 @@ function triggerLucreziaEnergy(card, player) {
 
 function triggerSerenaRetreatHeal(owner, fallenCard) {
   if (fallenCard.id === "C48") return;
-  const serena = boardCards(owner).find((ally) => ally.id === "C48" && ally.status.silenced <= 0);
+  const serena = boardCards(owner).find((ally) => ally.id === "C48" && ally.status.silenced <= 0 && !isNoxSkillStopped(ally));
   if (!serena) return;
   if (consumeEffectNullify(serena, owner, "セレナの撤退時回復")) return;
   healLp(owner, 1, "セレナ");
@@ -3011,7 +3038,7 @@ function triggerSerenaRetreatHeal(owner, fallenCard) {
 
 function triggerMariaArcadiaReturn(owner, fallenCard) {
   if (fallenCard.id === "C65" || fallenCard.series !== ARCADIA_SERIES) return false;
-  const maria = boardCards(owner).find((ally) => ally.id === "C65" && !ally.mariaReturnUsed && ally.status.silenced <= 0);
+  const maria = boardCards(owner).find((ally) => ally.id === "C65" && !ally.mariaReturnUsed && ally.status.silenced <= 0 && !isNoxSkillStopped(ally));
   if (!maria || arcadiaCount(owner, fallenCard) < 4) return false;
   if (consumeEffectNullify(maria, owner, "マリアの撤退保護")) return false;
   maria.mariaReturnUsed = true;
@@ -3229,11 +3256,11 @@ function supportRequiresTarget(card) {
 function getSupportTargets(card, player, foe) {
   switch (card?.id) {
     case "S01":
-      return boardCards(player).filter((ally) => ally.currentHp < ally.maxHp && !ally.noHeal);
+      return boardCards(player).filter((ally) => ally.currentHp < ally.maxHp && canReceiveHealing(ally));
     case "S03":
       return foe.front.filter(Boolean);
     case "S05":
-      return boardCards(player).filter((ally) => ally.awaken && !ally.awakened);
+      return boardCards(player).filter((ally) => ally.awaken && !ally.awakened && !isNoxSkillStopped(ally));
     case "S14":
       return activeGuards(foe);
     case "S15":
@@ -3323,7 +3350,7 @@ function chooseSupportTarget(card, player, foe) {
 }
 
 function awaken(card, player, forced = false) {
-  if (!card.awaken || card.awakened) return;
+  if (!card.awaken || card.awakened || isNoxSkillStopped(card)) return;
   const skillScale = consumeNextSkillMultiplier(card);
   card.awakened = true;
   card.dormant = false;
@@ -3370,7 +3397,7 @@ async function performAttack(attacker, target, options = {}) {
   state.busy = true;
   state.selectedAttackerId = null;
   // アトミックフレアはキャラへの攻撃でのみ発動・消費する（LP攻撃では温存）
-  const atomicFlareReady = attacker.id === "C46" && !attacker.atomicFlareUsed && target.type === "card";
+  const atomicFlareReady = attacker.id === "C46" && !isNoxSkillStopped(attacker) && !attacker.atomicFlareUsed && target.type === "card";
   audio.sfx(atomicFlareReady ? "atomic" : "attack", { ...attacker, amount: effectiveAtk(attacker) });
   audio.voice(attacker, "attack");
   const fx = window.FX;
@@ -3391,12 +3418,12 @@ async function performAttack(attacker, target, options = {}) {
   }
 
   let attackValue = effectiveAtk(attacker);
-  if (attacker.id === "C16") {
+  if (attacker.id === "C16" && !isNoxSkillStopped(attacker)) {
     const mod = Math.random() < 0.5 ? 3 : -4;
     attackValue = Math.max(0, attackValue + mod);
     log(`烈 龍翔の気まぐれ: ATK${mod > 0 ? "+" : ""}${mod}。`, "effect");
   }
-  if (target.type === "card" && attacker.id === "C44" && target.card.role === "ST") attackValue += 2;
+  if (target.type === "card" && attacker.id === "C44" && !isNoxSkillStopped(attacker) && target.card.role === "ST") attackValue += 2;
   const atomicFlareActive = atomicFlareReady;
   if (atomicFlareActive) attacker.atomicFlareUsed = true;
 
@@ -3429,18 +3456,18 @@ async function performAttack(attacker, target, options = {}) {
     hpDamage = attackValue;
   } else {
     const result = damageCharacter(target.card, attackValue, owner, {
-      ignoreDef: attacker.id === "C28" || atomicFlareActive,
+      ignoreDef: (attacker.id === "C28" && !isNoxSkillStopped(attacker)) || atomicFlareActive,
       attacker,
       cause: "attack",
       sourceCard: attacker,
     });
     killed = result.killed;
     hpDamage = result.hpDamage;
-    if (target.card?.id === "C30") damageCharacter(attacker, 1, foe, { ignoreDef: true, cause: "character-skill", sourceCard: target.card });
-    if (target.card?.id === "C40") damageCharacter(attacker, 2, foe, { ignoreDef: true, cause: "character-skill", sourceCard: target.card });
-    if (attacker.id === "C22" && target.card && !result.killed) buffAtk(target.card, -1);
-    if (attacker.id === "C35" && target.card && !result.killed) target.card.currentDef = Math.max(0, target.card.currentDef - 1);
-    if (attacker.id === "C34" && hpDamage > 0) drawCard(owner);
+    if (target.card?.id === "C30" && !isNoxSkillStopped(target.card)) damageCharacter(attacker, 1, foe, { ignoreDef: true, cause: "character-skill", sourceCard: target.card });
+    if (target.card?.id === "C40" && !isNoxSkillStopped(target.card)) damageCharacter(attacker, 2, foe, { ignoreDef: true, cause: "character-skill", sourceCard: target.card });
+    if (attacker.id === "C22" && !isNoxSkillStopped(attacker) && target.card && !result.killed) buffAtk(target.card, -1);
+    if (attacker.id === "C35" && !isNoxSkillStopped(attacker) && target.card && !result.killed) target.card.currentDef = Math.max(0, target.card.currentDef - 1);
+    if (attacker.id === "C34" && !isNoxSkillStopped(attacker) && hpDamage > 0) drawCard(owner);
   }
 
   await sleep(IMPACT_SETTLE_DELAY);
@@ -3458,8 +3485,9 @@ async function performAttack(attacker, target, options = {}) {
 }
 
 function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, effects = {}) {
+  const attackerSkillsEnabled = !isNoxSkillStopped(attacker);
   boardCards(owner)
-    .filter((ally) => ally.id === "C21")
+    .filter((ally) => ally.id === "C21" && !isNoxSkillStopped(ally))
     .forEach((te) => {
       if ((te.heatStacks || 0) < 3) {
         te.heatStacks = (te.heatStacks || 0) + 1;
@@ -3467,33 +3495,33 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
       }
     });
 
-  if (attacker.id === "C14") {
+  if (attacker.id === "C14" && attackerSkillsEnabled) {
     foe.back.filter(Boolean).forEach((enemy) => damageCharacter(enemy, 2, owner, { ignoreDef: false, cause: "character-skill", sourceCard: attacker }));
     log("アグニアの残火が後衛にも届いた。", "effect");
   }
 
-  if (attacker.id === "C26") {
+  if (attacker.id === "C26" && attackerSkillsEnabled) {
     const targetAlly = mostDamagedAlly(owner);
     if (targetAlly) healCharacter(targetAlly, 2);
   }
 
-  if (attacker.id === "C55" && hpDamage > 0 && (attacker.vanguardStacks || 0) < 2) {
+  if (attacker.id === "C55" && attackerSkillsEnabled && hpDamage > 0 && (attacker.vanguardStacks || 0) < 2) {
     attacker.vanguardStacks = (attacker.vanguardStacks || 0) + 1;
     buffAtk(attacker, 1);
     log("ヴァネッサが切り込みを成功させ、ATK+1。", "effect");
   }
 
-  if (attacker.id === "C56") {
+  if (attacker.id === "C56" && attackerSkillsEnabled) {
     clearOneStatusFromAlly(owner);
   }
 
   if (killed) {
-    if (attacker.id === "C46" && effects.atomicFlareActive) {
+    if (attacker.id === "C46" && attackerSkillsEnabled && effects.atomicFlareActive) {
       const blastTargets = foe.back.filter(Boolean);
       blastTargets.forEach((enemy) => damageCharacter(enemy, 2, owner, { cause: "character-skill", sourceCard: attacker }));
       if (blastTargets.length) log("カトリーナのアトミックフレアが着弾点を爆破。", "effect");
     }
-    if (attacker.id === "C07") {
+    if (attacker.id === "C07" && attackerSkillsEnabled) {
       attacker.killCount += 1;
       buffAtk(attacker, 3);
       log("悠久ニィアルが撃破でATK+3。", "effect");
@@ -3503,17 +3531,17 @@ function afterAttackEffects(attacker, owner, foe, target, killed, hpDamage = 0, 
         log("3体撃破。伝説の英雄が相手全体へ5ダメージ。", "effect");
       }
     }
-    if (attacker.id === "C64" && !attacker.sionReattackUsed) {
+    if (attacker.id === "C64" && attackerSkillsEnabled && !attacker.sionReattackUsed) {
       attacker.sionReattackUsed = true;
       attacker.attacked = false;
       log("シオンは排除に成功し、追加攻撃可能。", "effect");
     }
     boardCards(owner)
-      .filter((ally) => ally.id === "C10" && ally.status.silenced <= 0)
+      .filter((ally) => ally.id === "C10" && ally.status.silenced <= 0 && !isNoxSkillStopped(ally))
       .forEach(() => drawCard(owner));
   }
 
-  if (attacker.id === "C01" && attacker.currentHp <= Math.ceil(attacker.maxHp / 2) && !attacker.extraAttackUsed) {
+  if (attacker.id === "C01" && attackerSkillsEnabled && attacker.currentHp <= Math.ceil(attacker.maxHp / 2) && !attacker.extraAttackUsed) {
     attacker.extraAttackUsed = true;
     attacker.attacked = false;
     log("緋山玲奈はHP半分以下で追加攻撃可能。", "effect");
@@ -3533,7 +3561,7 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
     damageCharacter(protector, transferredDamage, sourcePlayer, { ...options, transferred: true });
     if (damage <= 0) return { killed: false, hpDamage: 0, totalDamage: 0 };
   }
-  if (card.id === "C03" && card.status.silenced <= 0) damage = Math.max(1, damage - 1);
+  if (card.id === "C03" && card.status.silenced <= 0 && !isNoxSkillStopped(card)) damage = Math.max(1, damage - 1);
 
   let hpDamage = 0;
   let totalDamage = 0;
@@ -3587,7 +3615,7 @@ function damageCharacter(card, amount, sourcePlayer, options = {}) {
       damageCharacter(interceptor, hpDamage, sourcePlayer, { ...options, ignoreDef: true, transferred: true });
       return { killed: false, hpDamage, totalDamage };
     }
-    if (card.id === "C49" && !card.lastStandUsed) {
+    if (card.id === "C49" && !isNoxSkillStopped(card) && !card.lastStandUsed) {
       card.lastStandUsed = true;
       card.currentHp = 1;
       audio.sfx("heal", { ...card, amount: 1 });
@@ -3608,7 +3636,7 @@ function findGaldioProtector(owner, target, sourcePlayer, options) {
     options.sourceCard?.kind !== "character"
   ) return null;
   return owner.front.find((ally) =>
-    ally?.id === "C70" && ally.currentHp > 0 && ally.status.silenced <= 0 && ally.status.stun <= 0 &&
+    ally?.id === "C70" && ally.currentHp > 0 && ally.status.silenced <= 0 && !isNoxSkillStopped(ally) && ally.status.stun <= 0 &&
     ally.galdioProtectTurn !== sourcePlayer.turns,
   ) || null;
 }
@@ -3623,6 +3651,7 @@ function findInterceptGuardian(owner, dying) {
         !ally.interceptUsed &&
         ally.currentHp > 0 &&
         ally.status.silenced <= 0 &&
+        !isNoxSkillStopped(ally) &&
         ally.status.stun <= 0,
     ) || null
   );
@@ -3658,6 +3687,9 @@ function destroyCharacter(card, sourcePlayer, options = {}) {
     log(`すれ違いの再会で ${card.name} が手札に戻った。`, "effect");
   }
 
+  // Removing an existing Serena bonus and resolving other cards' skills above
+  // still happen when the departing card's own retreat skill is stopped.
+  if (isNoxSkillStopped(card)) return;
   switch (card.id) {
     case "C09":
       damageLp(foe, 3, card.name);
@@ -3720,7 +3752,7 @@ function healLp(player, amount, source) {
 }
 
 function healCharacter(card, amount) {
-  if (!card || card.noHeal || amount <= 0) return;
+  if (!canReceiveHealing(card) || amount <= 0) return;
   const before = card.currentHp;
   card.currentHp = Math.min(card.maxHp, card.currentHp + amount);
   const gained = card.currentHp - before;
@@ -3739,14 +3771,14 @@ function healDef(card, amount) {
 function buffAtk(card, amount) {
   if (!card || !Number.isFinite(amount)) return;
   const multiplier =
-    card.id === "C24" && (card.status?.silenced || 0) <= 0 && hasActiveBoardCard(state[card.ownerKey], "C23") && amount > 0 ? 2 : 1;
+    card.id === "C24" && !isNoxSkillStopped(card) && (card.status?.silenced || 0) <= 0 && hasActiveBoardCard(state[card.ownerKey], "C23") && amount > 0 ? 2 : 1;
   card.currentAtk = Math.max(0, card.currentAtk + amount * multiplier);
 }
 
 function buffDef(card, amount) {
   if (!card || !Number.isFinite(amount)) return;
   const multiplier =
-    card.id === "C24" && (card.status?.silenced || 0) <= 0 && hasActiveBoardCard(state[card.ownerKey], "C23") && amount > 0 ? 2 : 1;
+    card.id === "C24" && !isNoxSkillStopped(card) && (card.status?.silenced || 0) <= 0 && hasActiveBoardCard(state[card.ownerKey], "C23") && amount > 0 ? 2 : 1;
   const actual = amount * multiplier;
   if (actual > 0) card.maxDef += actual;
   card.currentDef = Math.max(0, card.currentDef + actual);
@@ -3754,13 +3786,13 @@ function buffDef(card, amount) {
 
 function buffMaxHp(card, amount) {
   if (!card || amount <= 0) return;
-  const multiplier = card.id === "C24" && (card.status?.silenced || 0) <= 0 && hasActiveBoardCard(state[card.ownerKey], "C23") ? 2 : 1;
+  const multiplier = card.id === "C24" && !isNoxSkillStopped(card) && (card.status?.silenced || 0) <= 0 && hasActiveBoardCard(state[card.ownerKey], "C23") ? 2 : 1;
   card.maxHp += amount * multiplier;
   card.currentHp += amount * multiplier;
 }
 
 function decrementStatuses(card) {
-  ["stun", "guardOff", "silenced", "periodicStop"].forEach((key) => {
+  ["stun", "guardOff", "silenced"].forEach((key) => {
     if (card.status[key] > 0) card.status[key] -= 1;
   });
   if (card.status.bind > 0) {
@@ -3777,9 +3809,9 @@ function canAttack(card, player) {
   if (!card || player.key !== state.current || state.phase !== "battle") return false;
   if (!player.front.includes(card)) return false;
   if (card.attacked || card.status.stun > 0) return false;
-  if (card.dormant && !card.awakened) return false;
+  if (isDormant(card)) return false;
   if (effectiveAtk(card) <= 0) return false;
-  const ready = card.haste || player.turns > card.summonedOnTurn;
+  const ready = hasActiveHaste(card) || player.turns > card.summonedOnTurn;
   return ready && getLegalTargets(card, player).length > 0;
 }
 
@@ -3801,7 +3833,7 @@ function getLegalTargets(attacker, owner) {
 }
 
 function isSummonTurnHasteAttack(card, player) {
-  return Boolean(card?.haste && player && player.turns === card.summonedOnTurn);
+  return Boolean(hasActiveHaste(card) && player && player.turns === card.summonedOnTurn);
 }
 
 function activeGuards(player) {
@@ -3816,8 +3848,8 @@ function effectiveCost(card, player) {
   if (card.costReduction) cost -= card.costReduction;
   if (card.kind === "character" && player?.bannerTurns > 0) cost -= 1;
   if (card.kind === "support" && foe) {
-    if (hasActiveBoardCard(foe, "C23")) cost += 1;
-    if (hasActiveBoardCard(foe, "C63")) cost += 1;
+    if (hasActiveSkillSource(foe, "C23")) cost += 1;
+    if (hasActiveSkillSource(foe, "C63")) cost += 1;
   }
   return Math.max(0, cost);
 }
@@ -3827,7 +3859,7 @@ function effectiveAtk(card) {
 }
 
 function alyusTirisNiallBonus(card) {
-  if (card?.id !== "C26" || card.status?.silenced > 0) return 0;
+  if (card?.id !== "C26" || card.status?.silenced > 0 || isNoxSkillStopped(card)) return 0;
   const owner = state?.[card.ownerKey];
   if (!owner) return 0;
   return hasActiveBoardCard(owner, "C07") ? 2 : 0;
@@ -3858,6 +3890,11 @@ function hasActiveBoardCard(player, id) {
   return boardCards(player).some((card) => card.id === id && (card.status?.silenced || 0) <= 0);
 }
 
+// Unlike a mere presence condition, a continuing skill needs an enabled source.
+function hasActiveSkillSource(player, id) {
+  return boardCards(player).some((card) => card.id === id && (card.status?.silenced || 0) <= 0 && !isNoxSkillStopped(card));
+}
+
 function opponentOf(player) {
   return player.key === "player" ? state.ai : state.player;
 }
@@ -3879,7 +3916,7 @@ function findCardByInstance(instanceId) {
 
 function mostDamagedAlly(player) {
   return boardCards(player)
-    .filter((ally) => ally.currentHp < ally.maxHp && !ally.noHeal)
+    .filter((ally) => ally.currentHp < ally.maxHp && canReceiveHealing(ally))
     .sort((a, b) => a.currentHp / a.maxHp - b.currentHp / b.maxHp)[0];
 }
 
@@ -6542,7 +6579,7 @@ function renderStatusStrip(card) {
   if (card.illusionRouteTurn === state[card.ownerKey]?.turns && state.current === card.ownerKey) chips.push("幻影経路");
   if (card.id === "C72" && card.activeCleanseTurn === state[card.ownerKey]?.turns) chips.push("祓い済");
   if (card.awakened) chips.push("AWAKE");
-  if (card.dormant && !card.awakened) chips.push("SLEEP");
+  if (isDormant(card)) chips.push("SLEEP");
   return chips.length ? `<div class="status-strip">${chips.map((chip) => `<span class="status-chip">${chip}</span>`).join("")}</div>` : "";
 }
 
@@ -6947,9 +6984,9 @@ function isBackSkillCandidate(card) {
 function canJoinUpcomingAttack(card, player) {
   if (!card || !player.front.includes(card)) return false;
   if (card.attacked || card.status.stun > 0) return false;
-  if (card.dormant && !card.awakened) return false;
+  if (isDormant(card)) return false;
   if (effectiveAtk(card) <= 0) return false;
-  const ready = card.haste || player.turns > card.summonedOnTurn;
+  const ready = hasActiveHaste(card) || player.turns > card.summonedOnTurn;
   return ready && getLegalTargets(card, player).length > 0;
 }
 
@@ -6968,9 +7005,9 @@ function isAiProfileBacklineLocked(card) {
 function aiFrontPressureValue(card) {
   if (!card || card.backOnly) return 0;
   let score = effectiveAtk(card);
-  if (card.haste) score += 2;
-  if (card.dormant && !card.awakened) score -= 4;
-  if (AI_FRONT_PRESSURE_EFFECT_IDS.has(card.id)) score += 1;
+  if (hasActiveHaste(card)) score += 2;
+  if (isDormant(card)) score -= 4;
+  if (!isNoxSkillStopped(card) && AI_FRONT_PRESSURE_EFFECT_IDS.has(card.id)) score += 1;
   return Math.max(0, score);
 }
 
@@ -7055,13 +7092,13 @@ function scoreCardForAi(card, slot = null, player = state.ai) {
 
 function aiAttackValueForTarget(attacker, targetCard) {
   let attackValue = effectiveAtk(attacker);
-  if (attacker.id === "C44" && targetCard?.role === "ST") attackValue += 2;
-  if (targetCard?.id === "C03") attackValue = Math.max(1, attackValue - 1);
+  if (attacker.id === "C44" && !isNoxSkillStopped(attacker) && targetCard?.role === "ST") attackValue += 2;
+  if (targetCard?.id === "C03" && !isNoxSkillStopped(targetCard)) attackValue = Math.max(1, attackValue - 1);
   return Math.max(0, attackValue);
 }
 
 function aiAttackIgnoresDef(attacker) {
-  return attacker.id === "C28" || (attacker.id === "C46" && !attacker.atomicFlareUsed);
+  return !isNoxSkillStopped(attacker) && (attacker.id === "C28" || (attacker.id === "C46" && !attacker.atomicFlareUsed));
 }
 
 function aiPredictedDamageProfile(attacker, targetCard, availableDef = effectiveDef(targetCard)) {
@@ -7077,7 +7114,7 @@ function aiPredictedDamageProfile(attacker, targetCard, availableDef = effective
 
 function aiCanRemoveTargetWithDamage(targetCard, hpDamage) {
   if (!targetCard || hpDamage < targetCard.currentHp) return false;
-  return targetCard.id !== "C49" || targetCard.lastStandUsed;
+  return targetCard.id !== "C49" || isNoxSkillStopped(targetCard) || targetCard.lastStandUsed;
 }
 
 function aiAttackersForTarget(targetCard) {
@@ -7090,7 +7127,7 @@ function aiAttackersForTarget(targetCard) {
 function aiFocusedDamageProfile(targetCard, attackers) {
   let availableDef = effectiveDef(targetCard);
   let remainingHp = targetCard.currentHp;
-  let lastStandAvailable = targetCard.id === "C49" && !targetCard.lastStandUsed;
+  let lastStandAvailable = targetCard.id === "C49" && !isNoxSkillStopped(targetCard) && !targetCard.lastStandUsed;
   let removes = false;
   let hpDamage = 0;
   let shieldDamage = 0;
@@ -7141,6 +7178,7 @@ function aiShouldFocusFrontline(cardTargets) {
 }
 
 function aiAttackSynergyScore(attacker, targetCard, profile, removes, location) {
+  if (isNoxSkillStopped(attacker)) return 0;
   let score = 0;
   if (attacker.id === "C14" && location?.lane === AI_LANE_FRONT) score += 6;
   if (attacker.id === "C22" && !removes && effectiveAtk(targetCard) > 0) score += 4;
@@ -7157,15 +7195,15 @@ function aiAttackSynergyScore(attacker, targetCard, profile, removes, location) 
 
 function aiCounterAttackDamage(attacker, target) {
   let attackValue = effectiveAtk(attacker);
-  if (attacker.id === "C16") attackValue += 3;
-  if (target?.type === "card" && attacker.id === "C44" && target.card.role === "ST") attackValue += 2;
-  if (attacker.id === "C03") attackValue = Math.max(1, attackValue - 1);
+  if (attacker.id === "C16" && !isNoxSkillStopped(attacker)) attackValue += 3;
+  if (target?.type === "card" && attacker.id === "C44" && !isNoxSkillStopped(attacker) && target.card.role === "ST") attackValue += 2;
+  if (attacker.id === "C03" && !isNoxSkillStopped(attacker)) attackValue = Math.max(1, attackValue - 1);
   return Math.max(0, attackValue);
 }
 
 function aiCounterAttackOutcome(attacker, target) {
   const reflectedDamage = aiCounterAttackDamage(attacker, target);
-  const usesLastStand = attacker.id === "C49" && !attacker.lastStandUsed && reflectedDamage >= attacker.currentHp;
+  const usesLastStand = attacker.id === "C49" && !isNoxSkillStopped(attacker) && !attacker.lastStandUsed && reflectedDamage >= attacker.currentHp;
   const survives = reflectedDamage < attacker.currentHp || usesLastStand;
   return {
     reflectedDamage,
@@ -7193,9 +7231,9 @@ function scoreAiCounterBait(attacker, outcome) {
   let score = outcome.reflectedDamage * 20 + effectiveAtk(attacker) * 4 + aiFrontPressureValue(attacker) * 3;
   if (outcome.remainingHp === 1) score += 12;
   if (outcome.remainingHp === 2) score += 4;
-  if (attacker.id === "C16") score += 12;
-  if (attacker.id === "C46" && !attacker.atomicFlareUsed) score += 28;
-  if (attacker.id === "C64" && !attacker.sionReattackUsed) score += 14;
+  if (attacker.id === "C16" && !isNoxSkillStopped(attacker)) score += 12;
+  if (attacker.id === "C46" && !isNoxSkillStopped(attacker) && !attacker.atomicFlareUsed) score += 28;
+  if (attacker.id === "C64" && !isNoxSkillStopped(attacker) && !attacker.sionReattackUsed) score += 14;
   return score;
 }
 
@@ -7232,7 +7270,7 @@ function scoreAiAttackTarget(attacker, target, context) {
   const profile = aiPredictedDamageProfile(attacker, card);
   const focused = aiFocusedDamageProfile(card, aiAttackersForTarget(card));
   const removesNow = aiCanRemoveTargetWithDamage(card, profile.hpDamage);
-  const breaksLastStand = card.id === "C49" && !card.lastStandUsed && profile.hpDamage >= card.currentHp;
+  const breaksLastStand = card.id === "C49" && !isNoxSkillStopped(card) && !card.lastStandUsed && profile.hpDamage >= card.currentHp;
   const lowHpValue = Math.max(0, 7 - card.currentHp);
   const threatValue = effectiveAtk(card) * 1.1;
   let score = lowHpValue + threatValue + profile.hpDamage * 4 + profile.shieldDamage * 1.5;

@@ -134,6 +134,7 @@ function renderNewCardActions() {
   if (enabled) hint.textContent = "状態異常のある味方を選んで祓います。1ターンに1回使えます。";
   else if (state.current !== "player" || state.phase !== "main") hint.textContent = "自分のメインフェーズに使えます。";
   else if (card.status?.stun > 0 || card.status?.silenced > 0) hint.textContent = "カノンの行動不能・封印を解除すると使えます。";
+  else if (card.status?.periodicStop > 0) hint.textContent = "閉律で固有スキルが停止中です。他の味方の祓いで解除できます。";
   else if (player.energy < 1) hint.textContent = "使用には1エネルギーが必要です。";
   else hint.textContent = "祓える味方がいないか、このターンは使用済みです。";
   actions.append(button, hint);
